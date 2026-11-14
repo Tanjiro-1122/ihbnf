@@ -1,7 +1,7 @@
 const pillars = [
-  { title: "Books", text: "Young-adult fantasy, and a memoir in progress." },
-  { title: "Apps", text: "Unfiltr by Javier, on iOS and Android." },
-  { title: "What's next", text: "More stories and more tools, built the same way." },
+  { title: "Books", text: "Fantasy, memoir, and more stories already waiting their turn." },
+  { title: "Apps", text: "Unfiltr, Sports Wager Helper, and the tools that started as “what if?”" },
+  { title: "The method", text: "Build it. Break something. Learn why. Fix it. Keep going." },
 ];
 
 export function BrandStatement() {
@@ -13,9 +13,9 @@ export function BrandStatement() {
         </p>
         <div className="lg:col-span-9">
           <h2 id="statement-title" data-reveal className="font-display text-[clamp(2rem,4.4vw,4rem)] leading-[1.08] text-bone">
-            IHBNF is the name on everything Javier Huertas makes.{" "}
-            <span className="text-mute">Books, apps, and whatever comes next.</span> Different projects, one rule behind
-            all of them: <em className="text-gold">nothing happens until you do the work.</em>
+            IHBNF is where I put the things I actually finish.{" "}
+            <span className="text-mute">Books, apps, sports tech, and whatever idea talks me into more work next.</span>{" "}
+            Different projects, same rule: <em className="text-gold">nothing happens until you do the work.</em>
           </h2>
           <dl className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-bone/[0.08] bg-bone/[0.08] sm:grid-cols-3">
             {pillars.map((p, i) => (
