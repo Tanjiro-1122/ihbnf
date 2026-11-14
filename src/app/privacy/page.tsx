@@ -9,11 +9,15 @@ export const metadata: Metadata = {
 const sections = [
   {
     h: "What this site collects",
-    p: "This website doesn't have accounts, forms, or a newsletter yet, and it doesn't set advertising or tracking cookies. Our hosting provider may keep standard server logs (such as IP address and browser type) for security and reliability.",
+    p: "This website doesn't have user accounts, a newsletter, or advertising trackers, and it doesn't set advertising cookies. Our hosting provider may process standard request information such as IP address, browser details, and timestamps for security, reliability, and delivery of the site.",
+  },
+  {
+    h: "Ask IHBNF",
+    p: "The Ask IHBNF assistant is optional and may be disabled. When it is enabled and you choose to send a message, the recent conversation you provide is sent to the configured AI service so it can generate a response. Don't include passwords, financial information, health information, or other sensitive personal information in those messages.",
   },
   {
     h: "Links to other sites",
-    p: "Pages here link to Amazon, the Unfiltr by Javier website, and social platforms like YouTube, Instagram, TikTok, Threads, Bluesky, Pinterest and Facebook. Those services have their own privacy policies, which apply once you leave this site.",
+    p: "Pages here link to services including Amazon, the Unfiltr by Javier website, Apple App Store, Google Play, YouTube, Instagram, TikTok, Threads, Bluesky, Pinterest, and Facebook. Those services have their own privacy policies, which apply once you leave this site.",
   },
   {
     h: "Apps",
@@ -21,11 +25,11 @@ const sections = [
   },
   {
     h: "Email",
-    p: "If you email IHBNF, your message and address are used only to reply to you. They aren't sold or shared.",
+    p: "If you email IHBNF, your message and address are used to read and respond to your inquiry and are processed through the email services used by IHBNF. IHBNF does not sell your email address.",
   },
   {
     h: "Changes",
-    p: "If the site adds features like an email signup, this page will be updated before they go live.",
+    p: "If the site adds features that change how visitor information is handled, this page will be updated to reflect them.",
   },
 ];
 
