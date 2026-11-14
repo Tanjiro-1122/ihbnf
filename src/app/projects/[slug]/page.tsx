@@ -105,6 +105,21 @@ const whyHenryPreview = [
   },
 ];
 
+const whyHenryCharacters = [
+  {
+    src: "/media/why-henry/characters/dominick.png",
+    name: "Dominick Xavier St. Clair",
+    role: "An ordinary boy facing extraordinary questions",
+    text: "Fourteen-year-old Dominick never expected an adventure. With his closest friend beside him, curiosity draws him into a mystery that will test his courage.",
+  },
+  {
+    src: "/media/why-henry/characters/henry.png",
+    name: "Henry Mercer",
+    role: "The friend at his side",
+    text: "Loyal, curious, and impossible to leave out of an adventure, Henry is more than a sidekick. His friendship with Dominick is at the heart of the story.",
+  },
+];
+
 export default async function ProjectPage({ params }: Params) {
   const p = getProject((await params).slug);
   if (!p) notFound();
@@ -210,6 +225,42 @@ export default async function ProjectPage({ params }: Params) {
                   <p className="mt-2 leading-relaxed text-mute">{item.caption}</p>
                 </figcaption>
               </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {p.theme === "henry" && (
+        <section className="shell pb-24 sm:pb-32" aria-labelledby="henry-characters-title">
+          <div className="max-w-2xl">
+            <p className="eyebrow text-amber">The friendship at the center</p>
+            <h2 id="henry-characters-title" className="mt-4 font-display text-[clamp(2.5rem,5vw,4.6rem)] leading-[0.98]">
+              Meet Dominick and Henry.
+            </h2>
+          </div>
+          <div className="mt-12 grid gap-5 lg:grid-cols-2">
+            {whyHenryCharacters.map((character, i) => (
+              <article
+                key={character.name}
+                data-reveal
+                style={{ "--d": `${i * 80}ms` } as React.CSSProperties}
+                className="grid overflow-hidden rounded-[22px] border border-bone/10 bg-coal sm:grid-cols-[minmax(170px,0.75fr)_1.25fr]"
+              >
+                <div className="relative min-h-[280px] bg-ash">
+                  <Image
+                    src={character.src}
+                    alt={character.name}
+                    fill
+                    sizes="(min-width: 1024px) 24vw, (min-width: 640px) 38vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col justify-center p-6 sm:p-8">
+                  <p className="font-display text-3xl text-bone">{character.name}</p>
+                  <p className="mt-2 text-sm uppercase tracking-[0.14em] text-amber">{character.role}</p>
+                  <p className="mt-5 leading-relaxed text-mute">{character.text}</p>
+                </div>
+              </article>
             ))}
           </div>
         </section>
