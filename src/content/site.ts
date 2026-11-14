@@ -4,7 +4,7 @@ import type { MediaAsset } from "./types";
 export const site = {
   name: "IHBNF",
   motto: "Idle Hands Bear No Fruit.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://ihbnf.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://ihbnf.vercel.app",
   title: "IHBNF — Idle Hands Bear No Fruit",
   description:
     "IHBNF (Idle Hands Bear No Fruit) is the creative home of author and builder Javier Huertas: The Unwritten Journey — Book One: Why Henry?, the Unfiltr by Javier AI companion app, and the memoir The Dream of the Payoff of Working Hard.",
