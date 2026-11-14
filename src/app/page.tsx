@@ -5,6 +5,7 @@ import { FeaturedProjects } from "@/components/sections/FeaturedProjects";
 import { WhyHenryFeature } from "@/components/sections/WhyHenryFeature";
 import { UnfiltrFeature } from "@/components/sections/UnfiltrFeature";
 import { MemoirFeature } from "@/components/sections/MemoirFeature";
+import { MoreBooksTeaser } from "@/components/sections/MoreBooksTeaser";
 import { About } from "@/components/sections/About";
 import { Philosophy } from "@/components/sections/Philosophy";
 import { Connect } from "@/components/sections/Connect";
@@ -34,6 +35,7 @@ export default function Home() {
       <WhyHenryFeature />
       <UnfiltrFeature />
       <MemoirFeature />
+      <MoreBooksTeaser />
       <About />
       <Philosophy />
       <Connect />
