@@ -266,6 +266,34 @@ export default async function ProjectPage({ params }: Params) {
         </section>
       )}
 
+      {p.theme === "unfiltr" && p.media.screenshots && (
+        <section className="shell pb-24 sm:pb-32" aria-labelledby="unfiltr-screens-title">
+          <div className="max-w-2xl">
+            <p className="eyebrow text-violet">Real screens</p>
+            <h2 id="unfiltr-screens-title" className="mt-4 font-display text-[clamp(2.5rem,5vw,4.6rem)] leading-[0.98]">
+              See Unfiltr as it actually looks.
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-mute">
+              Chat with Kai, write in the Zen Temple journal, and revisit what your companion remembers.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-5 sm:grid-cols-3">
+            {p.media.screenshots.map((shot, i) => (
+              <figure
+                key={shot.src}
+                data-reveal
+                style={{ "--d": `${i * 70}ms` } as React.CSSProperties}
+                className="mx-auto w-full max-w-[320px]"
+              >
+                <div className="relative aspect-[9/19] overflow-hidden rounded-[2rem] border border-white/10 bg-black shadow-[0_30px_80px_-30px_rgb(100_80_220/0.65)]">
+                  <Image src={shot.src} alt={shot.alt} fill sizes="320px" className="object-cover" />
+                </div>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="shell pb-28" aria-labelledby="more-title">
         <h2 id="more-title" className="eyebrow">More from IHBNF</h2>
         <div className="mt-8 grid gap-5 lg:grid-cols-2">
