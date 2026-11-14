@@ -35,9 +35,7 @@ export const site = {
 };
 
 export const links = {
-  // TODO: replace with the exact Amazon product URL.
-  amazonWhyHenry:
-    "https://www.amazon.com/s?k=The+Unwritten+Journey+Why+Henry+Javier+Huertas",
+  amazonWhyHenry: "https://a.co/d/0cFlHSYB",
   unfiltrSite: "https://unfiltrbyjavier.com",
   unfiltrAppStore:
     "https://apps.apple.com/us/app/unfiltr-by-javier-ai-friend/id6760604917",
