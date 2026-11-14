@@ -5,7 +5,8 @@ import { HeroBackdrop } from "@/components/visuals/HeroBackdrop";
 const index = [
   { n: "01", label: "Books", href: "/#books" },
   { n: "02", label: "Apps", href: "/#apps" },
-  { n: "03", label: "In progress", href: "/#memoir" },
+  { n: "03", label: "Sports tech", href: "/#sports" },
+  { n: "04", label: "In progress", href: "/#memoir" },
 ];
 
 export function Hero() {
@@ -14,7 +15,7 @@ export function Hero() {
       <HeroBackdrop />
       <div className="shell relative z-10 flex flex-1 flex-col justify-center pb-16 pt-28 sm:pt-32">
         <p className="eyebrow load-in" style={{ "--d": "100ms" } as React.CSSProperties}>
-          Stories · Technology · Ideas
+          Books · Apps · Sports Tech · Whatever I Build Next
         </p>
         <h1
           aria-label="IHBNF"
@@ -33,12 +34,12 @@ export function Hero() {
               Idle Hands Bear No Fruit.
             </p>
             <p className="load-in mt-5 max-w-lg text-lg leading-relaxed text-mute" style={{ "--d": "600ms" } as React.CSSProperties}>
-              A home for the stories, technology, and ideas created by Javier Huertas.
+              I write books. I build apps. Apparently I don&apos;t know how to sit still.
             </p>
           </div>
           <div className="load-in flex flex-col gap-3 sm:flex-row lg:col-span-5 lg:justify-end" style={{ "--d": "750ms" } as React.CSSProperties}>
             <Link href="/#work" data-testid="hero-explore-work-btn" className="btn btn-primary">
-              Explore Our Work <Arrow />
+              See What I Built <Arrow />
             </Link>
             <Link href="/#about" data-testid="hero-meet-creator-btn" className="btn btn-ghost">
               Meet the Creator
