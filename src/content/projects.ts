@@ -88,7 +88,26 @@ export const projects: Project[] = [
       cta: "Discover",
     },
     media: {
-      // screenshots: [{ src: "/media/unfiltr/screen-1.webp", alt: "Unfiltr chat screen", width: 1179, height: 2556 }],
+      screenshots: [
+        {
+          src: "/media/unfiltr/kai-tropical-chat.jpg",
+          alt: "Real Unfiltr chat screen with Kai in a tropical sunset world",
+          width: 1179,
+          height: 2556,
+        },
+        {
+          src: "/media/unfiltr/zen-temple-journal.jpg",
+          alt: "Real Unfiltr journal screen in the Zen Temple world",
+          width: 1179,
+          height: 2556,
+        },
+        {
+          src: "/media/unfiltr/memory-timeline.png",
+          alt: "Real Unfiltr Memory Timeline screen with Kai",
+          width: 1179,
+          height: 2556,
+        },
+      ],
     },
     links: [
       { label: "Visit Website", href: links.unfiltrSite, external: true, primary: true },
