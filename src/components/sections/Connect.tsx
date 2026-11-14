@@ -4,8 +4,8 @@ import { EmailReveal } from "@/components/ui/EmailReveal";
 
 export function Connect() {
   return (
-    <section id="connect" aria-labelledby="connect-title" data-testid="connect-section" className="relative border-t border-bone/[0.06] py-28 sm:py-40">
-      <div className="shell grid gap-14 lg:grid-cols-12">
+    <section id="connect" aria-labelledby="connect-title" data-testid="connect-section" className="relative border-t border-bone/[0.06] py-24 sm:py-32">
+      <div className="shell grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <p data-reveal className="eyebrow flex items-center gap-3">
             <span className="text-gold">07</span>
@@ -31,7 +31,7 @@ export function Connect() {
                 rel="noopener noreferrer"
                 data-testid={`social-link-${s.key}`}
                 aria-label={`${s.label}: ${s.handle} (opens in a new tab)`}
-                className="group flex min-h-[5.5rem] items-center gap-4 rounded-2xl border border-bone/10 bg-coal/60 px-5 py-4 transition-[border-color,background-color,transform] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:border-gold/40 hover:bg-ash"
+                className="group flex min-h-[5rem] items-center gap-4 rounded-2xl border border-bone/10 bg-coal/60 px-5 py-4 transition-[border-color,background-color,transform] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:border-gold/40 hover:bg-ash"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-bone/[0.06] text-bone transition-colors duration-500 group-hover:bg-gold group-hover:text-ink">
                   <SocialIcon name={s.key} />
