@@ -179,7 +179,7 @@ export default async function ProjectPage({ params }: Params) {
           </div>
         </div>
         <aside className="space-y-10 lg:col-span-5">
-          {p.theme === "henry" && <div data-reveal className="mx-auto w-[70%] max-w-[340px]"><BookCover project={p} /></div>}
+          {p.category === "book" && <div data-reveal className="mx-auto w-[70%] max-w-[340px]"><BookCover project={p} /></div>}
           {p.theme === "unfiltr" && <PhoneMockup />}
           <dl data-reveal className="divide-y divide-bone/10 rounded-2xl border border-bone/10 bg-coal/60" data-testid="project-details">
             {p.details.map((d) => (
