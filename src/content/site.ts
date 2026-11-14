@@ -7,7 +7,7 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://ihbnf.vercel.app",
   title: "IHBNF — Idle Hands Bear No Fruit",
   description:
-    "IHBNF (Idle Hands Bear No Fruit) is the creative home of author and builder Javier Huertas: The Unwritten Journey — Book One: Why Henry?, the Unfiltr by Javier AI companion app, and the memoir The Dream of the Payoff of Working Hard.",
+    "IHBNF (Idle Hands Bear No Fruit) is the creative home of author and builder Javier Huertas: The Unwritten Journey — Book One: Why Henry?, the Unfiltr by Javier AI companion app, and the memoir The Dream of the Payoff.",
   keywords: [
     "IHBNF",
     "Idle Hands Bear No Fruit",
