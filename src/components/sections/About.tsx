@@ -21,7 +21,7 @@ export function About() {
         </div>
         <div className="lg:col-span-7 lg:pl-6 xl:pl-10">
           <p data-reveal className="eyebrow flex items-center gap-3">
-            <span className="text-gold">05</span>
+            <span className="text-gold">06</span>
             <span className="h-px w-8 bg-bone/20" />
             The founder
           </p>
@@ -31,8 +31,8 @@ export function About() {
           <p data-reveal className="mt-4 text-lg tracking-[0.18em] uppercase text-gold">{site.founder.roles.join(". ")}.</p>
           <div className="mt-10 max-w-2xl space-y-6 text-lg leading-relaxed text-bone/85">
             <p data-reveal>
-              I write books and I build apps. Most of my life has been spent working hard for things that didn&apos;t come
-              easy, and somewhere along the way I stopped waiting for the right moment to start.
+              I write books and build apps. A lot of my projects start with some version of &quot;how hard could it be?&quot;
+              which, for the record, is rarely the beginning of an easy week.
             </p>
             <p data-reveal>
               IHBNF is where all of it lives: The Unwritten Journey, Unfiltr, the memoir I&apos;m working on, and whatever I
@@ -40,7 +40,7 @@ export function About() {
             </p>
             <p data-reveal>
               There&apos;s no secret formula behind it. Make something. See what breaks. Fix it, learn from it, and keep
-              going. That&apos;s the whole method.
+              going. Somewhere in there, it usually turns into something real.
             </p>
           </div>
           <p data-reveal className="mt-10 font-display text-3xl italic text-bone">— Javier</p>
