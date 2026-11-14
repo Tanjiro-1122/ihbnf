@@ -7,12 +7,14 @@ const glow: Record<Project["theme"], string> = {
   henry: "hover:shadow-[0_40px_120px_-40px_rgb(217_140_63/0.45)]",
   unfiltr: "hover:shadow-[0_40px_120px_-40px_rgb(120_100_255/0.5)]",
   memoir: "hover:shadow-[0_40px_120px_-40px_rgb(201_164_92/0.35)]",
+  sports: "hover:shadow-[0_40px_120px_-40px_rgb(132_204_22/0.35)]",
 };
 
 const accent: Record<Project["theme"], string> = {
   henry: "text-amber",
   unfiltr: "text-violet",
   memoir: "text-gold",
+  sports: "text-[#a3e635]",
 };
 
 type Props = { project: Project; className?: string; delay?: number };
@@ -66,6 +68,31 @@ function UnfiltrVisual() {
   );
 }
 
+
+function SportsVisual() {
+  return (
+    <>
+      <Image
+        src="/media/sports-wager-helper/og-image.png"
+        alt=""
+        fill
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        className="object-cover object-center opacity-58"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/58 to-transparent" />
+      <div className="absolute right-[7%] top-[12%] h-20 w-20 overflow-hidden rounded-[20px] border border-[#a3e635]/30 bg-black/70 p-2 shadow-[0_20px_60px_-20px_rgb(132_204_22/0.7)] sm:h-24 sm:w-24">
+        <Image
+          src="/media/sports-wager-helper/swh-icon.svg"
+          alt="Sports Wager Helper logo"
+          fill
+          sizes="96px"
+          className="object-contain p-2"
+        />
+      </div>
+    </>
+  );
+}
+
 function MemoirVisual() {
   return (
     <>
@@ -89,6 +116,7 @@ function MemoirVisual() {
 function CardVisual({ theme }: { theme: Project["theme"] }) {
   if (theme === "henry") return <HenryVisual />;
   if (theme === "unfiltr") return <UnfiltrVisual />;
+  if (theme === "sports") return <SportsVisual />;
   return <MemoirVisual />;
 }
 
@@ -105,7 +133,7 @@ export function ProjectCard({ project, className = "", delay = 0 }: Props) {
           <CardVisual theme={theme} />
         </div>
 
-        <div className={`flex h-full flex-col justify-end p-6 sm:p-10 ${theme === "unfiltr" ? "pr-[45%] sm:pr-[48%]" : "sm:pr-[34%]"}`}>
+        <div className={`flex h-full flex-col justify-end p-6 sm:p-10 ${theme === "unfiltr" ? "pr-[45%] sm:pr-[48%]" : theme === "sports" ? "sm:pr-[30%]" : "sm:pr-[34%]"}`}>
           <p className={`eyebrow ${accent[theme]}`}>{card.kicker}</p>
           <h3 className="mt-4 max-w-xl text-[clamp(1.6rem,3vw,2.4rem)] font-medium uppercase leading-[1.05] tracking-[0.04em]">
             {card.title}
