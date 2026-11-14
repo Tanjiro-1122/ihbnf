@@ -52,13 +52,14 @@ function structuredData(p: Project) {
   }
 
   if (p.category === "app") {
+    const isSports = p.theme === "sports";
     return {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       name: p.fullTitle,
       url,
-      operatingSystem: "iOS, Android",
-      applicationCategory: "EntertainmentApplication",
+      operatingSystem: isSports ? "Web, iOS, Android" : "iOS, Android",
+      applicationCategory: isSports ? "SportsApplication" : "EntertainmentApplication",
       author,
       publisher,
       sameAs: p.links.filter((link) => link.external).map((link) => link.href),
@@ -78,8 +79,18 @@ function structuredData(p: Project) {
   };
 }
 
-const accent: Record<Project["theme"], string> = { henry: "text-amber", unfiltr: "text-violet", memoir: "text-gold" };
-const btn: Record<Project["theme"], string> = { henry: "btn-gold", unfiltr: "btn-violet", memoir: "btn-primary" };
+const accent: Record<Project["theme"], string> = {
+  henry: "text-amber",
+  unfiltr: "text-violet",
+  memoir: "text-gold",
+  sports: "text-[#a3e635]",
+};
+const btn: Record<Project["theme"], string> = {
+  henry: "btn-gold",
+  unfiltr: "btn-violet",
+  memoir: "btn-primary",
+  sports: "bg-[#a3e635] text-black hover:bg-[#bef264]",
+};
 
 const whyHenryPreview = [
   {
@@ -136,6 +147,25 @@ function ProjectHeroVisual({ p }: { p: Project }) {
               <Image src="/media/unfiltr/kai-tropical-chat.jpg" alt="" fill sizes="270px" className="object-cover" />
             </div>
           </div>
+        </div>
+      </>
+    );
+  }
+
+  if (p.theme === "sports") {
+    return (
+      <>
+        <Image
+          src="/media/sports-wager-helper/og-image.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-45"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/72 to-ink/30" />
+        <div className="absolute right-[8%] top-1/2 hidden h-40 w-40 -translate-y-1/2 overflow-hidden rounded-[36px] border border-[#a3e635]/25 bg-black/75 p-4 shadow-[0_35px_90px_-25px_rgb(132_204_22/0.6)] lg:block">
+          <Image src="/media/sports-wager-helper/swh-icon.svg" alt="" fill sizes="160px" className="object-contain p-3" />
         </div>
       </>
     );
@@ -229,6 +259,19 @@ export default async function ProjectPage({ params }: Params) {
         <aside className="space-y-10 lg:col-span-5">
           {p.category === "book" && <div data-reveal className="mx-auto w-[70%] max-w-[340px]"><BookCover project={p} /></div>}
           {p.theme === "unfiltr" && <PhoneMockup />}
+          {p.theme === "sports" && (
+            <div data-reveal className="mx-auto max-w-[420px] overflow-hidden rounded-[24px] border border-[#a3e635]/15 bg-black/70 p-4">
+              <div className="relative aspect-[1200/630] overflow-hidden rounded-[16px]">
+                <Image
+                  src="/media/sports-wager-helper/og-image.png"
+                  alt="Sports Wager Helper"
+                  fill
+                  sizes="420px"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          )}
           <dl data-reveal className="divide-y divide-bone/10 rounded-2xl border border-bone/10 bg-coal/60" data-testid="project-details">
             {p.details.map((d) => (
               <div key={d.label} className="flex justify-between gap-6 px-6 py-4">
