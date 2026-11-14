@@ -16,7 +16,7 @@ yarn build      # production build
 
 1. Push this folder to the `ihbnf` GitHub repository.
 2. Import the repo in Vercel. Framework preset: **Next.js**. No settings to change.
-3. Optional: add `NEXT_PUBLIC_SITE_URL` (e.g. `https://ihbnf.com`) so canonical URLs, sitemap and social previews use your domain.
+3. The current production URL is `https://ihbnf.vercel.app`. If a custom domain is connected later, set `NEXT_PUBLIC_SITE_URL` to that domain so canonical URLs, sitemap and social previews follow it.
 
 ## Where things live
 
@@ -54,7 +54,7 @@ The key stays on the server (`src/app/api/ask/route.ts`) and is never sent to th
 
 ## Common updates
 
-- **Amazon link / Facebook URL:** `src/content/site.ts` (marked `TODO`).
+- **External links:** `src/content/site.ts` contains the direct Why Henry Amazon link, Unfiltr website, App Store, Google Play, and social URLs. Facebook is the only remaining URL that should be confirmed before treating it as final.
 - **Add a book or app:** add an entry to `src/content/projects.ts`. It gets a card and its own page automatically.
 - **Swap placeholder media:** see `MEDIA.md`.
 
