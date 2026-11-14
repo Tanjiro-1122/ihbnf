@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProject, projects } from "@/content/projects";
@@ -81,6 +82,29 @@ function structuredData(p: Project) {
 const accent: Record<Project["theme"], string> = { henry: "text-amber", unfiltr: "text-violet", memoir: "text-gold" };
 const btn: Record<Project["theme"], string> = { henry: "btn-gold", unfiltr: "btn-violet", memoir: "btn-primary" };
 
+const whyHenryPreview = [
+  {
+    src: "/media/why-henry/illustrations/01.webp",
+    title: "The Forgotten Map",
+    caption: "An old map of Briar Glen, annotated in a worried hand.",
+  },
+  {
+    src: "/media/why-henry/illustrations/02.webp",
+    title: "The Ancient Hollow Tree",
+    caption: "The oldest tree in the glen — a hiding place, a landmark, and a clue.",
+  },
+  {
+    src: "/media/why-henry/illustrations/03.webp",
+    title: "The Underground Cavern",
+    caption: "Below the roots, Dominick and Henry find a chamber hidden beneath the forest.",
+  },
+  {
+    src: "/media/why-henry/illustrations/04.webp",
+    title: "The First Stone Marker",
+    caption: "The first piece of a mystery that keeps getting larger.",
+  },
+];
+
 export default async function ProjectPage({ params }: Params) {
   const p = getProject((await params).slug);
   if (!p) notFound();
@@ -152,6 +176,44 @@ export default async function ProjectPage({ params }: Params) {
           </dl>
         </aside>
       </section>
+
+      {p.theme === "henry" && (
+        <section className="shell pb-24 sm:pb-32" aria-labelledby="henry-preview-title">
+          <div className="max-w-2xl">
+            <p className="eyebrow text-amber">From the book</p>
+            <h2 id="henry-preview-title" className="mt-4 font-display text-[clamp(2.5rem,5vw,4.6rem)] leading-[0.98]">
+              A glimpse inside Briar Glen.
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-mute">
+              Four early, non-spoiler illustrations from Book One. The later reveal images stay where they belong: in the story.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2">
+            {whyHenryPreview.map((item, i) => (
+              <figure
+                key={item.src}
+                data-reveal
+                style={{ "--d": `${i * 70}ms` } as React.CSSProperties}
+                className="overflow-hidden rounded-[22px] border border-bone/10 bg-coal"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image
+                    src={item.src}
+                    alt={item.title}
+                    fill
+                    sizes="(min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] hover:scale-[1.02]"
+                  />
+                </div>
+                <figcaption className="p-5 sm:p-6">
+                  <p className="font-display text-2xl text-bone">{item.title}</p>
+                  <p className="mt-2 leading-relaxed text-mute">{item.caption}</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="shell pb-28" aria-labelledby="more-title">
         <h2 id="more-title" className="eyebrow">More from IHBNF</h2>
