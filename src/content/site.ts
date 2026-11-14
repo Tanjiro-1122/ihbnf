@@ -57,6 +57,7 @@ export const nav: NavItem[] = [
   { id: "work", label: "Projects" },
   { id: "books", label: "Books" },
   { id: "apps", label: "Apps" },
+  { id: "sports", label: "Sports" },
   { id: "about", label: "About" },
   { id: "connect", label: "Connect" },
 ];
