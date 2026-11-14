@@ -7,7 +7,7 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://ihbnf.vercel.app",
   title: "IHBNF — Idle Hands Bear No Fruit",
   description:
-    "IHBNF (Idle Hands Bear No Fruit) is the creative home of author and builder Javier Huertas: The Unwritten Journey — Book One: Why Henry?, the Unfiltr by Javier AI companion app, and the memoir The Dream of the Payoff.",
+    "IHBNF (Idle Hands Bear No Fruit) is the creative home of author and builder Javier Huertas: The Unwritten Journey — Book One: Why Henry?, the Unfiltr by Javier AI companion app, Sports Wager Helper, and the memoir The Dream of the Payoff.",
   keywords: [
     "IHBNF",
     "Idle Hands Bear No Fruit",
@@ -21,6 +21,8 @@ export const site = {
     "young adult fantasy",
     "independent author",
     "AI companion app",
+    "Sports Wager Helper",
+    "sports analytics",
   ],
   founder: {
     name: "Javier Huertas",
@@ -45,6 +47,7 @@ export const links = {
     "https://apps.apple.com/us/app/unfiltr-by-javier-ai-friend/id6760604917",
   unfiltrGooglePlay:
     "https://play.google.com/store/apps/details?id=com.huertas.unfiltr",
+  sportsWagerHelper: "https://sportswagerhelper.com",
 };
 
 export type NavItem = { id: string; label: string };
