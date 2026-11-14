@@ -1,0 +1,47 @@
+name: Import IHBNF takeover ZIP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".takeover/**"
+      - ".github/workflows/import-ihbnf-takeover.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for all ZIP parts
+        id: parts
+        shell: bash
+        run: |
+          if [[ -f .takeover/part-1.txt && -f .takeover/part-2.txt && -f .takeover/part-3.txt && -f .takeover/part-4.txt ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Reconstruct and import website
+        if: steps.parts.outputs.ready == 'true'
+        shell: bash
+        run: |
+          cat .takeover/part-1.txt .takeover/part-2.txt .takeover/part-3.txt .takeover/part-4.txt | base64 -d > /tmp/ihbnf.zip
+          rm -rf /tmp/ihbnf-unpack
+          mkdir -p /tmp/ihbnf-unpack
+          unzip -q /tmp/ihbnf.zip -d /tmp/ihbnf-unpack
+          test -f /tmp/ihbnf-unpack/ihbnf/package.json
+          rm -rf /tmp/ihbnf-unpack/ihbnf/.git
+          cp -a /tmp/ihbnf-unpack/ihbnf/. .
+          rm -rf .takeover
+          git config user.name "IHBNF Takeover"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to import."
+            exit 0
+          fi
+          git commit -m "Import complete IHBNF website from Emergent export"
+          git push
