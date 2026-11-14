@@ -1,23 +1,18 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getProject } from "@/content/projects";
-import { Parallax } from "@/components/ui/Parallax";
 import { Arrow } from "@/components/ui/Icons";
+import { BookCover } from "@/components/visuals/BookCover";
 
 const themes = ["Growing up", "Family", "Relationships", "Fatherhood", "Work", "Sacrifice", "Financial struggle", "Dreams"];
 
 export function MemoirFeature() {
   const memoir = getProject("the-dream-of-the-payoff-of-working-hard")!;
-  const art = memoir.media.artwork!;
   return (
     <section id="memoir" aria-labelledby="memoir-title" data-testid="memoir-section" className="relative py-28 sm:py-40">
       <div className="shell grid items-center gap-14 lg:grid-cols-12">
-        <div data-reveal className="relative aspect-[4/5] overflow-hidden rounded-[24px] ring-1 ring-bone/10 sm:aspect-[16/11] lg:col-span-6 lg:aspect-[4/5]">
-          <Parallax speed={0.08} className="absolute -inset-y-[10%] inset-x-0">
-            <Image src={art.src} alt={art.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
-          </Parallax>
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent" />
-          <p className="absolute bottom-6 left-6 font-display text-xl italic text-bone/90">A true story.</p>
+        <div data-reveal className="mx-auto w-[72%] max-w-[390px] sm:w-[52%] lg:col-span-6 lg:w-full lg:max-w-[430px]">
+          <BookCover project={memoir} />
+          <p className="mt-7 text-center font-display text-xl italic text-bone/75">A true story.</p>
         </div>
         <div className="lg:col-span-6 lg:pl-8">
           <p data-reveal className="eyebrow flex flex-wrap items-center gap-3">
