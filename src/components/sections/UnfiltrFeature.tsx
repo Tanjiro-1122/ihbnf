@@ -40,12 +40,27 @@ export function UnfiltrFeature() {
               </li>
             ))}
           </ul>
-          <div data-reveal className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <div data-reveal className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link href="/projects/unfiltr" data-testid="unfiltr-explore-btn" className="btn btn-violet">
               Explore Unfiltr <Arrow />
             </Link>
-            <a href={links.unfiltrSite} target="_blank" rel="noopener noreferrer" data-testid="unfiltr-visit-website-btn" className="btn btn-ghost">
-              Visit Website <ExternalArrow />
+            <a
+              href={links.unfiltrAppStore}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="unfiltr-app-store-btn"
+              className="btn btn-ghost"
+            >
+              App Store <ExternalArrow />
+            </a>
+            <a
+              href={links.unfiltrGooglePlay}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="unfiltr-google-play-btn"
+              className="btn btn-ghost"
+            >
+              Google Play <ExternalArrow />
             </a>
           </div>
         </div>
