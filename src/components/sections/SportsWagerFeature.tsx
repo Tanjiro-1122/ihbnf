@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getProject } from "@/content/projects";
 import { ExternalArrow, Arrow } from "@/components/ui/Icons";
 
 const highlights = [
@@ -13,8 +12,6 @@ const highlights = [
 ];
 
 export function SportsWagerFeature() {
-  const project = getProject("sports-wager-helper")!;
-
   return (
     <section id="sports" aria-labelledby="sports-title" className="relative isolate overflow-hidden border-y border-white/[0.06] bg-[#070b08] py-24 sm:py-32">
       <div aria-hidden="true" className="absolute inset-0 -z-10">
