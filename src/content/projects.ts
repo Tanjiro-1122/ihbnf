@@ -33,14 +33,18 @@ export const projects: Project[] = [
       cta: "Explore",
     },
     media: {
-      // Replace with promotional art in /public/media/why-henry.
       artwork: {
-        src: "/media/why-henry/artwork.webp",
-        alt: "Six weathered standing stones on a misty hillside at twilight, at the edge of a dark forest",
-        width: 1264,
-        height: 848,
+        src: "/media/why-henry/approved-concept.svg",
+        alt: "Approved promotional artwork for The Unwritten Journey — Book One: Why Henry?",
+        width: 1400,
+        height: 940,
       },
-      // cover: { src: "/media/why-henry/cover.webp", alt: "Cover of Why Henry? by Javier Huertas", width: 1600, height: 2400 },
+      cover: {
+        src: "/media/why-henry/cover.webp",
+        alt: "Cover of The Unwritten Journey — Book One: Why Henry? by Javier Huertas",
+        width: 1024,
+        height: 1536,
+      },
       // trailer: { src: "/media/why-henry/trailer.mp4", poster: "/media/why-henry/trailer-poster.webp", title: "Why Henry? book trailer" },
     },
     links: [{ label: "Buy on Amazon", href: links.amazonWhyHenry, external: true, primary: true }],
