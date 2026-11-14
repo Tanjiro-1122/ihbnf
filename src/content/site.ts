@@ -39,6 +39,10 @@ export const links = {
   amazonWhyHenry:
     "https://www.amazon.com/s?k=The+Unwritten+Journey+Why+Henry+Javier+Huertas",
   unfiltrSite: "https://unfiltrbyjavier.com",
+  unfiltrAppStore:
+    "https://apps.apple.com/us/app/unfiltr-by-javier-ai-friend/id6760604917",
+  unfiltrGooglePlay:
+    "https://play.google.com/store/apps/details?id=com.huertas.unfiltr",
 };
 
 export type NavItem = { id: string; label: string };
