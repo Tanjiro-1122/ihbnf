@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { getProject, projects } from "@/content/projects";
 import { site } from "@/content/site";
 import type { Project } from "@/content/types";
-import { ProjectVisual } from "@/components/visuals/ProjectVisual";
 import { BookCover } from "@/components/visuals/BookCover";
 import { PhoneMockup } from "@/components/visuals/PhoneMockup";
 import { ProjectCard } from "@/components/ui/ProjectCard";
@@ -105,6 +104,55 @@ const whyHenryPreview = [
   },
 ];
 
+function ProjectHeroVisual({ p }: { p: Project }) {
+  if (p.theme === "henry") {
+    return (
+      <>
+        <Image
+          src="/media/why-henry/illustrations/02.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center opacity-55"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/52 to-transparent" />
+        <div className="absolute right-[6%] top-1/2 hidden w-[20%] max-w-[290px] -translate-y-1/2 rotate-[3deg] lg:block">
+          <div className="relative aspect-[2/3] overflow-hidden rounded-[4px] shadow-[0_40px_100px_-30px_rgb(0_0_0/0.9)] ring-1 ring-white/15">
+            <Image src="/media/why-henry/cover.webp" alt="" fill sizes="290px" className="object-cover" />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (p.theme === "unfiltr") {
+    return (
+      <>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_30%,rgb(112_94_255/0.38),transparent_30%),linear-gradient(135deg,#181035_0%,#0a0813_55%,#06060a_100%)]" />
+        <div className="absolute right-[7%] top-1/2 hidden w-[22%] max-w-[270px] -translate-y-1/2 rotate-[2deg] lg:block">
+          <div className="relative aspect-[9/19] overflow-hidden rounded-[2.2rem] border border-white/12 bg-black p-[6px] shadow-[0_40px_100px_-30px_rgb(105_88_255/0.85)]">
+            <div className="relative h-full overflow-hidden rounded-[1.9rem]">
+              <Image src="/media/unfiltr/kai-tropical-chat.jpg" alt="" fill sizes="270px" className="object-cover" />
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_36%,rgb(240_177_71/0.34),transparent_28%),linear-gradient(135deg,#2b180a_0%,#15110d_55%,#080807_100%)]" />
+      <div className="absolute right-[8%] top-1/2 hidden w-[20%] max-w-[250px] -translate-y-1/2 rotate-[3deg] lg:block">
+        <div className="relative aspect-[2/3] overflow-hidden rounded-[4px] shadow-[0_40px_100px_-30px_rgb(0_0_0/0.9)] ring-1 ring-white/15">
+          <Image src="/media/memoir/dream-payoff-cover.svg" alt="" fill sizes="250px" className="object-cover" />
+        </div>
+      </div>
+    </>
+  );
+}
+
 const whyHenryCharacters = [
   {
     src: "/media/why-henry/characters/dominick.png",
@@ -130,9 +178,9 @@ export default async function ProjectPage({ params }: Params) {
       <JsonLd data={structuredData(p)} />
       <header className="relative isolate flex min-h-[78svh] items-end overflow-hidden pb-14 pt-32 sm:pb-20">
         <div className="absolute inset-0 -z-10">
-          <ProjectVisual project={p} sizes="100vw" priority />
+          <ProjectHeroVisual p={p} />
         </div>
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/60 to-ink/30" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/55 to-ink/20" />
         <div className="absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-ink/90 to-transparent" />
         <div className="shell">
           <Link href="/#work" data-testid="project-back-link" className="load-in group inline-flex items-center gap-2 text-sm text-mute hover:text-bone">
