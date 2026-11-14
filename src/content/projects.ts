@@ -117,15 +117,15 @@ export const projects: Project[] = [
     keywords: ["Unfiltr by Javier", "AI companion app", "Unfiltr"],
   },
   {
-    slug: "the-dream-of-the-payoff-of-working-hard",
+    slug: "the-dream-of-the-payoff",
     category: "book",
     theme: "memoir",
-    title: "The Dream of the Payoff of Working Hard",
-    fullTitle: "The Dream of the Payoff of Working Hard",
+    title: "The Dream of the Payoff",
+    fullTitle: "The Dream of the Payoff",
     tagline: "A life built through work, sacrifice, family, mistakes, and persistence.",
     summary: "An autobiographical project by Javier Huertas.",
     description: [
-      "The Dream of the Payoff of Working Hard is Javier Huertas's autobiographical project: the true story of an ordinary man whose life has been anything but ordinary.",
+      "The Dream of the Payoff is Javier Huertas's autobiographical project: the true story of an ordinary man whose life has been anything but ordinary.",
       "It covers growing up, family, relationships, fatherhood, work, sacrifice, financial struggles, and dreams that never went away.",
       "Underneath all of it is one question: when does all that hard work finally pay off?",
     ],
@@ -138,7 +138,7 @@ export const projects: Project[] = [
     ],
     card: {
       kicker: "Memoir · In development",
-      title: "The Dream of the Payoff of Working Hard",
+      title: "The Dream of the Payoff",
       description: "A life built through work, sacrifice, family, mistakes, and persistence.",
       cta: "Learn More",
     },
@@ -157,7 +157,7 @@ export const projects: Project[] = [
       },
     },
     links: [{ label: "Follow for updates", href: "/#connect" }],
-    keywords: ["Javier Huertas memoir", "The Dream of the Payoff of Working Hard"],
+    keywords: ["Javier Huertas memoir", "The Dream of the Payoff"],
   },
 ];
 
