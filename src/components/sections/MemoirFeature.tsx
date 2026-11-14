@@ -16,7 +16,7 @@ export function MemoirFeature() {
         </div>
         <div className="lg:col-span-6 lg:pl-8">
           <p data-reveal className="eyebrow flex flex-wrap items-center gap-3">
-            <span className="text-gold">04</span>
+            <span className="text-gold">05</span>
             <span className="h-px w-8 bg-bone/20" />
             Memoir
             <span data-testid="memoir-status" className="rounded-full border border-gold/40 px-3 py-1 tracking-[0.18em] text-gold">
