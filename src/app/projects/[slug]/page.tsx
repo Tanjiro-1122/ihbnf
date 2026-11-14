@@ -34,10 +34,48 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 function structuredData(p: Project) {
+  const url = `${site.url}/projects/${p.slug}`;
   const author = { "@type": "Person", name: site.founder.name };
-  if (p.theme === "henry") return { "@context": "https://schema.org", "@type": "Book", name: p.fullTitle, author, genre: "Young adult fantasy", description: p.tagline };
-  if (p.category === "app") return { "@context": "https://schema.org", "@type": "SoftwareApplication", name: p.fullTitle, operatingSystem: "iOS, Android", applicationCategory: "LifestyleApplication", author, url: p.links[0]?.href };
-  return { "@context": "https://schema.org", "@type": "CreativeWork", name: p.fullTitle, author, creativeWorkStatus: p.statusLabel };
+  const publisher = { "@type": "Organization", name: site.name, url: site.url };
+
+  if (p.theme === "henry") {
+    return {
+      "@context": "https://schema.org",
+      "@type": "Book",
+      name: p.fullTitle,
+      url,
+      author,
+      publisher,
+      genre: "Young adult fantasy",
+      description: p.tagline,
+    };
+  }
+
+  if (p.category === "app") {
+    return {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: p.fullTitle,
+      url,
+      operatingSystem: "iOS, Android",
+      applicationCategory: "LifestyleApplication",
+      author,
+      publisher,
+      sameAs: p.links.filter((link) => link.external).map((link) => link.href),
+      description: p.tagline,
+    };
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: p.fullTitle,
+    url,
+    author,
+    publisher,
+    description: p.tagline,
+    creativeWorkStatus: p.statusLabel,
+  };
 }
 
 const accent: Record<Project["theme"], string> = { henry: "text-amber", unfiltr: "text-violet", memoir: "text-gold" };
