@@ -30,6 +30,9 @@ function clean(input: unknown): Msg[] | null {
 }
 
 export async function POST(req: Request) {
+  const enabled = process.env.NEXT_PUBLIC_ASK_IHBNF_ENABLED === "true";
+  if (!enabled) return Response.json({ error: "Assistant is disabled." }, { status: 404 });
+
   const key = process.env.ASK_AI_API_KEY;
   const model = process.env.ASK_AI_MODEL;
   if (!key || !model) return Response.json({ error: "Assistant is not configured." }, { status: 503 });
