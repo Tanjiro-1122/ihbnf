@@ -58,7 +58,7 @@ function structuredData(p: Project) {
       name: p.fullTitle,
       url,
       operatingSystem: "iOS, Android",
-      applicationCategory: "LifestyleApplication",
+      applicationCategory: "EntertainmentApplication",
       author,
       publisher,
       sameAs: p.links.filter((link) => link.external).map((link) => link.href),
