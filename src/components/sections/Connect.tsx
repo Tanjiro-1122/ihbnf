@@ -8,15 +8,15 @@ export function Connect() {
       <div className="shell grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <p data-reveal className="eyebrow flex items-center gap-3">
-            <span className="text-gold">07</span>
+            <span className="text-gold">08</span>
             <span className="h-px w-8 bg-bone/20" />
             Connect
           </p>
           <h2 id="connect-title" data-reveal className="mt-6 font-display text-[clamp(2.8rem,6vw,5rem)] leading-[0.96]">
-            Follow the work.
+            Want to see what I build next?
           </h2>
           <p data-reveal className="mt-6 max-w-md text-lg leading-relaxed text-mute">
-            Book news, app updates, and what&apos;s being built right now. Pick wherever you already spend your time.
+            I&apos;d tell you exactly what comes next, but half the time I don&apos;t know yet either. Follow along and you&apos;ll find out when I do.
           </p>
           <div data-reveal className="mt-10">
             <EmailReveal />
