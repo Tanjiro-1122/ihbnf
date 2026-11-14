@@ -13,7 +13,7 @@ export type VideoAsset = {
 
 export type ProjectCategory = "book" | "app";
 export type ProjectStatus = "available" | "live" | "in-development" | "coming-soon";
-export type ProjectTheme = "henry" | "unfiltr" | "memoir";
+export type ProjectTheme = "henry" | "unfiltr" | "memoir" | "sports";
 
 export type ProjectLink = {
   label: string;
