@@ -144,10 +144,16 @@ export const projects: Project[] = [
     },
     media: {
       artwork: {
-        src: "/media/memoir/artwork.webp",
-        alt: "A worn workbench at dawn with work gloves, an open notebook and a coffee mug in warm window light",
-        width: 1264,
-        height: 848,
+        src: "/media/memoir/dream-payoff-cover.svg",
+        alt: "Cover of The Dream of the Payoff by Javier Huertas",
+        width: 320,
+        height: 480,
+      },
+      cover: {
+        src: "/media/memoir/dream-payoff-cover.svg",
+        alt: "Cover of The Dream of the Payoff by Javier Huertas",
+        width: 320,
+        height: 480,
       },
     },
     links: [{ label: "Follow for updates", href: "/#connect" }],
