@@ -25,8 +25,12 @@ export const site = {
   founder: {
     name: "Javier Huertas",
     roles: ["Author", "Creator", "Builder"],
-    // Replace with the real portrait: put the file in /public/media/author and fill this in.
-    photo: null as MediaAsset | null,
+    photo: {
+      src: "/media/author/javier-huertas-author.jpg",
+      alt: "Author Javier Huertas",
+      width: 1200,
+      height: 1500,
+    } as MediaAsset,
   },
   // Replace with the real logo file in /public/media/brand when it's ready.
   logo: null as MediaAsset | null,
