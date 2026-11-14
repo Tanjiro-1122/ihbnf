@@ -86,7 +86,11 @@ export const projects: Project[] = [
     media: {
       // screenshots: [{ src: "/media/unfiltr/screen-1.webp", alt: "Unfiltr chat screen", width: 1179, height: 2556 }],
     },
-    links: [{ label: "Visit Website", href: links.unfiltrSite, external: true, primary: true }],
+    links: [
+      { label: "Visit Website", href: links.unfiltrSite, external: true, primary: true },
+      { label: "Download on the App Store", href: links.unfiltrAppStore, external: true },
+      { label: "Get it on Google Play", href: links.unfiltrGooglePlay, external: true },
+    ],
     keywords: ["Unfiltr by Javier", "AI companion app", "Unfiltr"],
   },
   {
