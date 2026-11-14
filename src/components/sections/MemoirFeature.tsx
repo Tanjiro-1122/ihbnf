@@ -6,7 +6,7 @@ import { BookCover } from "@/components/visuals/BookCover";
 const themes = ["Growing up", "Family", "Relationships", "Fatherhood", "Work", "Sacrifice", "Financial struggle", "Dreams"];
 
 export function MemoirFeature() {
-  const memoir = getProject("the-dream-of-the-payoff-of-working-hard")!;
+  const memoir = getProject("the-dream-of-the-payoff")!;
   return (
     <section id="memoir" aria-labelledby="memoir-title" data-testid="memoir-section" className="relative py-28 sm:py-40">
       <div className="shell grid items-center gap-14 lg:grid-cols-12">
@@ -24,7 +24,7 @@ export function MemoirFeature() {
             </span>
           </p>
           <h2 id="memoir-title" data-reveal style={{ "--d": "80ms" } as React.CSSProperties} className="mt-6 font-display text-[clamp(2.4rem,5vw,4.4rem)] leading-[1]">
-            The Dream of the Payoff of Working Hard
+            The Dream of the Payoff
           </h2>
           <p data-reveal className="mt-6 text-xl leading-relaxed text-bone/90">
             The true story of an ordinary man whose life has been anything but ordinary.
