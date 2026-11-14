@@ -1,7 +1,7 @@
 import { Mark } from "@/components/layout/Logo";
 import { Parallax } from "@/components/ui/Parallax";
 
-const steps = ["Create", "Build", "Experiment", "Fail", "Try again", "Keep moving"];
+const steps = ["Create", "Build", "Break it", "Fix it", "Learn", "Keep moving"];
 
 export function Philosophy() {
   return (
@@ -14,7 +14,7 @@ export function Philosophy() {
       </div>
       <div className="shell">
         <p data-reveal className="eyebrow flex items-center gap-3">
-          <span className="text-gold">06</span>
+          <span className="text-gold">07</span>
           <span className="h-px w-8 bg-bone/20" />
           The philosophy
         </p>
@@ -22,7 +22,7 @@ export function Philosophy() {
           Idle hands bear <em className="text-gold">no fruit.</em>
         </h2>
         <p data-reveal className="mt-8 max-w-xl text-xl leading-relaxed text-mute">
-          Things don&apos;t happen by themselves. It fits on a business card, and it&apos;s harder than it sounds.
+          Basically: stop talking about it and make the thing. Then expect something to break, fix it, learn from it, and keep moving.
         </p>
         <ol className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-6">
           {steps.map((s, i) => (
