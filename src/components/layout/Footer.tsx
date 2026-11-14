@@ -13,13 +13,13 @@ const footerLinks = [
 export function Footer() {
   return (
     <footer data-testid="site-footer" className="relative border-t border-bone/[0.08] bg-ink">
-      <div className="shell grid gap-12 py-16 sm:py-20 lg:grid-cols-12">
+      <div className="shell grid gap-10 py-12 sm:py-16 lg:grid-cols-12">
         <div className="lg:col-span-7">
           <div className="flex items-center gap-4">
             <Mark className="h-10 w-10 text-gold" />
             <span className="text-3xl font-semibold tracking-[0.3em] sm:text-4xl">IHBNF</span>
           </div>
-          <p className="mt-6 font-display text-2xl italic text-bone/90 sm:text-3xl">{site.motto}</p>
+          <p className="mt-5 font-display text-2xl italic text-bone/90 sm:text-3xl">{site.motto}</p>
           <p className="mt-3 text-mute">Created by {site.founder.name}.</p>
         </div>
         <nav aria-label="Footer" className="lg:col-span-5 lg:justify-self-end">
