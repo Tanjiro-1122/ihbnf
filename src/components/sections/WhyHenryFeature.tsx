@@ -2,30 +2,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { getProject } from "@/content/projects";
 import { links } from "@/content/site";
-import { Parallax } from "@/components/ui/Parallax";
 import { Arrow, ExternalArrow } from "@/components/ui/Icons";
 import { BookCover } from "@/components/visuals/BookCover";
 import { StoneMarkers } from "@/components/visuals/StoneMarkers";
 
 export function WhyHenryFeature() {
   const book = getProject("why-henry")!;
-  const art = book.media.artwork!;
-  const trailer = book.media.trailer;
   return (
-    <section id="books" aria-labelledby="henry-title" data-testid="why-henry-section" className="relative isolate overflow-hidden bg-[#0a0b09] py-24 sm:py-32">
+    <section id="books" aria-labelledby="henry-title" data-testid="why-henry-section" className="relative isolate overflow-hidden bg-[#090a08] py-24 sm:py-32">
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <Parallax speed={0.14} className="absolute -inset-y-[12%] inset-x-0">
-          {trailer ? (
-            <video className="h-full w-full object-cover" autoPlay muted loop playsInline poster={trailer.poster} aria-label={trailer.title}>
-              <source src={trailer.src} />
-            </video>
-          ) : (
-            <Image src={art.src} alt="" fill sizes="100vw" className="object-cover object-[50%_56%] opacity-82" />
-          )}
-        </Parallax>
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/85 via-[#0a0b09]/42 to-ink/92" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/78 via-ink/28 to-transparent" />
-        <div className="anim-fog absolute inset-x-[-20%] bottom-[18%] h-40 bg-[radial-gradient(ellipse_at_center,rgb(237_230_218/0.08),transparent_70%)]" />
+        <Image
+          src="/media/why-henry/illustrations/03.webp"
+          alt=""
+          fill
+          priority={false}
+          quality={92}
+          sizes="100vw"
+          className="object-cover object-[56%_50%]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-[#090a08]/32 to-ink/88" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/94 via-ink/66 to-ink/18" />
+        <div className="absolute inset-y-0 right-0 w-[42%] bg-[radial-gradient(circle_at_72%_48%,rgba(215,159,72,0.12),transparent_58%)]" />
       </div>
 
       <div className="shell grid items-center gap-16 lg:grid-cols-12">
