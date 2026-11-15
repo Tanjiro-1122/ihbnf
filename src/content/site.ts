@@ -4,7 +4,7 @@ import type { MediaAsset } from "./types";
 export const site = {
   name: "IHBNF",
   motto: "Idle Hands Bear No Fruit.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://ihbnf.vercel.app",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://ihbnf.com",
   title: "IHBNF — Idle Hands Bear No Fruit",
   description:
     "IHBNF (Idle Hands Bear No Fruit) is the creative home of author and builder Javier Huertas: The Unwritten Journey — Book One: Why Henry?, the Unfiltr by Javier AI companion app, Sports Wager Helper, and the memoir The Dream of the Payoff.",
@@ -34,8 +34,12 @@ export const site = {
       height: 1500,
     } as MediaAsset,
   },
-  // Replace with the real logo file in /public/media/brand when it's ready.
-  logo: null as MediaAsset | null,
+  logo: {
+    src: "/media/brand/ihbnf-icon.svg",
+    alt: "IHBNF — Idle Hands Bear No Fruit",
+    width: 128,
+    height: 128,
+  } as MediaAsset,
   // Split on purpose so the address never appears as plain text in the page source.
   email: { user: "ihbnfllc", domain: "gmail.com" },
 };
