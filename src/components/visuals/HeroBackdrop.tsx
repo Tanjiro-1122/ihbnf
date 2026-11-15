@@ -1,6 +1,3 @@
-import { Mark } from "@/components/layout/Logo";
-import { Parallax } from "@/components/ui/Parallax";
-
 const particles = Array.from({ length: 22 }, (_, i) => ({
   left: (i * 37 + 11) % 100,
   top: 55 + ((i * 53) % 45),
@@ -19,9 +16,6 @@ export function HeroBackdrop() {
       <div className="absolute left-1/2 top-[-60%] h-[160vh] w-[160vh] -translate-x-1/2 opacity-[0.35]">
         <div className="anim-spin-slow h-full w-full rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,rgb(237_230_218/0.06)_20deg,transparent_45deg,transparent_180deg,rgb(125_156_196/0.06)_205deg,transparent_230deg)]" />
       </div>
-      <Parallax speed={-0.18} className="absolute -right-[12vw] top-[12%] text-bone/[0.045] sm:right-[-4vw]">
-        <Mark className="h-[70vw] w-[70vw] max-h-[760px] max-w-[760px]" />
-      </Parallax>
       {particles.map((p, i) => (
         <span
           key={i}

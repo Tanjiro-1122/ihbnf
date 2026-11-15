@@ -1,6 +1,3 @@
-import { Mark } from "@/components/layout/Logo";
-import { Parallax } from "@/components/ui/Parallax";
-
 const steps = ["Create", "Build", "Break it", "Fix it", "Learn", "Keep moving"];
 
 export function Philosophy() {
@@ -8,9 +5,6 @@ export function Philosophy() {
     <section id="philosophy" aria-labelledby="philosophy-title" data-testid="philosophy-section" className="relative isolate overflow-hidden py-24 sm:py-32">
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         <div className="anim-drift-a absolute right-[-10%] top-[10%] h-[70vh] w-[70vh] rounded-full bg-[radial-gradient(circle,rgb(201_164_92/0.14),transparent_65%)]" />
-        <Parallax speed={-0.1} className="absolute -left-[10%] bottom-[-10%] text-gold/[0.06]">
-          <Mark className="h-[80vw] w-[80vw] max-h-[700px] max-w-[700px]" />
-        </Parallax>
       </div>
       <div className="shell">
         <p data-reveal className="eyebrow flex items-center gap-3">
