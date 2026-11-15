@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Arrow } from "@/components/ui/Icons";
 import { HeroBackdrop } from "@/components/visuals/HeroBackdrop";
@@ -17,13 +18,21 @@ export function Hero() {
         <p className="eyebrow load-in" style={{ "--d": "100ms" } as React.CSSProperties}>
           Books · Apps · Sports Tech · Whatever I Build Next
         </p>
-        <h1
+        <div
           aria-label="IHBNF"
           data-testid="hero-title"
-          className="hero-mark -ml-[0.04em] mt-6 text-[clamp(5.25rem,27vw,21rem)] font-[350] leading-[0.82] tracking-[-0.055em]"
+          className="load-in mt-8 flex w-full justify-center"
+          style={{ "--d": "250ms" } as React.CSSProperties}
         >
-          IHBNF
-        </h1>
+          <Image
+            src="/media/brand/ihbnf-secondary.svg"
+            alt="IHBNF — Idle Hands Bear No Fruit"
+            width={1200}
+            height={800}
+            priority
+            className="h-auto w-[min(82vw,760px)] object-contain"
+          />
+        </div>
         <div className="mt-8 grid gap-10 lg:mt-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <p
