@@ -72,11 +72,11 @@ export function SportsWagerFeature() {
             </div>
             <div className="mt-4 flex items-center gap-4 px-2 pb-1">
               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-[#a3e635]/25 bg-black">
-                <Image src="/media/sports-wager-helper/swh-icon.svg" alt="Sports Wager Helper logo" fill sizes="56px" className="object-contain p-1.5" />
+                <Image src="/media/sports-wager-helper/swh-brand-logo.svg" alt="Sports Wager Helper logo" fill sizes="56px" className="object-cover" />
               </div>
               <div>
-                <p className="font-medium text-bone">S.A.L.</p>
-                <p className="text-sm text-mute">Sports AI Librarian</p>
+                <p className="font-medium text-bone">Sports Wager Helper</p>
+                <p className="text-sm text-mute">AI-assisted sports research</p>
               </div>
             </div>
           </div>
