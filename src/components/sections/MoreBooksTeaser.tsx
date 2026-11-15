@@ -21,12 +21,10 @@ export function MoreBooksTeaser() {
           </h2>
           <div className="mt-8 max-w-2xl space-y-5 text-lg leading-relaxed text-bone/82">
             <p data-reveal>
-              There are more books in the works. I&apos;m not putting all of them on the front page yet because, believe it or not,
-              I do occasionally know when to keep something to myself.
+              There are more books in the works. I&apos;m giving each one the time it deserves before I put it out there.
             </p>
             <p data-reveal>
-              If you&apos;re here for the stories, stay close. More are coming — and trust me, they&apos;re not filler, side quests, or
-              pushover books. I plan on making you work for the ending.
+              If you&apos;re here for the stories, stay close. More are coming when they&apos;re ready, and each one will have something of its own to offer.
             </p>
           </div>
         </div>
