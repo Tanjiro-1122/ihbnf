@@ -16,13 +16,14 @@ export function WhyHenryFeature() {
           alt=""
           fill
           priority={false}
-          quality={92}
+          quality={94}
           sizes="100vw"
-          className="object-cover object-[56%_50%]"
+          className="object-cover object-[60%_50%]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-[#090a08]/32 to-ink/88" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/94 via-ink/66 to-ink/18" />
-        <div className="absolute inset-y-0 right-0 w-[42%] bg-[radial-gradient(circle_at_72%_48%,rgba(215,159,72,0.12),transparent_58%)]" />
+        <div className="absolute inset-y-0 left-0 w-[72%] bg-gradient-to-r from-ink via-ink/84 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink/65 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-ink/78 to-transparent" />
+        <div className="absolute inset-y-0 right-0 w-[44%] bg-[radial-gradient(circle_at_68%_48%,rgba(225,171,85,0.10),transparent_62%)]" />
       </div>
 
       <div className="shell grid items-center gap-16 lg:grid-cols-12">
