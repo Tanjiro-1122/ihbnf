@@ -31,16 +31,13 @@ export function About() {
           <p data-reveal className="mt-4 text-lg tracking-[0.18em] uppercase text-gold">{site.founder.roles.join(". ")}.</p>
           <div className="mt-10 max-w-2xl space-y-6 text-lg leading-relaxed text-bone/85">
             <p data-reveal>
-              I write books and build apps. A lot of my projects start with some version of &quot;how hard could it be?&quot;
-              which, for the record, is rarely the beginning of an easy week.
+              If I&apos;m not working hard, I&apos;m writing books and building apps. That&apos;s really where IHBNF comes from: idle hands bear no fruit.
             </p>
             <p data-reveal>
-              IHBNF is where all of it lives: The Unwritten Journey, Unfiltr, the memoir I&apos;m working on, and whatever I
-              start next.
+              IHBNF is where I put the things I think are worth sharing — The Unwritten Journey, Unfiltr, Sports Wager Helper, the memoir I&apos;m working on, and whatever comes next.
             </p>
             <p data-reveal>
-              There&apos;s no secret formula behind it. Make something. See what breaks. Fix it, learn from it, and keep
-              going. Somewhere in there, it usually turns into something real.
+              The projects are different because I have a lot to offer and more than one thing I&apos;m interested in creating. The common thread is simple: put in the work and make something worth sharing.
             </p>
           </div>
           <p data-reveal className="mt-10 font-display text-3xl italic text-bone">— Javier</p>
