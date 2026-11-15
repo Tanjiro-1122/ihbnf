@@ -17,8 +17,8 @@ export function FeaturedProjects() {
           id="work-title"
           index="01"
           label="The work"
-          title={<>Things I somehow turned into real things.</>}
-          intro="Books, apps, sports tech, and the occasional idea that probably sounded simpler before I started building it."
+          title={<>Things I think are worth sharing.</>}
+          intro="Books, apps, sports tech, and whatever I decide is worth putting out into the world. Different projects, because I have a lot to offer."
         />
         <div className="mt-14 grid gap-5 sm:mt-20 lg:grid-cols-12">
           {projects.map((p, i) => (
