@@ -35,14 +35,7 @@ export function Hero() {
         </div>
         <div className="mt-8 grid gap-10 lg:mt-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
-            <p
-              data-testid="hero-motto"
-              className="load-in font-display text-[clamp(2rem,4.6vw,3.9rem)] italic leading-[1.02] text-bone"
-              style={{ "--d": "450ms" } as React.CSSProperties}
-            >
-              Idle Hands Bear No Fruit.
-            </p>
-            <p className="load-in mt-5 max-w-lg text-lg leading-relaxed text-mute" style={{ "--d": "600ms" } as React.CSSProperties}>
+            <p className="load-in max-w-lg text-lg leading-relaxed text-mute" style={{ "--d": "450ms" } as React.CSSProperties}>
               I write books. I build apps. Apparently I don&apos;t know how to sit still.
             </p>
           </div>
