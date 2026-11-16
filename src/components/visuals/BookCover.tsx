@@ -10,7 +10,7 @@ export function BookCover({ project, className = "" }: { project: Project; class
         <div className="absolute inset-y-[1.2%] right-[-10px] w-[12px] rounded-r-sm bg-gradient-to-r from-[#d9cdb6] to-[#a99d86] [transform:rotateY(90deg)] [transform-origin:left]" />
         <div className="absolute inset-0 overflow-hidden rounded-[3px] shadow-[30px_40px_80px_-20px_rgb(0_0_0/0.8)] ring-1 ring-white/10">
           {cover ? (
-            <Image src={cover.src} alt={cover.alt} fill sizes="(min-width: 1024px) 380px, 70vw" className="object-cover" />
+            <Image src={cover.src} alt={cover.alt} fill sizes="(min-width: 1024px) 380px, 70vw" className="object-contain" />
           ) : (
             <>
               {artwork && <Image src={artwork.src} alt="" fill sizes="(min-width: 1024px) 380px, 70vw" className="scale-[1.6] object-cover object-[45%_60%]" />}
