@@ -5,10 +5,9 @@ import type { Project } from "@/content/types";
 export function BookCover({ project, className = "" }: { project: Project; className?: string }) {
   const { cover, artwork } = project.media;
   return (
-    <div className={`group/book [perspective:1600px] ${className}`} data-testid={`book-cover-${project.slug}`}>
-      <div className="relative aspect-[2/3] w-full transition-transform duration-[1.2s] ease-[var(--ease-out-expo)] [transform:rotateY(-16deg)_rotateX(4deg)] [transform-style:preserve-3d] group-hover/book:[transform:rotateY(-6deg)_rotateX(2deg)]">
-        <div className="absolute inset-y-[1.2%] right-[-10px] w-[12px] rounded-r-sm bg-gradient-to-r from-[#d9cdb6] to-[#a99d86] [transform:rotateY(90deg)] [transform-origin:left]" />
-        <div className="absolute inset-0 overflow-hidden rounded-[3px] shadow-[30px_40px_80px_-20px_rgb(0_0_0/0.8)] ring-1 ring-white/10">
+    <div className={className} data-testid={`book-cover-${project.slug}`}>
+      <div className="relative aspect-[2/3] w-full">
+        <div className="absolute inset-0 overflow-hidden rounded-[3px] shadow-[20px_28px_60px_-25px_rgb(0_0_0/0.7)]">
           {cover ? (
             <Image src={cover.src} alt={cover.alt} fill sizes="(min-width: 1024px) 380px, 70vw" className="object-contain" />
           ) : (
@@ -25,7 +24,6 @@ export function BookCover({ project, className = "" }: { project: Project; class
               </div>
             </>
           )}
-          <div className="absolute inset-y-0 left-0 w-[6%] bg-gradient-to-r from-black/50 to-transparent" />
         </div>
       </div>
     </div>
