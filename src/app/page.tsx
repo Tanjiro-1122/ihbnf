@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Hero } from "@/components/sections/Hero";
+import { LivingWorkspace } from "@/components/sections/LivingWorkspace";
 import { BrandStatement } from "@/components/sections/BrandStatement";
 import { FeaturedProjects } from "@/components/sections/FeaturedProjects";
 import { WhyHenryFeature } from "@/components/sections/WhyHenryFeature";
@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <>
       <JsonLd data={orgLd} />
-      <Hero />
+      <LivingWorkspace />
       <BrandStatement />
       <FeaturedProjects />
       <WhyHenryFeature />
