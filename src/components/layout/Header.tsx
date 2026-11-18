@@ -52,8 +52,12 @@ export function Header() {
     <>
       <header
         data-testid="site-header"
-        className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color] duration-500 ${
-          solid ? "border-b border-bone/[0.07] bg-ink/70 backdrop-blur-xl" : "border-b border-transparent"
+        className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,opacity,transform] duration-500 ${
+          isHome && !scrolled && !open
+            ? "pointer-events-none -translate-y-2 border-b border-transparent opacity-0"
+            : solid
+              ? "border-b border-bone/[0.07] bg-ink/70 opacity-100 backdrop-blur-xl"
+              : "border-b border-transparent opacity-100"
         }`}
       >
         <div className="shell flex h-16 items-center justify-between sm:h-[4.5rem]">
