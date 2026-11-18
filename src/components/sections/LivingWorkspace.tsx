@@ -7,6 +7,7 @@ import { getProject } from "@/content/projects";
 import { links, site, socials } from "@/content/site";
 import { ExternalArrow, SocialIcon } from "@/components/ui/Icons";
 import { EmailReveal } from "@/components/ui/EmailReveal";
+import { BankersLampControl } from "@/components/ui/BankersLampControl";
 
 type HoveredItem =
   | null
@@ -114,6 +115,7 @@ export function LivingWorkspace() {
 
   const [hovered, setHovered] = useState<HoveredItem>(null);
   const [lampOn, setLampOn] = useState(true);
+  const [muted, setMuted] = useState(false);
 
   // Physical Shelf Book 3D Extraction State (Why Henry & The Dream of the Payoff)
   const [activeShelfBook, setActiveShelfBook] = useState<ShelfBookId>("why-henry");
@@ -282,12 +284,21 @@ export function LivingWorkspace() {
           className="relative mx-auto aspect-[16/9] h-full min-h-[500px] w-auto min-w-[888px] max-w-none shrink-0 overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.95)] lg:h-auto lg:max-h-[100svh] lg:w-full lg:max-w-[177.78svh]"
         >
           {/* -----------------------------------------------------------------
-              BASE LAYER: CLEAN 2K HIGH-RESOLUTION STUDY PLATE
-              (Contains the rain window, green banker's lamp, ornate wall frame,
-              carved walnut bookshelf with empty recesses behind the two removable
-              books, walnut desk, coffee mug, quill, globe, hourglass, rune stone,
-              and leather armchair.)
+              BASE LAYER: CLEAN 2K HIGH-RESOLUTION STUDY PLATES (LAMP-ON & LAMP-OFF)
+              Cross-fades between the illuminated green banker's lamp plate and the
+              extinguished lamp plate where the bulb is off, the green glass shade
+              is dark, and the warm amber light cast on nearby books, the writing
+              journal, walnut desk, and wall frame responds naturally.
              ----------------------------------------------------------------- */}
+          <Image
+            src="/media/study/study-clean-plate-off.webp"
+            alt=""
+            fill
+            priority
+            quality={95}
+            sizes="100vw"
+            className="pointer-events-none object-cover"
+          />
           <Image
             src="/media/study/study-clean-plate.webp"
             alt="Javier Huertas's study — walnut desk, green banker's lamp, rain-streaked night window, and bookshelf"
@@ -295,8 +306,8 @@ export function LivingWorkspace() {
             priority
             quality={95}
             sizes="100vw"
-            className={`pointer-events-none object-cover transition-[filter] duration-700 ${
-              lampOn ? "brightness-100" : "brightness-[0.68] contrast-[1.06]"
+            className={`pointer-events-none object-cover transition-opacity duration-300 ${
+              lampOn ? "opacity-100" : "opacity-0"
             }`}
           />
 
@@ -865,35 +876,28 @@ export function LivingWorkspace() {
           </button>
 
           {/* -----------------------------------------------------------------
-              GREEN GLASS BANKER'S LAMP ON THE DESK (INTERACTIVE LIGHT TOGGLE)
+              GREEN GLASS BANKER'S LAMP & PHYSICAL BRASS PULL-CHAIN ON THE DESK
              ----------------------------------------------------------------- */}
-          <button
-            type="button"
-            data-testid="workspace-lamp"
-            onClick={() => setLampOn((v) => !v)}
-            onMouseEnter={() => setHovered("lamp")}
-            onMouseLeave={() => setHovered(null)}
-            onFocus={() => setHovered("lamp")}
-            onBlur={() => setHovered(null)}
-            aria-pressed={lampOn}
-            aria-label="Classic green glass banker's lamp — toggle warm reading light"
-            style={{
-              left: "13.5%",
-              top: "34.5%",
-              width: "17.5%",
-              height: "33.5%",
-            }}
-            className="group absolute z-20 cursor-pointer rounded-[16px] p-0 text-left outline-none"
-          >
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none h-full w-full rounded-[16px] transition-all duration-300 ${
-                hovered === "lamp"
-                  ? "ring-2 ring-[#ffd584]/80 shadow-[0_0_36px_rgba(255,214,128,0.5)]"
-                  : "ring-0"
-              }`}
-            />
-          </button>
+          <BankersLampControl
+            lampOn={lampOn}
+            onToggleLamp={() => setLampOn((v) => !v)}
+            muted={muted}
+            onHoverChange={(isHov) => setHovered(isHov ? "lamp" : null)}
+          />
+
+          {/* Subtle Top-Right Audio Mute Toggle */}
+          <div className="absolute right-4 top-4 z-30">
+            <button
+              type="button"
+              data-testid="audio-mute-toggle"
+              onClick={() => setMuted((m) => !m)}
+              aria-pressed={muted}
+              aria-label={muted ? "Unmute study sound effects" : "Mute study sound effects"}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gold/35 bg-[#100a06]/85 px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.16em] text-bone/90 shadow-lg backdrop-blur-md transition-colors hover:border-gold"
+            >
+              <span>{muted ? "🔇 Muted" : "🔊 Sound"}</span>
+            </button>
+          </div>
 
           {/* -----------------------------------------------------------------
               DISCREET IN-SCENE CAPTION PILL (BOTTOM EDGE OF THE STUDY)

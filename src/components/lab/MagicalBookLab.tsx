@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { getProject } from "@/content/projects";
 import { links } from "@/content/site";
+import { BankersLampControl } from "@/components/ui/BankersLampControl";
 
 /**
  * Seven-Phase Magical Book Animation State Machine:
@@ -400,6 +401,7 @@ export function MagicalBookLab() {
   const whyHenry = getProject("why-henry")!;
 
   const [phase, setPhase] = useState<MagicalBookPhase>("idle");
+  const [lampOn, setLampOn] = useState(true);
   const [muted, setMuted] = useState(false);
   const [plateIdx, setPlateIdx] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -1263,7 +1265,16 @@ export function MagicalBookLab() {
           data-testid="lab-study-stage"
           className="relative mx-auto aspect-[16/9] h-full min-h-[500px] w-auto min-w-[888px] max-w-none shrink-0 overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.95)] lg:h-auto lg:max-h-[100svh] lg:w-full lg:max-w-[177.78svh]"
         >
-          {/* ── 1. CLEAN BACKGROUND ROOM PLATE (Empty Walnut Recess behind Why Henry) ── */}
+          {/* ── 1. CLEAN BACKGROUND ROOM PLATES (Lamp-ON & Lamp-OFF with Empty Walnut Recess behind Why Henry) ── */}
+          <Image
+            src="/media/study/study-approved-v2-why-henry-empty-off.webp"
+            alt=""
+            fill
+            priority
+            quality={95}
+            sizes="100vw"
+            className="pointer-events-none object-cover"
+          />
           <Image
             src="/media/study/study-approved-v2-why-henry-empty.webp"
             alt="Javier Huertas's cinematic study with rain window, green banker's lamp, walnut desk, and bookshelf"
@@ -1271,7 +1282,9 @@ export function MagicalBookLab() {
             priority
             quality={95}
             sizes="100vw"
-            className="pointer-events-none object-cover"
+            className={`pointer-events-none object-cover transition-opacity duration-300 ${
+              lampOn ? "opacity-100" : "opacity-0"
+            }`}
           />
 
           {/* ── 2. RESTRAINED AMBIENT ROOM MOTION (Rain, Lamp Glow, Coffee Steam, Rune Pulse) ── */}
@@ -1296,7 +1309,11 @@ export function MagicalBookLab() {
             </div>
 
             {/* Subtle warm tungsten breathing glow from the green glass banker's lamp */}
-            <div className="anim-lamp absolute left-[9%] top-[33%] h-[42%] w-[28%] rounded-full bg-[radial-gradient(ellipse_at_48%_32%,rgba(255,212,128,0.24)_0%,rgba(196,138,52,0.09)_48%,transparent_75%)] blur-xl" />
+            <div
+              className={`anim-lamp absolute left-[9%] top-[33%] h-[42%] w-[28%] rounded-full bg-[radial-gradient(ellipse_at_48%_32%,rgba(255,212,128,0.24)_0%,rgba(196,138,52,0.09)_48%,transparent_75%)] blur-xl transition-opacity duration-300 ${
+                lampOn ? "opacity-100" : "opacity-0"
+              }`}
+            />
 
             {/* Gentle steam wisps rising from the coffee cup */}
             <div className="absolute left-[36.2%] top-[44.5%] h-[14%] w-[5.5%] overflow-hidden">
@@ -1330,6 +1347,14 @@ export function MagicalBookLab() {
             ref={canvasMountRef}
             data-testid="three-book-canvas-container"
             className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+          />
+
+          {/* ── 4b. INTERACTIVE GREEN GLASS BANKER'S LAMP & PHYSICAL BRASS PULL-CHAIN ── */}
+          <BankersLampControl
+            lampOn={lampOn}
+            onToggleLamp={() => setLampOn((v) => !v)}
+            muted={muted}
+            reducedMotion={reducedMotion}
           />
 
           {/* ── 5. INVISIBLE SILHOUETTE-ALIGNED SHELF TRIGGER FOR "WHY HENRY?"
