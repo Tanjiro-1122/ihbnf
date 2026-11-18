@@ -30,7 +30,7 @@ type HoveredItem =
  * - "closing-cover": Front cover & pages fold shut back into a closed 3D hardcover
  * - "returning": Book slides back into its exact walnut shelf position
  */
-type BookStage = "shelved" | "extracting" | "open" | "closing-cover" | "returning";
+type BookStage = "shelved" | "extracting" | "floating" | "opening" | "open" | "closing-cover" | "returning";
 type ShelfBookId = "why-henry" | "dream-payoff";
 
 /**
@@ -225,12 +225,15 @@ export function LivingWorkspace() {
     const rect = targetEl.getBoundingClientRect();
     const bookCenterX = rect.left + rect.width / 2;
     const bookCenterY = rect.top + rect.height / 2;
-    const viewportCenterX = window.innerWidth / 2;
+    // The closed hardcover occupies the RIGHT half of the spread.
+    // Anchor its center, not the spread's center, on the selected shelf slot.
+    const spreadWidth = Math.min(960, window.innerWidth - (window.innerWidth >= 640 ? 48 : 24));
+    const viewportCenterX = window.innerWidth / 2 + spreadWidth / 4;
     const viewportCenterY = window.innerHeight / 2;
     setFlightDelta({
       dx: Math.round(bookCenterX - viewportCenterX),
       dy: Math.round(bookCenterY - viewportCenterY),
-      scale: Math.max(0.22, Math.min(0.46, +(rect.height / 480).toFixed(2))),
+      scale: Math.max(0.18, Math.min(0.48, +(rect.height / 480).toFixed(2))),
     });
   }, []);
 
@@ -250,35 +253,37 @@ export function LivingWorkspace() {
         setExtractStarted(true);
       }, 25);
 
-      const openTimer = window.setTimeout(() => {
+      // Let the CLOSED book visibly travel out of its shelf slot before
+      // opening. The original 620ms sequence opened while it was still flying.
+      const floatTimer = window.setTimeout(() => setBookStage("floating"), 1150);
+      const openingTimer = window.setTimeout(() => {
+        setBookStage("opening");
+        playBookSound("creak", 0.62);
+      }, 1670);
+      const rustleTimer = window.setTimeout(() => playBookSound("rustle", 0.48), 2030);
+      const openedTimer = window.setTimeout(() => {
         setBookStage("open");
-        playBookSound("creak", 0.7);
-        const rustleTimer = window.setTimeout(() => playBookSound("rustle", 0.55), 230);
-        stageTimersRef.current.push(rustleTimer);
-        window.setTimeout(() => {
-          closeBookBtnRef.current?.focus({ preventScroll: true });
-        }, 120);
-      }, 620);
-
-      stageTimersRef.current.push(rafId, openTimer);
+        closeBookBtnRef.current?.focus({ preventScroll: true });
+      }, 2570);
+      stageTimersRef.current.push(rafId, floatTimer, openingTimer, rustleTimer, openedTimer);
     },
     [bookStage, clearStageTimers, computeShelfDelta, playBookSound],
   );
 
   // Trigger reverse animation: fold cover shut -> slide back into walnut shelf slot
   const handleReturnShelfBook = useCallback(() => {
-    if (bookStage !== "open" && bookStage !== "extracting") return;
+    if (bookStage === "shelved" || bookStage === "returning" || bookStage === "closing-cover") return;
     clearStageTimers();
     computeShelfDelta(activeShelfBook);
     setBookStage("closing-cover");
 
-    const thumpTimer = window.setTimeout(() => playBookSound("thump", 0.75), 400);
-    const settleTimer = window.setTimeout(() => playBookSound("settle", 0.6), 900);
+    const thumpTimer = window.setTimeout(() => playBookSound("thump", 0.75), 700);
+    const settleTimer = window.setTimeout(() => playBookSound("settle", 0.6), 1960);
 
     const returnTimer = window.setTimeout(() => {
       setExtractStarted(false);
       setBookStage("returning");
-    }, 520);
+    }, 1050);
 
     const shelvedTimer = window.setTimeout(() => {
       setBookStage("shelved");
@@ -289,7 +294,7 @@ export function LivingWorkspace() {
             : dreamPayoffBookRef.current;
         targetEl?.focus({ preventScroll: true });
       }, 60);
-    }, 1080);
+    }, 2180);
 
     stageTimersRef.current.push(thumpTimer, settleTimer, returnTimer, shelvedTimer);
   }, [bookStage, activeShelfBook, clearStageTimers, computeShelfDelta, playBookSound]);
@@ -955,7 +960,7 @@ export function LivingWorkspace() {
             data-testid="why-henry-stage-backdrop"
             onClick={handleReturnShelfBook}
             className={`fixed inset-0 bg-[#050302]/68 backdrop-blur-[4px] transition-opacity duration-500 ${
-              bookStage === "extracting" || bookStage === "open" ? "opacity-100" : "opacity-0"
+              bookStage !== "returning" ? "opacity-100" : "opacity-0"
             }`}
           />
 
@@ -966,13 +971,19 @@ export function LivingWorkspace() {
               perspective: "2000px",
               transform:
                 bookStage === "returning" || (bookStage === "extracting" && !extractStarted)
-                  ? `translate3d(${flightDelta.dx}px, ${flightDelta.dy}px, -260px) scale(${flightDelta.scale}) rotateY(-24deg) rotateZ(2deg)`
+                  ? `translate3d(${flightDelta.dx}px, ${flightDelta.dy}px, -260px) scale(${flightDelta.scale}) rotateY(-18deg) rotateZ(-3deg)`
                   : bookStage === "extracting"
-                    ? "translate3d(0px, 0px, 0px) scale(0.92) rotateX(6deg) rotateY(-10deg)"
-                    : "translate3d(0px, 0px, 0px) scale(1) rotateX(2deg) rotateY(0deg)",
+                    ? "translate3d(0px, -28px, 0px) scale(0.90) rotateX(9deg) rotateY(-12deg) rotateZ(2deg)"
+                    : bookStage === "floating"
+                      ? "translate3d(0px, -18px, 25px) scale(0.92) rotateX(2deg) rotateY(-5deg) rotateZ(-1deg)"
+                      : "translate3d(0px, 0px, 0px) scale(1) rotateX(2deg) rotateY(0deg)",
               transition:
-                "transform 560ms cubic-bezier(0.22, 1, 0.36, 1), opacity 480ms ease",
-              opacity: bookStage === "returning" ? 0.15 : 1,
+                bookStage === "extracting"
+                  ? "transform 1100ms cubic-bezier(0.16, 1, 0.30, 1), opacity 900ms ease"
+                  : bookStage === "returning"
+                    ? "transform 1100ms cubic-bezier(0.38, 0, 0.65, 1), opacity 900ms ease"
+                    : "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+              opacity: 1,
             }}
             className="relative z-10 my-auto flex w-full max-w-[960px] items-center justify-center"
           >
@@ -980,7 +991,7 @@ export function LivingWorkspace() {
             <div
               aria-hidden="true"
               className={`pointer-events-none absolute inset-x-8 -bottom-8 h-16 rounded-full bg-black/90 blur-2xl transition-all duration-500 ${
-                bookStage === "open" ? "scale-x-100 opacity-95" : "scale-x-50 opacity-70"
+                bookStage === "open" || bookStage === "opening" ? "scale-x-100 opacity-70" : "scale-x-50 opacity-45"
               }`}
             />
 
@@ -993,7 +1004,7 @@ export function LivingWorkspace() {
               <div
                 aria-hidden="true"
                 className={`pointer-events-none absolute -inset-[8px] rounded-[10px] border-2 border-[#6e4926] bg-gradient-to-b from-[#2c190c] via-[#1c0f07] to-[#120904] shadow-[0_35px_90px_rgba(0,0,0,0.95),0_0_50px_rgba(217,140,63,0.18)] transition-opacity duration-300 ${
-                  bookStage === "open" ? "opacity-100" : "opacity-0"
+                  bookStage === "opening" || bookStage === "open" ? "opacity-100" : "opacity-0"
                 }`}
               />
 
@@ -1003,7 +1014,7 @@ export function LivingWorkspace() {
                   <div
                     data-testid="why-henry-left-page"
                     className={`relative flex flex-col justify-between overflow-hidden rounded-t-[6px] border border-[#b89b72]/45 bg-gradient-to-br from-[#f3ead8] via-[#eadbc0] to-[#dcc69e] p-5 text-[#22170d] shadow-[inset_-18px_0_32px_rgba(68,42,18,0.22)] transition-all duration-500 sm:p-7 md:rounded-l-[6px] md:rounded-tr-none ${
-                      bookStage === "open"
+                      (bookStage === "opening" || bookStage === "open")
                         ? "translate-y-0 opacity-100"
                         : "pointer-events-none translate-y-2 opacity-0"
                     }`}
@@ -1161,13 +1172,11 @@ export function LivingWorkspace() {
                         transformOrigin: "left center",
                         transformStyle: "preserve-3d",
                         transform:
-                          bookStage === "open" ? "rotateY(-165deg)" : "rotateY(0deg)",
-                        transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+                          (bookStage === "opening" || bookStage === "open") ? "rotateY(-165deg)" : "rotateY(0deg)",
+                        transition: "transform 850ms cubic-bezier(0.22, 1, 0.36, 1)",
                       }}
                       className={`pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-r-[6px] border-2 border-[#6e4926] bg-[#0d0a08] shadow-[16px_20px_48px_rgba(0,0,0,0.9)] ${
-                        bookStage === "open"
-                          ? "opacity-0 transition-[transform,opacity] duration-500"
-                          : "opacity-100"
+                        "opacity-100"
                       }`}
                     >
                       <Image
@@ -1186,7 +1195,7 @@ export function LivingWorkspace() {
                   <div
                     data-testid="dream-payoff-left-page"
                     className={`relative flex flex-col justify-between overflow-hidden rounded-t-[6px] border border-[#b89b72]/45 bg-gradient-to-br from-[#f3ead8] via-[#eadbc0] to-[#dcc69e] p-5 text-[#22170d] shadow-[inset_-18px_0_32px_rgba(68,42,18,0.22)] transition-all duration-500 sm:p-7 md:rounded-l-[6px] md:rounded-tr-none ${
-                      bookStage === "open"
+                      (bookStage === "opening" || bookStage === "open")
                         ? "translate-y-0 opacity-100"
                         : "pointer-events-none translate-y-2 opacity-0"
                     }`}
@@ -1332,13 +1341,11 @@ export function LivingWorkspace() {
                         transformOrigin: "left center",
                         transformStyle: "preserve-3d",
                         transform:
-                          bookStage === "open" ? "rotateY(-165deg)" : "rotateY(0deg)",
-                        transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+                          (bookStage === "opening" || bookStage === "open") ? "rotateY(-165deg)" : "rotateY(0deg)",
+                        transition: "transform 850ms cubic-bezier(0.22, 1, 0.36, 1)",
                       }}
                       className={`pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-r-[6px] border-2 border-[#6e4926] bg-[#120d09] shadow-[16px_20px_48px_rgba(0,0,0,0.9)] ${
-                        bookStage === "open"
-                          ? "opacity-0 transition-[transform,opacity] duration-500"
-                          : "opacity-100"
+                        "opacity-100"
                       }`}
                     >
                       <Image
