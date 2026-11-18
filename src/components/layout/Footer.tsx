@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Mark } from "./Logo";
 import { site } from "@/content/site";
 
@@ -11,6 +14,9 @@ const footerLinks = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname === "/" || pathname.startsWith("/lab")) return null;
+
   return (
     <footer data-testid="site-footer" className="relative border-t border-bone/[0.08] bg-ink">
       <div className="shell grid gap-10 py-12 sm:py-16 lg:grid-cols-12">

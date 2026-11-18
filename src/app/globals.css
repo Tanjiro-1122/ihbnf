@@ -192,6 +192,30 @@ section[id] {
   0%, 100% { transform: translate3d(0, 0, 0); }
   50% { transform: translate3d(0, -10px, 0); }
 }
+@keyframes rain-fall {
+  0% { transform: translate3d(0, -100%, 0); opacity: 0; }
+  20% { opacity: 0.55; }
+  85% { opacity: 0.45; }
+  100% { transform: translate3d(-4px, 240%, 0); opacity: 0; }
+}
+@keyframes steam-rise {
+  0% { transform: translate3d(0, 8px, 0) scaleX(0.9); opacity: 0; }
+  35% { opacity: 0.32; }
+  70% { transform: translate3d(-5px, -16px, 0) scaleX(1.18); opacity: 0.18; }
+  100% { transform: translate3d(4px, -34px, 0) scaleX(1.35); opacity: 0; }
+}
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(0deg) translate3d(0, 0, 0); }
+  50% { transform: rotate(1.15deg) translate3d(1.5px, 1px, 0); }
+}
+@keyframes lamp-breathe {
+  0%, 100% { opacity: 0.88; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.025); }
+}
+@keyframes rune-pulse {
+  0%, 100% { opacity: 0.45; filter: blur(10px); }
+  50% { opacity: 0.85; filter: blur(14px); }
+}
 @keyframes scroll-line {
   0% { transform: scaleY(0); transform-origin: top; }
   45% { transform: scaleY(1); transform-origin: top; }
@@ -211,6 +235,11 @@ section[id] {
 .anim-bob { animation: bob 7s ease-in-out infinite; }
 .anim-stone { animation: stone 6s ease-in-out infinite; animation-delay: var(--d, 0ms); }
 .anim-scroll-line { animation: scroll-line 2.6s var(--ease-out-expo) infinite; }
+.anim-rain { animation: rain-fall var(--rt, 3.8s) linear infinite; animation-delay: var(--rd, 0s); }
+.anim-steam { animation: steam-rise var(--st, 5.5s) ease-in-out infinite; animation-delay: var(--sd, 0s); }
+.anim-leaf { animation: leaf-sway 9s ease-in-out infinite; transform-origin: top center; }
+.anim-lamp { animation: lamp-breathe 6s ease-in-out infinite; }
+.anim-rune { animation: rune-pulse 5s ease-in-out infinite; }
 .particle { animation: float-up var(--t, 18s) linear infinite; animation-delay: var(--d, 0s); }
 
 [data-reveal] {
