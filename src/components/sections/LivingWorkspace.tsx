@@ -107,6 +107,34 @@ const philosophySteps = [
   "Keep moving",
 ];
 
+
+/**
+ * Highlights the object that is ALREADY painted into the approved study plate.
+ * No duplicate composited phone/laptop/frame images: they were the source of
+ * visible misregistration and exposed background artwork behind the overlays.
+ * SVG is deliberately pointer-events-none; the original semantic button
+ * handles touch, keyboard and click interactions.
+ */
+function ArtworkHotspotGlow({ active, color, points }: {
+  active: boolean;
+  color: "gold" | "lime" | "violet";
+  points: string;
+}) {
+  const palette = {
+    gold: { fill: "rgba(255,225,159,0.12)", stroke: "#ffe0a0", glow: "rgba(255,190,81,0.65)" },
+    lime: { fill: "rgba(183,235,138,0.10)", stroke: "#d4f5a6", glow: "rgba(148,208,87,0.48)" },
+    violet: { fill: "rgba(207,174,255,0.13)", stroke: "#ddc3ff", glow: "rgba(168,112,244,0.60)" },
+  }[color];
+  return (
+    <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"
+      className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible transition-opacity duration-300 ${active ? "opacity-100" : "opacity-0"}`}>
+      <polygon points={points} fill={palette.fill} stroke={palette.stroke}
+        strokeWidth="0.9" strokeLinejoin="round"
+        style={{ filter: `drop-shadow(0 0 2px ${palette.stroke}) drop-shadow(0 0 5px ${palette.glow})` }} />
+    </svg>
+  );
+}
+
 export function LivingWorkspace() {
   const whyHenry = getProject("why-henry")!;
   const memoir = getProject("the-dream-of-the-payoff")!;
@@ -134,6 +162,41 @@ export function LivingWorkspace() {
   const closeBookBtnRef = useRef<HTMLButtonElement>(null);
   const closeModalBtnRef = useRef<HTMLButtonElement>(null);
   const stageTimersRef = useRef<number[]>([]);
+
+  // Book sound bank: pull off shelf -> cover creak -> page rustle, then thump shut -> settle on shelf
+  const bookAudioRef = useRef<Record<string, HTMLAudioElement>>({});
+  const mutedRef = useRef(muted);
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
+
+  useEffect(() => {
+    const files: Record<string, string> = {
+      pull: "/media/audio/book-pull.wav",
+      creak: "/media/audio/binding-creak.wav",
+      rustle: "/media/audio/page-rustle.wav",
+      thump: "/media/audio/book-close-thump.wav",
+      settle: "/media/audio/shelf-settle.wav",
+    };
+    Object.entries(files).forEach(([key, src]) => {
+      const audio = new Audio(src);
+      audio.preload = "auto";
+      bookAudioRef.current[key] = audio;
+    });
+  }, []);
+
+  const playBookSound = useCallback((key: string, volume = 0.7) => {
+    if (mutedRef.current) return;
+    const audio = bookAudioRef.current[key];
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      audio.volume = volume;
+      audio.play().catch(() => {});
+    } catch {
+      // Ignore autoplay restrictions
+    }
+  }, []);
 
   const clearStageTimers = useCallback(() => {
     stageTimersRef.current.forEach((id) => window.clearTimeout(id));
@@ -181,6 +244,7 @@ export function LivingWorkspace() {
       computeShelfDelta(bookId);
       setExtractStarted(false);
       setBookStage("extracting");
+      playBookSound("pull", 0.8);
 
       const rafId = window.setTimeout(() => {
         setExtractStarted(true);
@@ -188,6 +252,9 @@ export function LivingWorkspace() {
 
       const openTimer = window.setTimeout(() => {
         setBookStage("open");
+        playBookSound("creak", 0.7);
+        const rustleTimer = window.setTimeout(() => playBookSound("rustle", 0.55), 230);
+        stageTimersRef.current.push(rustleTimer);
         window.setTimeout(() => {
           closeBookBtnRef.current?.focus({ preventScroll: true });
         }, 120);
@@ -195,7 +262,7 @@ export function LivingWorkspace() {
 
       stageTimersRef.current.push(rafId, openTimer);
     },
-    [bookStage, clearStageTimers, computeShelfDelta],
+    [bookStage, clearStageTimers, computeShelfDelta, playBookSound],
   );
 
   // Trigger reverse animation: fold cover shut -> slide back into walnut shelf slot
@@ -204,6 +271,9 @@ export function LivingWorkspace() {
     clearStageTimers();
     computeShelfDelta(activeShelfBook);
     setBookStage("closing-cover");
+
+    const thumpTimer = window.setTimeout(() => playBookSound("thump", 0.75), 400);
+    const settleTimer = window.setTimeout(() => playBookSound("settle", 0.6), 900);
 
     const returnTimer = window.setTimeout(() => {
       setExtractStarted(false);
@@ -221,8 +291,8 @@ export function LivingWorkspace() {
       }, 60);
     }, 1080);
 
-    stageTimersRef.current.push(returnTimer, shelvedTimer);
-  }, [bookStage, activeShelfBook, clearStageTimers, computeShelfDelta]);
+    stageTimersRef.current.push(thumpTimer, settleTimer, returnTimer, shelvedTimer);
+  }, [bookStage, activeShelfBook, clearStageTimers, computeShelfDelta, playBookSound]);
 
   // Open an in-room object overlay
   const openRoomModal = useCallback((modal: Exclude<ActiveRoomModal, null>) => {
@@ -414,42 +484,8 @@ export function LivingWorkspace() {
             }}
             className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.018] focus-visible:scale-[1.018]"
           >
-            {/* Subtle warm gallery highlight around the ornate gold frame on hover/focus */}
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute -inset-1.5 rounded-[6px] transition-all duration-300 ${
-                hovered === "brand"
-                  ? "ring-2 ring-[#ffd584]/90 shadow-[0_0_38px_rgba(255,204,112,0.55)]"
-                  : "ring-0"
-              }`}
-            />
-
-            {/* Inner Canvas Replacement inside the Ornate Gold Frame:
-                Displays the exact official IHBNF primary hands/soil/seedling artwork without any clipping */}
-            <div
-              style={{
-                left: "11.0%",
-                top: "10.6%",
-                width: "77.2%",
-                height: "77.6%",
-                transform: "perspective(900px) rotateY(4deg) rotateZ(0.6deg)",
-              }}
-              className="absolute flex items-center justify-center overflow-hidden rounded-[2px] bg-[radial-gradient(ellipse_at_50%_42%,#24180d_0%,#0f0a06_68%,#080503_100%)] p-1 shadow-[inset_0_0_18px_rgba(0,0,0,0.92)]"
-            >
-              <Image
-                src="/media/brand/ihbnf-icon.svg"
-                alt="IHBNF — Official Hands, Soil, and Seedling Emblem"
-                fill
-                priority
-                sizes="(min-width: 1024px) 240px, 160px"
-                className="object-contain p-1.5 transition-transform duration-500 group-hover:scale-[1.04]"
-              />
-              {/* Warm picture-light top-down wash & natural canvas vignette */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_70%_at_50%_12%,rgba(255,214,138,0.18)_0%,transparent_62%,rgba(6,4,2,0.55)_100%)]"
-              />
-            </div>
+            <ArtworkHotspotGlow active={hovered === "brand"} color="gold"
+              points="2,2 96,3 99,98 2,97" />
           </button>
 
           {/* -----------------------------------------------------------------
@@ -653,55 +689,8 @@ export function LivingWorkspace() {
             }}
             className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.015] focus-visible:scale-[1.015]"
           >
-            {/* Soft green ambient screen glow & hover highlight */}
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute inset-x-[4%] top-[2%] h-[72%] rounded-[10px] transition-all duration-300 ${
-                hovered === "laptop"
-                  ? "ring-2 ring-[#a3e635] shadow-[0_0_36px_rgba(163,230,53,0.48)]"
-                  : "shadow-[0_0_22px_rgba(163,230,53,0.12)]"
-              }`}
-            />
-
-            {/* Official Sports Wager Helper Screen Composite inside the Laptop Bezel */}
-            <div
-              style={{
-                left: "5.8%",
-                top: "5.2%",
-                width: "77.2%",
-                height: "66.5%",
-                transform: "perspective(900px) rotateY(-3.5deg) rotateX(1.8deg) rotateZ(-0.5deg)",
-              }}
-              className="absolute overflow-hidden rounded-[4px] bg-[#070b08]"
-            >
-              <Image
-                src="/media/sports-wager-helper/og-image.png"
-                alt="Sports Wager Helper running on the laptop screen"
-                fill
-                sizes="(min-width: 1024px) 340px, 220px"
-                className="object-contain object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/15" />
-              <div className="absolute inset-x-1.5 bottom-1 flex items-center justify-between rounded border border-[#a3e635]/40 bg-black/85 px-1.5 py-0.5 backdrop-blur-xs">
-                <div className="flex items-center gap-1">
-                  <div className="relative h-3.5 w-3.5 shrink-0 overflow-hidden rounded-xs bg-black">
-                    <Image
-                      src="/media/sports-wager-helper/swh-brand-logo.svg"
-                      alt=""
-                      fill
-                      sizes="16px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <span className="font-mono text-[0.42rem] font-semibold tracking-wider text-bone sm:text-[0.48rem]">
-                    SPORTS WAGER HELPER
-                  </span>
-                </div>
-                <span className="rounded-xs bg-[#a3e635] px-1 py-0.2 font-mono text-[0.38rem] font-bold text-black">
-                  S.A.L.
-                </span>
-              </div>
-            </div>
+            <ArtworkHotspotGlow active={hovered === "laptop"} color="lime"
+              points="3,3 88,3 89,74 99,92 95,99 9,98 1,80" />
           </button>
 
           {/* -----------------------------------------------------------------
@@ -727,37 +716,8 @@ export function LivingWorkspace() {
             }}
             className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:scale-[1.03] focus-visible:-translate-y-1 focus-visible:scale-[1.03]"
           >
-            {/* Soft violet screen glow & hover ring */}
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute inset-x-[12%] top-[2%] bottom-[12%] rounded-[14px] transition-all duration-300 ${
-                hovered === "smartphone"
-                  ? "ring-2 ring-violet shadow-[0_0_32px_rgba(169,156,255,0.65)]"
-                  : "shadow-[0_0_18px_rgba(139,92,246,0.22)]"
-              }`}
-            />
-
-            {/* Real Unfiltr Screenshot mapped to the angled phone glass */}
-            <div
-              style={{
-                left: "21.5%",
-                top: "4.2%",
-                width: "63.5%",
-                height: "78.5%",
-                transform:
-                  "perspective(600px) rotateX(10deg) rotateY(-12deg) rotateZ(9.2deg)",
-              }}
-              className="absolute overflow-hidden rounded-[10px] border border-[#5a4e7c]/60 bg-black shadow-inner"
-            >
-              <Image
-                src="/media/unfiltr/kai-tropical-chat.jpg"
-                alt="Unfiltr by Javier real app screen on smartphone"
-                fill
-                sizes="110px"
-                className="object-cover"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/25 via-transparent to-white/10" />
-            </div>
+            <ArtworkHotspotGlow active={hovered === "smartphone"} color="violet"
+              points="20,3 87,4 83,79 95,90 94,98 8,98 4,90 16,82" />
           </button>
 
           {/* -----------------------------------------------------------------

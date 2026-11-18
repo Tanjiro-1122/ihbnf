@@ -59,7 +59,7 @@ export function BankersLampControl({
     if (mutedRef.current || !clickAudioRef.current) return;
     try {
       clickAudioRef.current.currentTime = 0;
-      clickAudioRef.current.volume = 0.85;
+      clickAudioRef.current.volume = 1;
       clickAudioRef.current.play().catch(() => {});
     } catch {
       // Ignore autoplay restrictions
