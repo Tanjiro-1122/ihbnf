@@ -1,0 +1,286 @@
+.slot {
+  position: absolute;
+  z-index: 20;
+  perspective: 620px;
+}
+
+.shelfBook {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: manipulation;
+  outline: none;
+}
+
+.shelfBook:focus-visible {
+  outline: 2px solid #ffe0a0;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.shelfBook::before {
+  content: "";
+  position: absolute;
+  inset: 5% -6% -3% 2%;
+  background: #000;
+  filter: blur(clamp(2px, .45vw, 8px));
+  opacity: .85;
+}
+
+.shelfBook[data-out="true"] { opacity: 0; pointer-events: none; }
+
+.hardcover {
+  --binding: #211610;
+  --board: #3c291d;
+  --board-rim: #6e5136;
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.hardcover[data-book="why-henry"] {
+  --binding: #141722;
+  --board: #242c39;
+  --board-rim: #414c59;
+}
+
+.shelfBook .hardcover {
+  --depth: clamp(3px, .68vw, 11px);
+  --board-thickness: clamp(1px, .13vw, 2px);
+  left: 9%;
+  right: 9%;
+  transform: rotateX(-4deg) rotateY(-13deg) rotateZ(-.8deg);
+  transition: transform 260ms ease;
+}
+
+.shelfBook[data-book="dream-payoff"] .hardcover { transform: rotateX(-4deg) rotateY(-11deg) rotateZ(.7deg); }
+.shelfBook:is(:hover, :focus-visible) .hardcover { transform: translateY(-2%) rotateX(-5deg) rotateY(-9deg); }
+
+.coverHinge, .coverFront, .endpaper, .backBoard, .pageBlock, .turningLeaf {
+  position: absolute;
+  inset: 0;
+  border-radius: 2% 2.8% 2.8% 2%;
+}
+
+.coverHinge {
+  transform: translateZ(var(--depth));
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+
+.coverFront {
+  overflow: hidden;
+  background: var(--board);
+  border: 1px solid var(--board-rim);
+  backface-visibility: hidden;
+  box-shadow: inset 0 0 0 1px #ffedbf26, 1px 1px 2px #0009;
+}
+
+.coverFront img { object-fit: fill; }
+
+.coverFront::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, #000a, #0004 2%, #ffc98b28 4%, transparent 7%),
+    linear-gradient(153deg, #fff1c728, transparent 46%, #0004);
+}
+
+.backBoard {
+  background: var(--binding);
+  border: 1px solid var(--board-rim);
+  box-shadow: 2px 3px 4px #0009;
+}
+
+.spine {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--depth);
+  transform-origin: left center;
+  transform: rotateY(-90deg);
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--binding), var(--board-rim) 44%, var(--binding));
+}
+
+.pageBlock {
+  inset: 1.6% 2% 1.6% 1%;
+  transform-style: preserve-3d;
+  background: linear-gradient(90deg, #c1a479, #f8ebd0 14%, #efe0c1 83%, #d5bb90);
+}
+
+.pageSide, .pageTop, .pageBottom {
+  position: absolute;
+  background: repeating-linear-gradient(90deg, #9f8265 0 1px, #decbaa 1px 2px, #f0e1c3 2px 3px);
+  box-shadow: inset 0 0 3px #3c291a70;
+}
+
+.pageSide {
+  inset: 0 0 0 auto;
+  width: var(--depth);
+  transform-origin: right center;
+  transform: rotateY(90deg);
+}
+
+.pageTop, .pageBottom {
+  width: 100%;
+  height: var(--depth);
+  background: repeating-linear-gradient(0deg, #a68c6e 0 1px, #dfcdb0 1px 2px, #eee0c2 2px 3px);
+}
+
+.pageTop { inset: 0; transform-origin: top center; transform: rotateX(90deg); }
+.pageBottom { inset: auto 0 0; transform-origin: bottom center; transform: rotateX(-90deg); }
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: transparent;
+  color: inherit;
+}
+
+.dialog::backdrop { background: transparent; }
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: #060402b8;
+  backdrop-filter: blur(3px);
+  animation: reader-dim 1640ms ease both;
+}
+
+@keyframes reader-dim {
+  0%, 12% { opacity: 0; }
+  52%, 100% { opacity: 1; }
+}
+
+.flightStage { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+
+.flightBook {
+  position: absolute;
+  left: var(--book-left);
+  top: var(--book-top);
+  width: var(--book-width);
+  height: var(--book-height);
+  perspective: 1050px;
+  transform-origin: top left;
+  animation: book-travel 1640ms both;
+}
+
+.bookOrientation {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: book-orientation 1640ms both;
+}
+
+.flightBook .hardcover {
+  --depth: clamp(8px, 2vw, 29px);
+  --board-thickness: 2px;
+}
+
+.flightBook .coverHinge { animation: cover-open 1640ms both; }
+
+.endpaper {
+  transform: rotateY(180deg) translateZ(var(--board-thickness));
+  backface-visibility: hidden;
+  border: 2px solid var(--board);
+  background:
+    radial-gradient(ellipse at 68% 37%, #f4e8cf, #dfc8a2),
+    #eedcc0;
+  box-shadow: inset -18px 0 24px #52351d38, 0 0 0 2px var(--board);
+}
+
+.turningLeaf {
+  inset: 2% 3% 2% 1%;
+  transform-origin: left center;
+  background: linear-gradient(95deg, #bca17d, #f6ecd6 20%, #f4e7ca 84%, #decaab);
+  box-shadow: inset 0 0 1px #563b30, 1px 0 3px #53381754;
+  animation: leaf-open 1640ms both;
+}
+
+.reader[data-opening="true"] { animation: reader-reveal 1640ms both; }
+
+@keyframes book-travel {
+  0% { transform: translate(var(--shelf-x), var(--shelf-y)) scale(var(--shelf-scale-x), var(--shelf-scale-y)); }
+  11% { transform: translate(var(--shelf-x), calc(var(--shelf-y) - var(--lift))) scale(calc(var(--shelf-scale-x) * 1.04), calc(var(--shelf-scale-y) * 1.04)); animation-timing-function: cubic-bezier(.22,.72,.20,1); }
+  44%, 53% { transform: translate(0, 0) scale(1); animation-timing-function: cubic-bezier(.3,.01,.25,1); }
+  83% {
+    transform: translateX(var(--spread-shift)) scale(1);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(.2,.68,.3,1);
+  }
+  100% {
+    transform: translate(var(--reader-x, var(--spread-shift)), var(--reader-y, 0px))
+      scale(var(--reader-scale-x, 1), var(--reader-scale-y, 1));
+    opacity: 0;
+  }
+}
+
+@keyframes book-orientation {
+  0% { transform: rotateX(-4deg) rotateY(-13deg) rotateZ(-.8deg); }
+  15% { transform: rotateX(-6deg) rotateY(-20deg) rotateZ(-3deg); }
+  32% { transform: rotateX(5deg) rotateY(-29deg) rotateZ(3deg); }
+  49%, 100% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+}
+
+@keyframes cover-open {
+  0%, 53% { transform: translateZ(var(--depth)) rotateY(0deg); animation-timing-function: cubic-bezier(.27,.58,.2,1); }
+  83%, 100% { transform: translateZ(2px) rotateY(-178deg); }
+}
+
+@keyframes leaf-open {
+  0%, 61% { transform: translateZ(calc(var(--depth) - 1px)) rotateY(0deg); }
+  73% { transform: translateZ(3px) rotateY(-88deg); }
+  91%, 100% { transform: translateZ(3px) rotateY(-177deg); }
+}
+
+@keyframes reader-reveal {
+  0%, 87% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop, .reader[data-opening="true"] { animation: none; }
+  .shelfBook .hardcover { transition: none; }
+  .shelfBook:is(:hover, :focus-visible) .hardcover { transform: rotateX(-4deg) rotateY(-13deg); }
+}
+
+.readerLayout {
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(.75rem, 3vw, 2.5rem);
+  pointer-events: none;
+}
+
+.reader {
+  position: relative;
+  width: min(100%, 960px);
+  margin-block: auto;
+  pointer-events: auto;
+}
+
+.reader[data-opening="true"] { pointer-events: none; }
+.backdrop:not([data-opening="true"]) { animation: none; }
+
+.spread {
+  position: relative;
+  padding: clamp(3px, .55vw, 8px);
+  overflow: hidden;
+  border: 1px solid #916d47;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #342418, #563a26 49%, #1d130d 50%, #563a26 51%, #342418);
+  box-shadow: 0 4px 0 #493220, 0 6px 0 #171009, 0 24px 72px #000b;
+}
