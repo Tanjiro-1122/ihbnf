@@ -311,7 +311,15 @@ export function BankersLampControl({
         onBlur={handleLeave}
         aria-pressed={lampOn}
         aria-label={`Pull brass chain to turn the lamp ${lampOn ? "off" : "on"}`}
-        style={{ left: "55.5%", top: "29%", width: "15.5%", height: "31%" }}
+        style={{
+          left: "63.2%",
+          top: "43.5%",
+          width: "15.5%",
+          height: "31%",
+          minWidth: "44px",
+          minHeight: "44px",
+          transform: "translate(-50%, -50%)",
+        }}
         className="pointer-events-auto absolute z-10 cursor-pointer rounded-full bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-200/80"
       />
     </div>

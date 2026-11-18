@@ -311,19 +311,29 @@ export function LivingWorkspace() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_85%_75%_at_50%_50%,rgba(54,30,14,0.42)_0%,rgba(12,7,4,0.96)_65%,#040201_100%)]"
       />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden lg:hidden">
+        <Image
+          src="/media/study/study-clean-plate.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className="scale-125 object-cover opacity-35 blur-2xl"
+        />
+        <div className="absolute inset-0 bg-[#070504]/55" />
+      </div>
 
       {/* =====================================================================
-          1. SCROLLABLE / PANNABLE 16:9 HIGH-RESOLUTION STUDY STAGE
-             Preserves the exact 16:9 composition of the approved reference
-             without stretching or distorting on any screen size.
+          1. RESPONSIVE 16:9 HIGH-RESOLUTION STUDY STAGE
+             Fits the complete room on narrow screens and preserves the native
+             16:9 composition without stretching or distorting.
          ===================================================================== */}
       <div
         ref={scrollContainerRef}
-        className="relative flex h-full w-full items-center justify-start overflow-x-auto overflow-y-hidden lg:justify-center"
+        className="relative z-10 flex h-full w-full items-center justify-start overflow-x-auto overflow-y-hidden lg:justify-center"
       >
         <div
           data-testid="walnut-desk-surface"
-          className="relative mx-auto aspect-[16/9] h-full min-h-[500px] w-auto min-w-[888px] max-w-none shrink-0 overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.95)] lg:h-auto lg:max-h-[100svh] lg:w-full lg:max-w-[177.78svh]"
+          className="relative mx-auto aspect-[16/9] h-auto min-h-0 w-full min-w-0 max-w-full shrink-0 overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.95)] lg:h-auto lg:max-h-[100svh] lg:w-full lg:max-w-[177.78svh]"
         >
           {/* -----------------------------------------------------------------
               BASE LAYER: CLEAN 2K HIGH-RESOLUTION STUDY PLATES (LAMP-ON & LAMP-OFF)
