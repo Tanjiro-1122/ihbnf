@@ -140,15 +140,40 @@
   background-image: url("/media/vault/portrait-on.webp");
 }
 
-.recess[data-moving="true"] .portrait {
+.recess[data-frame="opening"] .portrait {
   animation: hinge 1000ms .64s cubic-bezier(.2,.65,.25,1) both;
   will-change: transform;
 }
 
+.recess[data-frame="closing"] .portrait {
+  animation: hinge 600ms ease-in-out reverse both;
+}
+
 @keyframes hinge {
   from { transform: rotateY(0); }
-  100% { transform: rotateY(-101deg); }
+  to { transform: rotateY(-101deg); }
 }
+
+.frameLatch {
+  position: absolute;
+  right: -13px;
+  bottom: 1%;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #b39564;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #644b2b, #211710);
+  color: #ffe0a5;
+  box-shadow: 0 2px 8px #000;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.frameLatch:focus-visible { outline: 2px solid #ffe4a7; outline-offset: 2px; }
+.frameLatch:disabled { pointer-events: none; }
 
 .recessSafe {
   position: absolute;
@@ -424,8 +449,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .needle, .safeDoor, .mechanism[data-opening="true"] .safeDoor, .wheel, .bolt, .passage { transition: none; }
-  .runeGlow, .inspection[open], .recess[data-moving="true"] .portrait,
-  .inspection[data-entering="true"], .inspection[data-entering="true"]::backdrop { animation: none; }
+  .runeGlow, .inspection[open], .recess[data-frame="opening"] .portrait,
+  .recess[data-frame="closing"] .portrait, .inspection[data-entering="true"],
+  .inspection[data-entering="true"]::backdrop { animation: none; }
   .spark, .transfer { display: none; }
   .compassFade { animation: none; opacity: 0; }
 }

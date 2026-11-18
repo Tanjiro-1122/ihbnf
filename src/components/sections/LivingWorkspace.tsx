@@ -130,12 +130,14 @@ function StudyObjectHighlight({
   active,
   onHover,
   onSelect,
+  frameVisible,
 }: {
   active: HoveredItem;
+  frameVisible: boolean;
   onHover: (item: HoveredItem) => void;
   onSelect: (modal: Exclude<ActiveRoomModal, null>) => void;
 }) {
-  const activePoints = active && active !== "why-henry" && active !== "dream-payoff"
+  const activePoints = active && active !== "why-henry" && active !== "dream-payoff" && !(frameVisible && active === "brand")
     ? studyHotspotPoints[active]
     : undefined;
   const activePath = activePoints ? `M${activePoints.replaceAll(" ", "L")}Z` : undefined;
@@ -152,6 +154,7 @@ function StudyObjectHighlight({
         </filter>
       </defs>
       {studyHotspotActions.map((target) => {
+        if (target.id === "brand" && frameVisible) return null;
         const points = studyHotspotPoints[target.id];
         if (!points) return null;
         const path = `M${points.replaceAll(" ", "L")}Z`;
@@ -206,6 +209,7 @@ export function LivingWorkspace() {
   const [hovered, setHovered] = useState<HoveredItem>(null);
   const [lampOn, setLampOn] = useState(true);
   const [muted, setMuted] = useState(false);
+  const [vaultFrameVisible, setVaultFrameVisible] = useState(false);
   const vaultAudio = useVaultAudio(muted);
 
   const toggleLamp = (trusted: boolean) => {
@@ -375,7 +379,7 @@ export function LivingWorkspace() {
               lampOn ? "opacity-100" : "opacity-0"
             }`}
           />
-          <StudyObjectHighlight active={hovered} onHover={setHovered} onSelect={openRoomModal} />
+          <StudyObjectHighlight active={hovered} onHover={setHovered} onSelect={openRoomModal} frameVisible={vaultFrameVisible} />
 
           {/* -----------------------------------------------------------------
               AMBIENT LIVING MOTION LAYERS (RESTRAINED, SUBTLE & LIGHTWEIGHT)
@@ -798,7 +802,8 @@ export function LivingWorkspace() {
             onHoverChange={(isHov) => setHovered(isHov ? "lamp" : null)}
           />
 
-          <StudyVault lampOn={lampOn} play={vaultAudio.play} obstructed={isBookOut || activeModal !== null} />
+          <StudyVault lampOn={lampOn} play={vaultAudio.play} obstructed={isBookOut || activeModal !== null}
+            onFrameVisibilityChange={setVaultFrameVisible} />
 
           {/* Subtle Top-Right Audio Mute Toggle */}
           <div className="absolute right-4 top-4 z-30">

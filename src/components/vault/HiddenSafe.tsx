@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { site } from "@/content/site";
 import { advanceProgress, SAFE_FOUND } from "./progress";
@@ -10,10 +10,9 @@ type Sound = "key" | "reject" | "bolt" | "door" | "entry";
 const combination = "45425";
 const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 
-export function HiddenSafe({ unlocked, lampOn, trigger, sound, onClose }: {
+export function HiddenSafe({ unlocked, lampOn, sound, onClose }: {
   unlocked: boolean;
   lampOn: boolean;
-  trigger: RefObject<HTMLButtonElement | null>;
   sound: (cue: Sound, offset?: number) => void;
   onClose: () => void;
 }) {
@@ -30,14 +29,12 @@ export function HiddenSafe({ unlocked, lampOn, trigger, sound, onClose }: {
 
   useEffect(() => {
     const panel = dialog.current;
-    const returnFocus = trigger.current;
     panel?.showModal();
     return () => {
       window.clearTimeout(timer.current);
       panel?.close();
-      returnFocus?.focus({ preventScroll: true });
     };
-  }, [trigger]);
+  }, []);
 
   // A second tab can solve the combination while this inspection is open.
   const canEnter = unlocked && (ready || !opening);

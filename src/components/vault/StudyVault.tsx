@@ -16,28 +16,29 @@ function activateWithKey(event: KeyboardEvent<SVGPathElement>, activate: () => v
   if (!event.repeat) activate();
 }
 
-export function StudyVault({ lampOn, play, obstructed }: {
+export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }: {
   lampOn: boolean;
   play: ReturnType<typeof useVaultAudio>["play"];
   obstructed: boolean;
+  onFrameVisibilityChange: (visible: boolean) => void;
 }) {
   const progress = useVaultProgress();
   const [swing, setSwing] = useState(false);
   const [inspecting, setInspecting] = useState(false);
   const [transfer, setTransfer] = useState(false);
-  const [portraitMoving, setPortraitMoving] = useState(false);
+  const [frame, setFrame] = useState<"closed" | "opening" | "open" | "closing">("closed");
   const safeTrigger = useRef<HTMLButtonElement>(null);
   const compass = useRef<SVGPathElement>(null);
   const rune = useRef<SVGPathElement>(null);
-  const restoreFocus = useRef(false);
+  const restoreFocus = useRef<"rune" | "safe" | null>(null);
   const timer = useRef<number>(0);
 
   const compassActive = progress >= COMPASS_READY && progress < RUNE_READY;
-  const runeActive = progress === RUNE_READY || progress === VAULT_UNLOCKED;
-  const frameOpen = progress >= SAFE_FOUND;
+  const runeActive = progress >= RUNE_READY;
+  const frameVisible = frame !== "closed";
   const unlocked = progress === VAULT_UNLOCKED;
   const compassTurns = swing ? 5 : Math.max(0, progress - COMPASS_READY);
-  const preparingPortrait = compassActive || progress === RUNE_READY;
+  const preparingPortrait = compassActive || progress === RUNE_READY || progress === SAFE_FOUND;
 
   useEffect(() => installDevReset(), []);
   useEffect(() => {
@@ -47,22 +48,23 @@ export function StudyVault({ lampOn, play, obstructed }: {
   }, [preparingPortrait, lampOn]);
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  useEffect(() => onFrameVisibilityChange(frameVisible), [frameVisible, onFrameVisibilityChange]);
+
   useEffect(() => {
-    if (!restoreFocus.current) return;
-    if (progress === RUNE_READY) {
-      rune.current?.focus();
-      restoreFocus.current = false;
+    if (restoreFocus.current === "rune" && frame === "closed" && !inspecting) {
+      rune.current?.focus({ preventScroll: true });
+      restoreFocus.current = null;
     }
-    if (frameOpen && !portraitMoving) {
-      safeTrigger.current?.focus();
-      restoreFocus.current = false;
+    if (restoreFocus.current === "safe" && frame === "open") {
+      safeTrigger.current?.focus({ preventScroll: true });
+      restoreFocus.current = null;
     }
-  }, [progress, frameOpen, portraitMoving]);
+  }, [progress, frame, inspecting]);
 
   function turnCompass() {
     if (!compassActive || obstructed || !advanceProgress(progress)) return;
     const final = progress + 1 === RUNE_READY;
-    restoreFocus.current = final && document.activeElement === compass.current;
+    if (final && document.activeElement === compass.current) restoreFocus.current = "rune";
     play("compass");
     if (final) {
       setSwing(true);
@@ -74,25 +76,34 @@ export function StudyVault({ lampOn, play, obstructed }: {
   }
 
   function touchRune() {
-    if (!runeActive || obstructed) return;
+    if (!runeActive || obstructed || frame !== "closed") return;
     if (unlocked) {
-      // The safe trigger is the natural focus return point even from the shortcut.
       setInspecting(true);
       return;
     }
-    if (!advanceProgress(RUNE_READY)) return;
+    if (progress === RUNE_READY && !advanceProgress(RUNE_READY)) return;
     window.clearTimeout(timer.current);
     setSwing(false);
-    restoreFocus.current = document.activeElement === rune.current;
+    if (document.activeElement === rune.current) restoreFocus.current = "safe";
     setTransfer(true);
-    setPortraitMoving(true);
+    setFrame("opening");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     play("pulse");
     play("hinge", reduced ? 0 : .64);
     timer.current = window.setTimeout(() => {
       setTransfer(false);
-      setPortraitMoving(false);
+      setFrame("open");
     }, reduced ? 0 : 1750);
+  }
+
+  function closeFrame() {
+    setInspecting(false);
+    restoreFocus.current = "rune";
+    if (frame !== "open") return;
+    setFrame("closing");
+    play("hinge");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    timer.current = window.setTimeout(() => setFrame("closed"), reduced ? 0 : 610);
   }
 
   return (
@@ -100,7 +111,7 @@ export function StudyVault({ lampOn, play, obstructed }: {
       <span className="sr-only" role="status">
         {compassActive ? "A latch clicks. The brass compass catches the light."
           : progress === RUNE_READY ? "The compass points toward the glowing rune stone."
-          : progress === SAFE_FOUND && !portraitMoving ? "The frame swings open, revealing a concealed safe."
+          : frame === "open" ? "The frame swings open, revealing a concealed safe."
           : ""}
       </span>
       <svg viewBox="0 0 1000 562.5" preserveAspectRatio="none" className={styles.hotspots}>
@@ -124,13 +135,13 @@ export function StudyVault({ lampOn, play, obstructed }: {
             </g>
           </g>
         )}
-        {runeActive && (
+        {runeActive && !frameVisible && (
           <path ref={rune} className={styles.runeTarget} d={runeShape}
             role="button" aria-label={unlocked ? "Return to the hidden entrance" : "Touch the glowing rune stone"}
             aria-haspopup={unlocked ? "dialog" : undefined} tabIndex={obstructed ? -1 : 0}
             onClick={touchRune} onKeyDown={(event) => activateWithKey(event, touchRune)} />
         )}
-        {(runeActive || transfer) && (
+        {((runeActive && !frameVisible) || transfer) && (
           <g aria-hidden="true" pointerEvents="none">
             <path d={runeShape} className={styles.runeGlow} data-transfer={transfer} />
             {!unlocked && [0, 1, 2, 3].map((i) => (
@@ -146,12 +157,12 @@ export function StudyVault({ lampOn, play, obstructed }: {
           </g>
         )}
       </svg>
-      {frameOpen && (
-        <div className={styles.recess} data-moving={portraitMoving} data-lit={lampOn}>
+      {frameVisible && (
+        <div className={styles.recess} data-frame={frame} data-lit={lampOn}>
           <div className={styles.wallCutout} style={{ clipPath: portraitShape }}>
             <button type="button" ref={safeTrigger} className={styles.recessSafe} aria-haspopup="dialog"
               aria-label={unlocked ? "Open the hidden passage" : "Inspect the concealed safe"}
-              disabled={portraitMoving || obstructed} onClick={() => setInspecting(true)} data-unlocked={unlocked}>
+              disabled={frame !== "open" || obstructed} onClick={() => setInspecting(true)} data-unlocked={unlocked}>
               <span className={styles.miniWheel} aria-hidden="true" />
             </button>
           </div>
@@ -159,11 +170,16 @@ export function StudyVault({ lampOn, play, obstructed }: {
             <div className={styles.portraitFront} style={{ clipPath: portraitShape }} />
             <div className={styles.portraitBack} />
           </div>
+          {frame === "open" && (
+            <button type="button" className={styles.frameLatch} disabled={obstructed}
+              aria-label="Close the frame" onClick={closeFrame}>
+              <span aria-hidden="true">↶</span>
+            </button>
+          )}
         </div>
       )}
       {inspecting && (
-        <HiddenSafe unlocked={unlocked} lampOn={lampOn} trigger={safeTrigger} sound={play}
-          onClose={() => setInspecting(false)} />
+        <HiddenSafe unlocked={unlocked} lampOn={lampOn} sound={play} onClose={closeFrame} />
       )}
     </>
   );
