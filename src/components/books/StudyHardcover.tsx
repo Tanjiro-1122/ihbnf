@@ -33,7 +33,7 @@ export function StackedBinding({ book, topVisible }: { book: ShelfBookId; topVis
       <span className={styles.stackSpine} data-stack-spine>
         <span>{shelfBooks[book].title}</span>
       </span>
-      <span className={styles.stackForeEdge} />
+      <span className={styles.stackEndcap} />
     </span>
   );
 }
