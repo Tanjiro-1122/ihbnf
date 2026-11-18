@@ -15,7 +15,7 @@ const footerLinks = [
 
 export function Footer() {
   const pathname = usePathname();
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname.startsWith("/lab")) return null;
 
   return (
     <footer data-testid="site-footer" className="relative border-t border-bone/[0.08] bg-ink">
