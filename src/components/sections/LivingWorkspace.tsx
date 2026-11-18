@@ -10,7 +10,7 @@ import { EmailReveal } from "@/components/ui/EmailReveal";
 import { StudyVault } from "@/components/vault/StudyVault";
 import { advanceProgress, COMPASS_READY, readProgress } from "@/components/vault/progress";
 import { useVaultAudio } from "@/components/vault/useVaultAudio";
-import { BookFlight, Hardcover, shelfBooks, type ShelfBookId } from "@/components/books/StudyHardcover";
+import { BookFlight, StackedBinding, shelfBooks, type ShelfBookId } from "@/components/books/StudyHardcover";
 import bookStyles from "@/components/books/studyBooks.module.css";
 import { BankersLampControl } from "@/components/ui/BankersLampControl";
 
@@ -80,17 +80,6 @@ const whyHenryIllustrations = [
     title: "The First Stone Marker",
     caption: "The first piece of a mystery that keeps getting larger.",
   },
-];
-
-const memoirThemes = [
-  "Growing up",
-  "Family",
-  "Relationships",
-  "Fatherhood",
-  "Work",
-  "Sacrifice",
-  "Financial struggle",
-  "Dreams",
 ];
 
 const philosophySteps = [
@@ -264,11 +253,11 @@ export function LivingWorkspace() {
   const handleOpenDigitalBook = useCallback((bookId: ShelfBookId) => {
     if (bookStage !== "shelved") return;
     const button = bookId === "why-henry" ? whyHenryBookRef.current : dreamPayoffBookRef.current;
-    const bounds = button?.getBoundingClientRect();
+    const bounds = button?.querySelector("[data-stack-spine]")?.getBoundingClientRect();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setActiveModal(null);
     setActiveShelfBook(bookId);
-    setBookOrigin(bounds ? new DOMRect(bounds.left + bounds.width * .09, bounds.top, bounds.width * .82, bounds.height) : null);
+    setBookOrigin(bounds ?? null);
     setBookStage(bounds && !reduced ? "opening" : "open");
   }, [bookStage]);
 
@@ -476,17 +465,19 @@ export function LivingWorkspace() {
           >
           </button>
 
+          <div className={bookStyles.shelfBack} data-lit={lampOn} aria-hidden="true" />
           {(["why-henry", "dream-payoff"] as const).map((bookId) => {
             const book = shelfBooks[bookId];
             const out = isBookOut && activeShelfBook === bookId;
             return (
-              <div key={bookId} className={bookStyles.slot} style={book.slot}>
+              <div key={bookId} className={bookStyles.slot} data-book={bookId} style={book.slot}>
                 <button
                   ref={bookId === "why-henry" ? whyHenryBookRef : dreamPayoffBookRef}
                   type="button"
                   data-testid={`${bookId}-shelf-book`}
                   data-book={bookId}
                   data-out={out}
+                  data-shift={isBookOut && activeShelfBook === "dream-payoff" && bookId === "why-henry"}
                   className={bookStyles.shelfBook}
                   aria-haspopup="dialog"
                   aria-expanded={out}
@@ -497,7 +488,7 @@ export function LivingWorkspace() {
                   onFocus={() => setHovered(bookId)}
                   onBlur={() => setHovered(null)}
                 >
-                  <Hardcover book={bookId} />
+                  <StackedBinding book={bookId} topVisible={bookId === "why-henry" || (isBookOut && activeShelfBook === "why-henry")} />
                 </button>
               </div>
             );
@@ -771,315 +762,66 @@ export function LivingWorkspace() {
             <BookFlight book={activeShelfBook} origin={bookOrigin} reader={bookReaderRef} onOpened={() => setBookStage("open")} />
           )}
           <div className={bookStyles.readerLayout}>
-            <div ref={bookReaderRef} data-testid="shelf-digital-reader" className={bookStyles.reader}
+            <div data-testid="shelf-digital-reader" className={bookStyles.reader}
               data-opening={bookStage === "opening"} inert={bookStage === "opening"}>
-              <div className={`${bookStyles.spread} grid grid-cols-1 gap-0 sm:grid-cols-2`}>
-              {activeShelfBook === "why-henry" ? (
-                <>
-                  {/* ── WHY HENRY: LEFT OPEN PAGE (COVER PLATE & BRIAR GLEN ILLUSTRATION GALLERY) ── */}
-                  <div
-                    data-testid="why-henry-left-page"
-                    className={`relative flex flex-col justify-between overflow-hidden rounded-t-[6px] border border-[#b89b72]/45 bg-gradient-to-br from-[#f3ead8] via-[#eadbc0] to-[#dcc69e] p-5 text-[#22170d] shadow-[inset_-18px_0_32px_rgba(68,42,18,0.22)] transition-all duration-500 sm:p-7 md:rounded-l-[6px] md:rounded-tr-none ${
-                      bookStage === "open" || bookStage === "opening"
-                        ? "translate-y-0 opacity-100"
-                        : "pointer-events-none translate-y-2 opacity-0"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between border-b border-[#8a683c]/30 pb-2.5">
-                      <span className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-[#7a4b19]">
-                        {whyHenry.details[0].value}
-                      </span>
-                      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#6e4e28]">
-                        By {site.founder.name}
-                      </span>
+              <nav className={bookStyles.readerTools} aria-label="Book controls">
+                <button ref={closeBookBtnRef} type="button" data-testid={`${activeShelfBook}-return-shelf-btn`}
+                  onClick={handleReturnShelfBook}>← Return to Shelf</button>
+                {activeShelfBook === "dream-payoff" && (
+                  <button type="button" data-testid="dream-payoff-follow-updates-btn" onClick={() => {
+                    setBookStage("shelved");
+                    openRoomModal("notebook");
+                  }}>Author&apos;s Journal</button>
+                )}
+                <a href={(activeShelfBook === "why-henry" ? whyHenry : memoir).links[0].href}
+                  data-testid={activeShelfBook === "why-henry" ? "why-henry-modal-amazon-link" : "dream-payoff-author-amazon-link"}
+                  target="_blank" rel="noopener noreferrer">
+                  Buy on Amazon <ExternalArrow className="h-3.5 w-3.5" />
+                </a>
+              </nav>
+              <div ref={bookReaderRef} className={bookStyles.spread}>
+                <div className={`${bookStyles.paper} ${bookStyles.platePage}`}
+                  data-testid={`${activeShelfBook}-left-page`}>
+                  <figure>
+                    <div className={bookStyles.illustration}>
+                      <Image
+                        src={activeShelfBook === "why-henry" ? whyHenryIllustrations[henryArtIdx].src : "/media/memoir/artwork.webp"}
+                        alt={activeShelfBook === "why-henry" ? whyHenryIllustrations[henryArtIdx].title : "Artwork for The Dream of the Payoff"}
+                        fill sizes="(max-width: 639px) 82vw, 390px"
+                      />
                     </div>
-
-                    <div className="my-4 grid grid-cols-12 items-center gap-4">
-                      <div className="col-span-5">
-                        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[4px] border border-[#6e4c24]/45 bg-[#0d0a08] shadow-[6px_10px_22px_rgba(0,0,0,0.55)]">
-                          <Image
-                            src="/media/why-henry/cover-user.jpg"
-                            alt="Cover of The Unwritten Journey — Book One: Why Henry?"
-                            fill
-                            sizes="180px"
-                            className="object-contain"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="col-span-7 flex flex-col gap-2.5">
-                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[4px] border border-[#8a683c]/40 bg-[#140e09] shadow-md">
-                          <Image
-                            src={whyHenryIllustrations[henryArtIdx].src}
-                            alt={whyHenryIllustrations[henryArtIdx].title}
-                            fill
-                            sizes="240px"
-                            className="object-cover"
-                          />
-                        </div>
-                        <div>
-                          <p className="font-display text-base font-semibold text-[#24160a]">
-                            {whyHenryIllustrations[henryArtIdx].title}
-                          </p>
-                          <p className="text-xs leading-snug text-[#4d351e]">
-                            {whyHenryIllustrations[henryArtIdx].caption}
-                          </p>
-                        </div>
-                        {/* In-Book Illustration Plate Selector */}
-                        <div className="flex flex-wrap gap-1 pt-0.5">
-                          {whyHenryIllustrations.map((ill, idx) => (
-                            <button
-                              key={ill.src}
-                              type="button"
-                              onClick={() => setHenryArtIdx(idx)}
-                              className={`cursor-pointer rounded px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-wider transition-colors ${
-                                henryArtIdx === idx
-                                  ? "bg-[#26170b] text-[#f3ead8]"
-                                  : "bg-[#8a683c]/15 text-[#5c3e1e] hover:bg-[#8a683c]/30"
-                              }`}
-                            >
-                              Plate 0{idx + 1}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                    <figcaption className={bookStyles.caption}>
+                      <strong>{activeShelfBook === "why-henry" ? whyHenryIllustrations[henryArtIdx].title : memoir.title}</strong>
+                      <span>{activeShelfBook === "why-henry" ? whyHenryIllustrations[henryArtIdx].caption : memoir.tagline}</span>
+                    </figcaption>
+                  </figure>
+                  {activeShelfBook === "why-henry" && (
+                    <div className={bookStyles.plateIndex} role="group" aria-label="Illustration plates">
+                      {whyHenryIllustrations.map((plate, index) => (
+                        <button key={plate.src} type="button" aria-label={`Plate 0${index + 1}`}
+                          aria-pressed={henryArtIdx === index} onClick={() => setHenryArtIdx(index)}>
+                          {["I", "II", "III", "IV"][index]}
+                        </button>
+                      ))}
                     </div>
-
-                    <div className="flex items-center justify-between border-t border-[#8a683c]/30 pt-2.5 text-xs text-[#5c4022]">
-                      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em]">
-                        Six Stone Markers · Briar Glen
-                      </span>
-                      <div aria-hidden="true" className="flex items-end gap-1">
-                        {[10, 15, 9, 17, 12, 14].map((h, i) => (
-                          <span
-                            key={i}
-                            style={{ height: h }}
-                            className="block w-1.5 rounded-t-full bg-gradient-to-t from-[#6e441b] to-[#c98a38]"
-                          />
-                        ))}
-                      </div>
-                    </div>
+                  )}
+                  <span className={bookStyles.folio} aria-hidden="true">1</span>
+                </div>
+                <section className={`${bookStyles.paper} ${bookStyles.textPage}`}
+                  data-testid={`${activeShelfBook}-right-page`} aria-labelledby="shelf-open-book-title">
+                  <header className={bookStyles.printTitle}>
+                    <p>{activeShelfBook === "why-henry" ? whyHenry.title : "A Memoir"}</p>
+                    <h2 id="shelf-open-book-title">{shelfBooks[activeShelfBook].title}</h2>
+                    <p>Javier Huertas</p>
+                  </header>
+                  <div className={bookStyles.printBody}>
+                    <h3>About the book</h3>
+                    {(activeShelfBook === "why-henry" ? whyHenry.description.slice(0, 2) : memoir.description).map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
                   </div>
-
-                  {/* ── WHY HENRY: RIGHT OPEN PAGE (TITLE, OFFICIAL SYNOPSIS & AMAZON ACTION) ── */}
-                  <div
-                    data-testid="why-henry-right-page"
-                    className="relative order-first flex min-w-0 flex-col justify-between overflow-visible rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:order-none sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
-                  >
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-y-0 left-0 hidden w-5 bg-gradient-to-r from-[#2e1b0c]/30 via-[#2e1b0c]/10 to-transparent md:block"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute top-0 left-3 hidden h-16 w-2 bg-gradient-to-b from-[#962318] to-[#69150d] shadow-md md:block"
-                    />
-
-                    <div className="flex items-center justify-between gap-2 border-b border-[#8a683c]/30 pb-2.5">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#8a5a24]/35 bg-[#8a5a24]/10 px-2.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-[#7a4b19]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#b85d19]" />
-                        DIGITAL READER · {whyHenry.details[1].value}
-                      </span>
-
-                      <button
-                        ref={closeBookBtnRef}
-                        type="button"
-                        data-testid="why-henry-return-shelf-btn"
-                        onClick={handleReturnShelfBook}
-                        className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#5c3d1e]/40 bg-[#26170b] px-3 py-1 font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-[#f3ead8] shadow-sm transition-colors hover:bg-[#3d2512]"
-                      >
-                        ← Return to Shelf
-                      </button>
-                    </div>
-
-                    <div className="my-3.5 space-y-2.5">
-                      <p className="font-mono text-[0.64rem] uppercase tracking-[0.26em] text-[#7a4b19]">
-                        {whyHenry.title}
-                      </p>
-                      <h2
-                        id="shelf-open-book-title"
-                        className="font-display text-3xl leading-[0.98] text-[#170f07] sm:text-4xl"
-                      >
-                        {whyHenry.subtitle}
-                      </h2>
-
-                      <div className="space-y-2 pt-1 text-sm leading-relaxed text-[#382716] sm:text-[0.92rem]">
-                        {whyHenry.description.slice(0, 2).map((para, idx) => (
-                          <p
-                            key={idx}
-                            className={idx === 0 ? "font-display text-lg italic text-[#593818]" : ""}
-                          >
-                            {para}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#8a683c]/30 pt-3.5">
-                      <a
-                        href={links.amazonWhyHenry}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid="why-henry-modal-amazon-link"
-                        className="inline-flex items-center gap-2 rounded-full bg-[#1c1209] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#f5dfb2] shadow-md transition-colors hover:bg-[#332010]"
-                      >
-                        Buy on Amazon <ExternalArrow className="h-3.5 w-3.5" />
-                      </a>
-                      <span className="font-display text-sm italic text-[#5c4022]">
-                        “{whyHenry.tagline}”
-                      </span>
-                    </div>
-
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* ── THE DREAM OF THE PAYOFF: LEFT OPEN PAGE (OFFICIAL PUBLISHED COVER & ARTWORK) ── */}
-                  <div
-                    data-testid="dream-payoff-left-page"
-                    className={`relative flex flex-col justify-between overflow-hidden rounded-t-[6px] border border-[#b89b72]/45 bg-gradient-to-br from-[#f3ead8] via-[#eadbc0] to-[#dcc69e] p-5 text-[#22170d] shadow-[inset_-18px_0_32px_rgba(68,42,18,0.22)] transition-all duration-500 sm:p-7 md:rounded-l-[6px] md:rounded-tr-none ${
-                      bookStage === "open" || bookStage === "opening"
-                        ? "translate-y-0 opacity-100"
-                        : "pointer-events-none translate-y-2 opacity-0"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between border-b border-[#8a683c]/30 pb-2.5">
-                      <span className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-[#7a4b19]">
-                        {memoir.details[0].value}
-                      </span>
-                      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[#6e4e28]">
-                        By {site.founder.name}
-                      </span>
-                    </div>
-
-                    <div className="my-4 grid grid-cols-12 items-center gap-4">
-                      <div className="col-span-5">
-                        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[4px] border border-[#6e4c24]/45 bg-[#120d09] shadow-[6px_10px_22px_rgba(0,0,0,0.55)]">
-                          <Image
-                            src="/media/memoir/dream-payoff-cover.svg"
-                            alt="Cover of The Dream of the Payoff by Javier Huertas"
-                            fill
-                            sizes="180px"
-                            className="object-cover"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="col-span-7 flex flex-col gap-3">
-                        <div className="relative aspect-[3/2] w-full overflow-hidden rounded-[4px] border border-[#8a683c]/40 bg-[#140e09] shadow-md">
-                          <Image
-                            src="/media/memoir/artwork.webp"
-                            alt="Artwork for The Dream of the Payoff"
-                            fill
-                            sizes="240px"
-                            className="object-cover"
-                          />
-                        </div>
-                        <p className="font-display text-base italic leading-snug text-[#3d2814] sm:text-lg">
-                          “{memoir.tagline}”
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {memoirThemes.map((t) => (
-                            <span
-                              key={t}
-                              className="rounded-full border border-[#8a683c]/35 bg-[#8a683c]/10 px-2 py-0.5 text-[0.62rem] text-[#4a3319]"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-[#8a683c]/30 pt-2.5 text-xs text-[#5c4022]">
-                      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em]">
-                        Published Memoir · Non-Fiction
-                      </span>
-                      <span className="font-display italic">A true story.</span>
-                    </div>
-                  </div>
-
-                  {/* ── THE DREAM OF THE PAYOFF: RIGHT OPEN PAGE (DESCRIPTION & VERIFIED PURCHASE LINK) ── */}
-                  <div
-                    data-testid="dream-payoff-right-page"
-                    className="relative order-first flex min-w-0 flex-col justify-between overflow-visible rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:order-none sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
-                  >
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-y-0 left-0 hidden w-5 bg-gradient-to-r from-[#2e1b0c]/30 via-[#2e1b0c]/10 to-transparent md:block"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute top-0 left-3 hidden h-16 w-2 bg-gradient-to-b from-[#962318] to-[#69150d] shadow-md md:block"
-                    />
-
-                    <div className="flex items-center justify-between gap-2 border-b border-[#8a683c]/30 pb-2.5">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#8a5a24]/35 bg-[#8a5a24]/10 px-2.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-[#7a4b19]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#b85d19]" />
-                        {memoir.statusLabel} · {memoir.details[0].value}
-                      </span>
-
-                      <button
-                        ref={closeBookBtnRef}
-                        type="button"
-                        data-testid="dream-payoff-return-shelf-btn"
-                        onClick={handleReturnShelfBook}
-                        className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[#5c3d1e]/40 bg-[#26170b] px-3 py-1 font-mono text-[0.62rem] font-medium uppercase tracking-[0.16em] text-[#f3ead8] shadow-sm transition-colors hover:bg-[#3d2512]"
-                      >
-                        ← Return to Shelf
-                      </button>
-                    </div>
-
-                    <div className="my-3.5 space-y-2.5">
-                      <p className="font-mono text-[0.64rem] uppercase tracking-[0.26em] text-[#7a4b19]">
-                        Published Book by {site.founder.name}
-                      </p>
-                      <h2
-                        id="shelf-open-book-title"
-                        className="font-display text-3xl leading-[0.98] text-[#170f07] sm:text-4xl"
-                      >
-                        {memoir.title}
-                      </h2>
-
-                      <div className="space-y-2.5 pt-1 text-sm leading-relaxed text-[#382716] sm:text-[0.92rem]">
-                        {memoir.description.map((para, idx) => (
-                          <p
-                            key={idx}
-                            className={idx === 2 ? "font-display text-lg italic text-[#593818]" : ""}
-                          >
-                            {para}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-[#8a683c]/30 pt-3.5">
-                      <a
-                        href={links.amazonWhyHenry}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid="dream-payoff-author-amazon-link"
-                        className="inline-flex items-center gap-2 rounded-full bg-[#1c1209] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#f5dfb2] shadow-md transition-colors hover:bg-[#332010]"
-                      >
-                        Buy on Amazon <ExternalArrow className="h-3.5 w-3.5" />
-                      </a>
-
-                      <button
-                        type="button"
-                        data-testid="dream-payoff-follow-updates-btn"
-                        onClick={() => {
-                          setBookStage("shelved");
-                          openRoomModal("notebook");
-                        }}
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#5c3d1e]/45 bg-[#efe2c8] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#24170b] transition-colors hover:bg-[#e3d0ad]"
-                      >
-                        Read Author&apos;s Journal →
-                      </button>
-                    </div>
-
-                  </div>
-                </>
-              )}
+                  <span className={bookStyles.folio} aria-hidden="true">2</span>
+                </section>
               </div>
             </div>
           </div>

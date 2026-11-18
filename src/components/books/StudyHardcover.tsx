@@ -8,34 +8,50 @@ export const shelfBooks = {
   "why-henry": {
     title: "Why Henry?",
     cover: "/media/why-henry/cover-user.jpg",
-    slot: { left: "59%", top: "21.4%", width: "9.3%", height: "20.2%" },
+    slot: { left: "60.6%", width: "18%", height: "12%" },
   },
   "dream-payoff": {
     title: "The Dream of the Payoff",
     cover: "/media/memoir/dream-payoff-cover.svg",
-    slot: { left: "71.1%", top: "20.5%", width: "9.4%", height: "20.9%" },
+    slot: { left: "60%", width: "19.1%", height: "5.2%" },
   },
 } as const;
 
 export type ShelfBookId = keyof typeof shelfBooks;
 
-export function Hardcover({ book, flight = false }: { book: ShelfBookId; flight?: boolean }) {
+export function StackedBinding({ book, topVisible }: { book: ShelfBookId; topVisible: boolean }) {
+  return (
+    <span className={styles.stackedBinding} data-book={book} aria-hidden="true">
+      {topVisible && (
+        <span className={styles.stackBoard}>
+          <Image src={shelfBooks[book].cover} alt="" fill priority
+            sizes="(max-width: 640px) 19vw, 290px" />
+        </span>
+      )}
+      <span className={styles.stackSpine} data-stack-spine>
+        <span>{shelfBooks[book].title}</span>
+      </span>
+      <span className={styles.stackForeEdge} />
+    </span>
+  );
+}
+
+function Hardcover({ book }: { book: ShelfBookId }) {
   return (
     <span className={styles.hardcover} data-book={book} aria-hidden="true">
       <span className={styles.backBoard} />
-      <span className={styles.spine} />
+      <span className={styles.spine}><span>{shelfBooks[book].title}</span></span>
       <span className={styles.pageBlock}>
         <span className={styles.pageTop} />
         <span className={styles.pageSide} />
         <span className={styles.pageBottom} />
       </span>
-      {flight && <span className={styles.turningLeaf} />}
+      <span className={styles.turningLeaf} />
       <span className={styles.coverHinge}>
         <span className={styles.coverFront}>
-          <Image src={shelfBooks[book].cover} alt="" fill priority={!flight}
-            sizes={flight ? "(max-width: 640px) 45vw, 420px" : "(max-width: 640px) 12vw, 165px"} />
+          <Image src={shelfBooks[book].cover} alt="" fill sizes="(max-width: 640px) 45vw, 420px" />
         </span>
-        {flight && <span className={styles.endpaper} />}
+        <span className={styles.endpaper} />
       </span>
     </span>
   );
@@ -56,8 +72,9 @@ export function BookFlight({ book, origin, reader, onOpened }: {
     const height = width * 1.5;
     const x = (window.innerWidth - width) / 2;
     const y = (window.innerHeight - height) / 2;
-    const startX = origin.left - x;
-    const startY = origin.top - y;
+    const shelfScale = origin.width / height;
+    const startX = origin.left + origin.width / 2 - width * shelfScale / 2 - x;
+    const startY = origin.top + origin.height / 2 - height * shelfScale / 2 - y;
     const css = element.style;
     css.setProperty("--book-width", `${width}px`);
     css.setProperty("--book-height", `${height}px`);
@@ -65,8 +82,7 @@ export function BookFlight({ book, origin, reader, onOpened }: {
     css.setProperty("--book-top", `${y}px`);
     css.setProperty("--shelf-x", `${startX}px`);
     css.setProperty("--shelf-y", `${startY}px`);
-    css.setProperty("--shelf-scale-x", String(origin.width / width));
-    css.setProperty("--shelf-scale-y", String(origin.height / height));
+    css.setProperty("--shelf-scale", String(shelfScale));
     css.setProperty("--spread-shift", `${width / 2}px`);
 
     // The modal lays out its accessible reader after opening the native dialog.
@@ -88,7 +104,7 @@ export function BookFlight({ book, origin, reader, onOpened }: {
       <div className={styles.flightBook}
         onAnimationEnd={(event) => { if (event.target === event.currentTarget) onOpened(); }}
         style={{ "--lift": `${Math.max(5, origin.height * .095)}px` } as CSSProperties}>
-        <div className={styles.bookOrientation}><Hardcover book={book} flight /></div>
+        <div className={styles.bookOrientation}><Hardcover book={book} /></div>
       </div>
     </div>
   );
