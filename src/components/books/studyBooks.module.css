@@ -82,32 +82,20 @@
   right: 8%;
   bottom: calc(var(--spine-height) - 1px);
   height: clamp(10px, 3vw, 39px);
-  container-type: size;
-  background: var(--board);
   clip-path: polygon(0 100%, 10% 3%, 16% 0, 89% 1%, 92% 7%, 100% 100%);
+  background:
+    radial-gradient(ellipse at 1% 100%, #c6975d77, transparent 17%),
+    radial-gradient(ellipse at 97% 94%, #ba8a555e, transparent 16%),
+    var(--cover-fibers) 11px 0 / 120px,
+    linear-gradient(175deg, var(--binding), var(--board) 58%, var(--board) 95%, var(--board-rim));
 }
-
-/* The portrait cover lies flat, with its binding along the near edge. */
-.stackPrint {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100cqh;
-  height: 100cqw;
-  transform: translate(-50%, -50%) rotate(-90deg);
-}
-
-.stackPrint img { object-fit: fill; filter: brightness(.62) saturate(.64); }
 
 .stackBoard::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 0 100%, #d4a76a9c, transparent 14%),
-    radial-gradient(ellipse at 100% 100%, #ddad724d, transparent 17%),
-    var(--cover-fibers) 0 0 / 100px,
-    linear-gradient(178deg, #1009, transparent 36%, #2a1a1638 86%, #f7cd8b60);
+  inset: 13% 9% 16%;
+  clip-path: polygon(0 100%, 8% 0, 93% 0, 100% 100%, 0 100%, 1.8% 92%, 98% 92%, 92.3% 9%, 9% 9%, 1.8% 92%, 0 100%);
+  background: color-mix(in srgb, var(--board-rim) 55%, transparent);
 }
 
 .stackSpine, .stackEndcap {

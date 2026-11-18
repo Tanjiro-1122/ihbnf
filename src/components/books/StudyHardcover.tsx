@@ -22,14 +22,7 @@ export type ShelfBookId = keyof typeof shelfBooks;
 export function StackedBinding({ book, topVisible }: { book: ShelfBookId; topVisible: boolean }) {
   return (
     <span className={styles.stackedBinding} data-book={book} aria-hidden="true">
-      {topVisible && (
-        <span className={styles.stackBoard}>
-          <span className={styles.stackPrint}>
-            <Image src={shelfBooks[book].cover} alt="" fill priority
-              sizes="(max-width: 640px) 19vw, 290px" />
-          </span>
-        </span>
-      )}
+      {topVisible && <span className={styles.stackBoard} />}
       <span className={styles.stackSpine} data-stack-spine>
         <span>{shelfBooks[book].title}</span>
       </span>
