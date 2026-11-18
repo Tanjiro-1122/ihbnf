@@ -30,7 +30,7 @@ type HoveredItem =
  * - "closing-cover": Front cover & pages fold shut back into a closed 3D hardcover
  * - "returning": Book slides back into its exact walnut shelf position
  */
-type BookStage = "shelved" | "extracting" | "floating" | "opening" | "open" | "closing-cover" | "returning";
+type BookStage = "shelved" | "lifting" | "extracting" | "floating" | "opening" | "open" | "closing-cover" | "returning";
 type ShelfBookId = "why-henry" | "dream-payoff";
 
 /**
@@ -246,26 +246,27 @@ export function LivingWorkspace() {
       setActiveShelfBook(bookId);
       computeShelfDelta(bookId);
       setExtractStarted(false);
-      setBookStage("extracting");
+      setBookStage("lifting");
       playBookSound("pull", 0.8);
 
       const rafId = window.setTimeout(() => {
         setExtractStarted(true);
       }, 25);
 
-      // Let the CLOSED book visibly travel out of its shelf slot before
-      // opening. The original 620ms sequence opened while it was still flying.
-      const floatTimer = window.setTimeout(() => setBookStage("floating"), 1150);
+      // Lift the still-closed physical book forward and upward FIRST.
+      // Then fly to the reader, hover, and only THEN open its front cover.
+      const travelTimer = window.setTimeout(() => setBookStage("extracting"), 400);
+      const floatTimer = window.setTimeout(() => setBookStage("floating"), 1470);
       const openingTimer = window.setTimeout(() => {
         setBookStage("opening");
         playBookSound("creak", 0.62);
-      }, 1670);
-      const rustleTimer = window.setTimeout(() => playBookSound("rustle", 0.48), 2030);
+      }, 1990);
+      const rustleTimer = window.setTimeout(() => playBookSound("rustle", 0.48), 2340);
       const openedTimer = window.setTimeout(() => {
         setBookStage("open");
         closeBookBtnRef.current?.focus({ preventScroll: true });
-      }, 2570);
-      stageTimersRef.current.push(rafId, floatTimer, openingTimer, rustleTimer, openedTimer);
+      }, 2950);
+      stageTimersRef.current.push(rafId, travelTimer, floatTimer, openingTimer, rustleTimer, openedTimer);
     },
     [bookStage, clearStageTimers, computeShelfDelta, playBookSound],
   );
@@ -960,7 +961,7 @@ export function LivingWorkspace() {
             data-testid="why-henry-stage-backdrop"
             onClick={handleReturnShelfBook}
             className={`fixed inset-0 bg-[#050302]/68 backdrop-blur-[4px] transition-opacity duration-500 ${
-              bookStage !== "returning" ? "opacity-100" : "opacity-0"
+              bookStage === "lifting" || bookStage === "returning" ? "opacity-0" : "opacity-100"
             }`}
           />
 
@@ -970,16 +971,20 @@ export function LivingWorkspace() {
             style={{
               perspective: "2000px",
               transform:
-                bookStage === "returning" || (bookStage === "extracting" && !extractStarted)
+                bookStage === "returning" || (bookStage === "lifting" && !extractStarted)
                   ? `translate3d(${flightDelta.dx}px, ${flightDelta.dy}px, -260px) scale(${flightDelta.scale}) rotateY(-18deg) rotateZ(-3deg)`
+                  : bookStage === "lifting"
+                    ? `translate3d(${flightDelta.dx}px, ${flightDelta.dy - 32}px, -90px) scale(${(flightDelta.scale * 1.09).toFixed(3)}) rotateY(-13deg) rotateZ(-1deg)`
                   : bookStage === "extracting"
                     ? "translate3d(0px, -28px, 0px) scale(0.90) rotateX(9deg) rotateY(-12deg) rotateZ(2deg)"
                     : bookStage === "floating"
                       ? "translate3d(0px, -18px, 25px) scale(0.92) rotateX(2deg) rotateY(-5deg) rotateZ(-1deg)"
                       : "translate3d(0px, 0px, 0px) scale(1) rotateX(2deg) rotateY(0deg)",
               transition:
-                bookStage === "extracting"
-                  ? "transform 1100ms cubic-bezier(0.16, 1, 0.30, 1), opacity 900ms ease"
+                bookStage === "lifting"
+                  ? "transform 340ms cubic-bezier(0.18, 0.7, 0.25, 1)"
+                  : bookStage === "extracting"
+                  ? "transform 1000ms cubic-bezier(0.16, 1, 0.30, 1), opacity 900ms ease"
                   : bookStage === "returning"
                     ? "transform 1100ms cubic-bezier(0.38, 0, 0.65, 1), opacity 900ms ease"
                     : "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
