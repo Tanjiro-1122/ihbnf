@@ -46,6 +46,8 @@ export function Header() {
     return () => window.removeEventListener("resize", update);
   }, [active, isHome]);
 
+  if (isHome) return null;
+
   const solid = scrolled && !open;
 
   return (
