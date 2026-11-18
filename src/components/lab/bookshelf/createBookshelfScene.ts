@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { ShelfBookId } from "@/components/books/StudyHardcover";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 const books = [
@@ -203,9 +204,15 @@ function addShadow(scene: THREE.Scene, map: THREE.Texture, width: number, depth:
   plane.rotation.x = -Math.PI / 2;
   plane.position.set(x, y, z);
   scene.add(plane);
+  return plane;
 }
 
-export async function createBookshelfScene(host: HTMLElement, ready: () => void, registerCleanup: (fn: () => void) => void) {
+export async function createBookshelfScene(
+  host: HTMLElement,
+  ready: () => void,
+  registerCleanup: (fn: () => void) => void,
+  registerUpdate?: (update: (selected: ShelfBookId | null, lit: boolean) => void) => void,
+) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0, 0);
@@ -213,7 +220,7 @@ export async function createBookshelfScene(host: HTMLElement, ready: () => void,
   renderer.toneMappingExposure = 1.28;
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .1, 50);
-  camera.position.set(1.55, 3.45, 10);
+  camera.position.set(registerUpdate ? 2.24 : 1.55, 3.45, 10);
   camera.lookAt(.04, .32, 0);
   camera.updateMatrixWorld();
 
@@ -257,7 +264,7 @@ export async function createBookshelfScene(host: HTMLElement, ready: () => void,
 
     const shadow = shadowMap();
     addShadow(scene, shadow, 3.97, 2.81, .9, -.09, -.004, .03);
-    addShadow(scene, shadow, 3.38, 2.27, .52, .048, books[0].thickness + .0005, .005);
+    const between = addShadow(scene, shadow, 3.38, 2.27, .52, .048, books[0].thickness + .0005, .005);
 
     scene.add(new THREE.HemisphereLight("#ffd5a4", "#59392b", 1.22));
     const key = new THREE.DirectionalLight("#ffe0ba", 2.2);
@@ -294,6 +301,15 @@ export async function createBookshelfScene(host: HTMLElement, ready: () => void,
       renderer.setSize(w, h, false);
       renderer.render(scene, camera);
     }
+
+    registerUpdate?.((selected, lit) => {
+      lower.visible = selected !== "dream-payoff";
+      upper.visible = selected !== "why-henry";
+      upper.position.y = lower.visible ? books[0].thickness : 0;
+      between.visible = lower.visible && upper.visible;
+      renderer.toneMappingExposure = lit ? 1.28 : 1.14;
+      render();
+    });
 
     observer = new ResizeObserver(render);
     observer.observe(host);

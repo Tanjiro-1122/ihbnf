@@ -37,7 +37,7 @@ export function BookshelfLab() {
   return (
     <section aria-label="Static hardcover stack preview" data-bookshelf-status={status} className={styles.lab}>
       <div ref={study} className={styles.study} inert>
-        <LivingWorkspace />
+        <LivingWorkspace previewBooks />
         {shelf && createPortal(<div ref={canvasHost} className={styles.models} aria-hidden="true" />, shelf)}
       </div>
       <p className="sr-only" role="status">

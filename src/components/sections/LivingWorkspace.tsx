@@ -11,6 +11,7 @@ import { StudyVault } from "@/components/vault/StudyVault";
 import { advanceProgress, COMPASS_READY, readProgress } from "@/components/vault/progress";
 import { useVaultAudio } from "@/components/vault/useVaultAudio";
 import { BookFlight, StackedBinding, shelfBooks, type ShelfBookId } from "@/components/books/StudyHardcover";
+import { StaticShelfBooks } from "@/components/books/StaticShelfBooks";
 import bookStyles from "@/components/books/studyBooks.module.css";
 import { BankersLampControl } from "@/components/ui/BankersLampControl";
 
@@ -190,7 +191,7 @@ function StudyObjectHighlight({
   );
 }
 
-export function LivingWorkspace() {
+export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boolean } = {}) {
   const whyHenry = getProject("why-henry")!;
   const memoir = getProject("the-dream-of-the-payoff")!;
   const unfiltr = getProject("unfiltr")!;
@@ -466,6 +467,7 @@ export function LivingWorkspace() {
           </button>
 
           <div className={bookStyles.shelfBack} data-lit={lampOn} aria-hidden="true" />
+          {!previewBooks && <StaticShelfBooks selected={isBookOut ? activeShelfBook : null} lampOn={lampOn} />}
           {(["why-henry", "dream-payoff"] as const).map((bookId) => {
             const book = shelfBooks[bookId];
             const out = isBookOut && activeShelfBook === bookId;
