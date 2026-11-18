@@ -631,8 +631,13 @@ export function MagicalBookLab() {
     function getOpenCenterPose() {
       const vH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
       const vW = vH * camera.aspect;
-      // When open, total spread width is 2 * coverW (~4.04 units)
-      const maxSpreadScaleW = (vW * 0.78) / (coverW * 2.15);
+      // Scale to the actual visible browser viewport width so the 2-page spread fits even on narrow 390px mobile screens
+      const visibleRatio =
+        typeof window !== "undefined" && mount
+          ? Math.min(1, window.innerWidth / Math.max(1, mount.clientWidth))
+          : 1;
+      const effectiveVW = vW * visibleRatio;
+      const maxSpreadScaleW = (effectiveVW * 0.86) / (coverW * 2.12);
       const maxSpreadScaleH = (vH * 0.74) / coverH;
       const openScale = Math.min(1.12, maxSpreadScaleW, maxSpreadScaleH);
       return {
