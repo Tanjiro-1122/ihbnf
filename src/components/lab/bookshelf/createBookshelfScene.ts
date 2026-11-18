@@ -7,11 +7,11 @@ const books = [
     title: "The Dream of the Payoff",
     author: "JAVIER HUERTAS",
     cover: "/media/memoir/dream-payoff-cover.svg",
-    tone: "#563621",
-    edge: "#795538",
-    foil: "#dfbe82",
+    tone: "#441a17",
+    edge: "#753c2a",
+    foil: "#ffd792",
     width: 3.13,
-    thickness: .37,
+    thickness: .43,
     x: -.065,
     z: .009,
     yaw: .034,
@@ -21,11 +21,11 @@ const books = [
     series: "THE UNWRITTEN JOURNEY  ·  BOOK ONE",
     author: "JAVIER HUERTAS",
     cover: "/media/why-henry/cover-user.jpg",
-    tone: "#212d39",
-    edge: "#425265",
-    foil: "#e6cf9d",
+    tone: "#101c2a",
+    edge: "#344956",
+    foil: "#ffda96",
     width: 2.99,
-    thickness: .33,
+    thickness: .395,
     x: .065,
     z: -.025,
     yaw: .056,
@@ -85,25 +85,44 @@ function makeBinding(book: (typeof books)[number], spine: boolean) {
   grain(ctx, width, height, spine ? 21 : 13, 22);
 
   if (spine) {
-    ctx.strokeStyle = book.foil + "60";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(55, 18, width - 110, height - 36);
-    for (const x of [122, width - 124]) {
-      ctx.fillStyle = book.foil + "77";
-      ctx.fillRect(x, 27, 2, height - 54);
-      ctx.fillRect(x + 7, 27, 1, height - 54);
+    for (const end of [1, -1]) {
+      const x = end === 1 ? 103 : width - 103;
+      ctx.save();
+      ctx.translate(x, height / 2);
+      ctx.scale(end, 1);
+      ctx.strokeStyle = book.foil + "bb";
+      ctx.fillStyle = book.foil;
+      ctx.lineWidth = 2;
+      for (const offset of [0, 9, 17]) {
+        ctx.beginPath();
+        ctx.moveTo(offset, -72);
+        ctx.quadraticCurveTo(offset - 4, 0, offset, 72);
+        ctx.stroke();
+      }
+      ctx.translate(55, 0);
+      ctx.beginPath();
+      ctx.moveTo(0, -22);
+      ctx.quadraticCurveTo(5, -5, 19, 0);
+      ctx.quadraticCurveTo(5, 5, 0, 22);
+      ctx.quadraticCurveTo(-5, 5, -19, 0);
+      ctx.quadraticCurveTo(-5, -5, 0, -22);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 3, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
     ctx.fillStyle = book.foil;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.shadowColor = "#170c08";
     ctx.shadowOffsetY = 1;
-    ctx.font = "72px Georgia";
-    ctx.fillText(book.title, width / 2, book.series ? 99 : 83, width - 320);
+    ctx.font = "92px Georgia";
+    ctx.fillText(book.title, width / 2, book.series ? 102 : 98, width - 385);
     ctx.font = "22px Georgia";
-    if (book.series) ctx.fillText(book.series, width / 2, 48, width - 300);
+    if (book.series) ctx.fillText(book.series, width / 2, 42, width - 330);
     ctx.font = "18px Georgia";
-    ctx.fillText(book.author, width / 2, book.series ? 141 : 132, width - 300);
+    ctx.fillText(book.author, width / 2, book.series ? 154 : 151, width - 300);
   }
   return texture(canvas);
 }
@@ -113,7 +132,7 @@ function makePaper(seed: number) {
   const height = 256;
   const { canvas, ctx } = surface(width, height);
   const rand = random(seed);
-  ctx.fillStyle = "#d8c8a6";
+  ctx.fillStyle = "#dcc098";
   ctx.fillRect(0, 0, width, height);
   for (let y = 2; y < height - 2; y += 1 + rand() * 2.3) {
     ctx.strokeStyle = rand() > .23 ? `rgba(73,48,25,${.09 + rand() * .19})` : "#f3e7cb";
@@ -165,7 +184,8 @@ function makeBook(book: (typeof books)[number], cover: THREE.Texture, relief: TH
   }
   const cloth = material(makeBinding(book, false), .88, .008);
   const art = material(cover, .68, .004);
-  const spine = material(makeBinding(book, true), .85, .006);
+  if (!book.series) art.color.set("#dfcebd");
+  const spine = material(makeBinding(book, true), .76, .006);
   const edges = material(makePaper(book.series ? 32 : 17), .98, .003);
   const endpaper = new THREE.MeshStandardMaterial({ color: "#d7c8aa", roughness: .98 });
   // RoundedBox uses the +X, -X, +Y, -Y, +Z, -Z material order.
@@ -220,7 +240,7 @@ export async function createBookshelfScene(
   renderer.toneMappingExposure = 1.28;
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .1, 50);
-  camera.position.set(registerUpdate ? 2.24 : 1.55, 3.45, 10);
+  camera.position.set(registerUpdate ? 3.25 : 1.55, 3.28, 10);
   camera.lookAt(.04, .32, 0);
   camera.updateMatrixWorld();
 
@@ -266,8 +286,8 @@ export async function createBookshelfScene(
     addShadow(scene, shadow, 3.97, 2.81, .9, -.09, -.004, .03);
     const between = addShadow(scene, shadow, 3.38, 2.27, .52, .048, books[0].thickness + .0005, .005);
 
-    scene.add(new THREE.HemisphereLight("#ffd5a4", "#59392b", 1.22));
-    const key = new THREE.DirectionalLight("#ffe0ba", 2.2);
+    scene.add(new THREE.HemisphereLight("#ffd2a0", "#522d20", 1.04));
+    const key = new THREE.DirectionalLight("#ffd6a8", 2.34);
     key.position.set(2.6, 4, 1.25);
     scene.add(key);
     const fill = new THREE.DirectionalLight("#d3ddfb", .57);
@@ -279,7 +299,7 @@ export async function createBookshelfScene(
     function render() {
       const { clientWidth: w, clientHeight: h } = host;
       if (!w || !h) return;
-      const halfWidth = 2.21;
+      const halfWidth = registerUpdate ? 2.29 : 2.21;
       const halfHeight = halfWidth * h / w;
       camera.left = -halfWidth;
       camera.right = halfWidth;
