@@ -16,7 +16,7 @@ type Props = {
  * - Separately animated physical brass beaded pull-chain + bottom brass acorn/ball aligned to the
  *   exact socket position under the green glass shade (`x = 25.55%, y = 45.4%` in the 16:9 study).
  * - Clicking/tapping pulls the chain & brass ball visibly downward (`+22px` travel), stretches the
- *   beaded chain links, fires `/media/audio/lamp-switch-click.wav` and toggles the room's lamp state
+ *   beaded chain links, fires `/media/audio/lamp-chain-approved.mp3` and toggles the room's lamp state
  *   at the exact lowest point of the pull (`175ms`), and retracts with a natural damped pendulum swing.
  */
 export function BankersLampControl({
@@ -47,7 +47,7 @@ export function BankersLampControl({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const audio = new Audio("/media/audio/lamp-switch-click.wav");
+    const audio = new Audio("/media/audio/lamp-chain-approved.mp3");
     audio.preload = "auto";
     clickAudioRef.current = audio;
     return () => {
