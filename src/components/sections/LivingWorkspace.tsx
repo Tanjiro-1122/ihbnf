@@ -23,11 +23,11 @@ type HoveredItem =
 /**
  * Five-stage state machine for the physical 3D book interactions on the shelf
  * (used by both "Why Henry?" and "The Dream of the Payoff"):
- * - "shelved": Sitting naturally on the walnut bookshelf
- * - "extracting": Sliding out of the shelf slot, moving forward with depth & rotating toward the viewer
+ * - "shelved": Sitting naturally in its carved walnut shelf niche
+ * - "extracting": Sliding out of the shelf niche, moving forward with depth & rotating toward the viewer
  * - "open": Front cover swings open (-165deg) & pages fan open to reveal the parchment spread
  * - "closing-cover": Front cover & pages fold shut back into a closed 3D hardcover
- * - "returning": Book slides back into its walnut shelf slot
+ * - "returning": Book slides back into its exact walnut shelf position
  */
 type BookStage = "shelved" | "extracting" | "open" | "closing-cover" | "returning";
 type ShelfBookId = "why-henry" | "dream-payoff";
@@ -45,25 +45,23 @@ type ActiveRoomModal =
   | "calendar"
   | "contact";
 
-const shelfLeftSpines = [
-  { title: "NOTES ON CRAFT", h: "h-[76%]", w: "w-[20px]", bg: "from-[#2d1d12] via-[#3e291a] to-[#1e120b]", band: "bg-[#c9a45c]/65" },
-  { title: "BRIAR GLEN LORE", h: "h-[84%]", w: "w-[24px]", bg: "from-[#1c2b22] via-[#263b2f] to-[#101a14]", band: "bg-[#d98c3f]/70" },
-  { title: "CHRONICLES I", h: "h-[79%]", w: "w-[18px]", bg: "from-[#3b1c16] via-[#542820] to-[#24100c]", band: "bg-[#e6c47a]/65" },
-];
+const rainDrops = Array.from({ length: 18 }, (_, i) => ({
+  left: `${8 + ((i * 19) % 84)}%`,
+  top: `${(i * 23) % 65}%`,
+  height: `${18 + (i % 4) * 9}px`,
+  duration: `${2.8 + (i % 5) * 0.55}s`,
+  delay: `-${(i * 0.43).toFixed(2)}s`,
+}));
 
-const shelfRightSpines = [
-  { title: "BOOK TWO · DRAFT", h: "h-[82%]", w: "w-[22px]", bg: "from-[#332211] via-[#4a3219] to-[#1f1409]", band: "bg-[#c9a45c]/75" },
-  { title: "FIELD ARCHIVE", h: "h-[74%]", w: "w-[18px]", bg: "from-[#1d2630] via-[#293645] to-[#11171d]", band: "bg-[#c9a45c]/55" },
-];
-
-const upperShelfLeftSpines = [
-  { h: "h-[78%]", w: "w-[20px]", bg: "from-[#2c1d14] to-[#170f0a]" },
-  { h: "h-[85%]", w: "w-[24px]", bg: "from-[#3a2018] to-[#1c0f0b]" },
-  { h: "h-[74%]", w: "w-[18px]", bg: "from-[#1f2922] to-[#101612]" },
-  { h: "h-[82%]", w: "w-[26px]", bg: "from-[#362819] to-[#1b140c]" },
-  { h: "h-[70%]", w: "w-[19px]", bg: "from-[#28212e] to-[#141018]" },
-  { h: "h-[80%]", w: "w-[22px]", bg: "from-[#422918] to-[#21140b]" },
-];
+const dustMotes = Array.from({ length: 16 }, (_, i) => ({
+  left: `${18 + ((i * 31) % 66)}%`,
+  top: `${24 + ((i * 29) % 52)}%`,
+  size: 2 + (i % 2),
+  t: 14 + (i % 6) * 2.5,
+  d: -(i * 1.3),
+  dx: ((i % 5) - 2) * 12,
+  o: 0.25 + (i % 3) * 0.14,
+}));
 
 const whyHenryIllustrations = [
   {
@@ -128,6 +126,7 @@ export function LivingWorkspace() {
   const [activeModal, setActiveModal] = useState<ActiveRoomModal>(null);
   const [unfiltrScreenIdx, setUnfiltrScreenIdx] = useState(0);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const whyHenryBookRef = useRef<HTMLButtonElement>(null);
   const dreamPayoffBookRef = useRef<HTMLButtonElement>(null);
   const closeBookBtnRef = useRef<HTMLButtonElement>(null);
@@ -143,6 +142,15 @@ export function LivingWorkspace() {
     return () => clearStageTimers();
   }, [clearStageTimers]);
 
+  // Center the horizontal scroll on narrow mobile screens on initial mount so the desk & shelf are balanced
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    if (el.scrollWidth > el.clientWidth) {
+      el.scrollLeft = Math.round((el.scrollWidth - el.clientWidth) * 0.42);
+    }
+  }, []);
+
   // Measure the selected shelf book's exact viewport coordinates so the 3D extraction originates from and returns to its true shelf slot
   const computeShelfDelta = useCallback((bookId: ShelfBookId) => {
     if (typeof window === "undefined") return;
@@ -157,7 +165,7 @@ export function LivingWorkspace() {
     setFlightDelta({
       dx: Math.round(bookCenterX - viewportCenterX),
       dy: Math.round(bookCenterY - viewportCenterY),
-      scale: Math.max(0.24, Math.min(0.48, +(rect.height / 480).toFixed(2))),
+      scale: Math.max(0.22, Math.min(0.46, +(rect.height / 480).toFixed(2))),
     });
   }, []);
 
@@ -252,80 +260,129 @@ export function LivingWorkspace() {
       id="home"
       data-testid="hero-section"
       aria-label="Javier Huertas's Study — Interactive Point-and-Click Environment"
-      className="relative isolate flex h-[100svh] w-full flex-col justify-end overflow-hidden bg-[#060403] select-none"
+      className="relative isolate flex h-[100svh] w-full flex-col items-center justify-center overflow-hidden bg-[#050302] select-none"
     >
-      {/* =====================================================================
-          1. ROOM ARCHITECTURE: BACK WALL, WAINSCOTING, WINDOW & AMBIENT LIGHT
-         ===================================================================== */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-20 overflow-hidden">
-        {/* Deep nocturnal study wallpaper & warm wood paneling gradient */}
-        <div
-          className="absolute inset-0 transition-opacity duration-700"
-          style={{
-            background: lampOn
-              ? "radial-gradient(ellipse 75% 60% at 32% 48%, rgba(168, 98, 42, 0.28) 0%, rgba(72, 39, 18, 0.40) 42%, rgba(16, 10, 7, 0.96) 80%, #050302 100%)"
-              : "radial-gradient(ellipse 65% 50% at 50% 45%, rgba(62, 36, 18, 0.18) 0%, rgba(12, 8, 6, 0.96) 75%, #030202 100%)",
-          }}
-        />
-
-        {/* Classical study vertical wall paneling / wainscoting grooves */}
-        <div
-          className="absolute inset-x-0 top-0 h-[66%] opacity-25"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, rgba(0,0,0,0.55) 0px, rgba(0,0,0,0.55) 2px, rgba(214,158,92,0.04) 3px, transparent 4px, transparent 96px)",
-          }}
-        />
-
-        {/* Horizontal chair-rail molding across the back wall behind the desk */}
-        <div className="absolute inset-x-0 top-[54%] h-3 border-y border-[#4a2e18]/50 bg-gradient-to-b from-[#2b1a0e] via-[#150c06] to-[#0c0704] shadow-[0_8px_20px_rgba(0,0,0,0.85)]" />
-
-        {/* Lower wainscoting recessed panels */}
-        <div className="absolute inset-x-0 top-[55%] h-[22%] bg-[#0b0705]" />
-
-        {/* Left Study Casement Window (Night sky + warm interior reflection) */}
-        <div className="absolute -left-6 top-[8%] hidden h-[44%] w-[15%] rounded-r-lg border-y-4 border-r-4 border-[#2b190d] bg-gradient-to-b from-[#0b1320] via-[#111c2d] to-[#18222f] opacity-75 shadow-[inset_0_0_40px_rgba(0,0,0,0.9),12px_20px_50px_rgba(0,0,0,0.85)] xl:block">
-          <div className="absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 bg-[#24150b] shadow-md" />
-          <div className="absolute inset-y-0 left-1/2 w-2 -translate-x-1/2 bg-[#24150b] shadow-md" />
-          <div className="absolute right-4 top-6 h-12 w-12 rounded-full bg-[#dce8ff]/10 blur-xl" />
-          {lampOn && (
-            <div className="absolute bottom-6 right-4 h-24 w-20 rounded-full bg-[#ffae52]/15 blur-2xl" />
-          )}
-        </div>
-
-        {/* Volumetric warm light cone cast from the desk lamp across the desk & bookshelf */}
-        <div
-          className={`absolute left-[8%] top-[12%] h-[78%] w-[62%] rounded-full blur-3xl transition-opacity duration-700 ${
-            lampOn ? "opacity-95" : "opacity-20"
-          }`}
-          style={{
-            background:
-              "radial-gradient(ellipse at 32% 48%, rgba(255, 196, 108, 0.34) 0%, rgba(224, 136, 56, 0.18) 38%, rgba(138, 72, 24, 0.06) 65%, transparent 82%)",
-          }}
-        />
-
-        {/* Secondary warm overhead library-light glow on the bookshelf */}
-        <div
-          className={`absolute right-[10%] top-[4%] h-[58%] w-[44%] rounded-full blur-3xl transition-opacity duration-700 ${
-            lampOn ? "opacity-90" : "opacity-35"
-          }`}
-          style={{
-            background:
-              "radial-gradient(ellipse at 55% 28%, rgba(255, 204, 128, 0.25) 0%, rgba(196, 122, 52, 0.12) 48%, transparent 78%)",
-          }}
-        />
-      </div>
+      {/* Ambient edge fill behind the 16:9 canvas on ultra-wide or tall monitors */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(ellipse_85%_75%_at_50%_50%,rgba(54,30,14,0.42)_0%,rgba(12,7,4,0.96)_65%,#040201_100%)]"
+      />
 
       {/* =====================================================================
-          2. SCENE STAGE: ONE COHESIVE CAMERA VIEW OF THE STUDY
+          1. SCROLLABLE / PANNABLE 16:9 HIGH-RESOLUTION STUDY STAGE
+             Preserves the exact 16:9 composition of the approved reference
+             without stretching or distorting on any screen size.
          ===================================================================== */}
-      <div className="relative mx-auto flex h-full w-full max-w-[1600px] flex-col justify-end overflow-x-auto overflow-y-hidden px-1 pt-2 pb-0 sm:px-6 sm:pt-4">
-        {/* Perspective Room Container — scrollable horizontally on narrow mobile screens so every object has a large, natural hit target */}
-        <div className="relative mx-auto my-auto aspect-[16/10] w-full min-w-[680px] max-w-[1440px] max-h-[96svh] lg:aspect-[16/9]">
+      <div
+        ref={scrollContainerRef}
+        className="relative flex h-full w-full items-center justify-start overflow-x-auto overflow-y-hidden lg:justify-center"
+      >
+        <div
+          data-testid="walnut-desk-surface"
+          className="relative mx-auto aspect-[16/9] h-full min-h-[500px] w-auto min-w-[888px] max-w-none shrink-0 overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.95)] lg:h-auto lg:max-h-[100svh] lg:w-full lg:max-w-[177.78svh]"
+        >
           {/* -----------------------------------------------------------------
-              A. FRAMED IHBNF WALL LOGO & MOTTO PLAQUE (LEFT-CENTER WALL)
-              Clicking brings the framed emblem forward to reveal the official
-              primary hands/soil/seedling logo and the meaning of IHBNF.
+              BASE LAYER: CLEAN 2K HIGH-RESOLUTION STUDY PLATE
+              (Contains the rain window, green banker's lamp, ornate wall frame,
+              carved walnut bookshelf with empty recesses behind the two removable
+              books, walnut desk, coffee mug, quill, globe, hourglass, rune stone,
+              and leather armchair.)
+             ----------------------------------------------------------------- */}
+          <Image
+            src="/media/study/study-clean-plate.webp"
+            alt="Javier Huertas's study — walnut desk, green banker's lamp, rain-streaked night window, and bookshelf"
+            fill
+            priority
+            quality={95}
+            sizes="100vw"
+            className={`pointer-events-none object-cover transition-[filter] duration-700 ${
+              lampOn ? "brightness-100" : "brightness-[0.68] contrast-[1.06]"
+            }`}
+          />
+
+          {/* -----------------------------------------------------------------
+              AMBIENT LIVING MOTION LAYERS (RESTRAINED, SUBTLE & LIGHTWEIGHT)
+             ----------------------------------------------------------------- */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+            {/* 1. Rain slowly streaking down the left casement window panes */}
+            <div className="absolute left-[1.5%] top-[1%] h-[58%] w-[21%] overflow-hidden opacity-65">
+              {rainDrops.map((drop, i) => (
+                <span
+                  key={i}
+                  className="anim-rain absolute block w-[1px] bg-gradient-to-b from-transparent via-[#a8ccff]/55 to-transparent"
+                  style={
+                    {
+                      left: drop.left,
+                      top: drop.top,
+                      height: drop.height,
+                      "--rt": drop.duration,
+                      "--rd": drop.delay,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+            </div>
+
+            {/* 2. Subtle warm tungsten breathing glow from the green glass banker's lamp */}
+            <div
+              className={`anim-lamp absolute left-[9%] top-[33%] h-[42%] w-[28%] rounded-full bg-[radial-gradient(ellipse_at_48%_32%,rgba(255,212,128,0.26)_0%,rgba(196,138,52,0.10)_48%,transparent_75%)] blur-xl transition-opacity duration-700 ${
+                lampOn ? "opacity-100" : "opacity-0"
+              }`}
+            />
+
+            {/* 3. Gentle warm steam wisps rising from the ceramic coffee mug on the desk */}
+            <div className="absolute left-[36.2%] top-[44.5%] h-[14%] w-[5.5%] overflow-hidden">
+              <span
+                className="anim-steam absolute bottom-0 left-[28%] h-12 w-3 rounded-full bg-gradient-to-t from-white/20 via-white/10 to-transparent blur-[4px]"
+                style={{ "--st": "5.2s", "--sd": "0s" } as React.CSSProperties}
+              />
+              <span
+                className="anim-steam absolute bottom-1 left-[52%] h-14 w-3.5 rounded-full bg-gradient-to-t from-white/15 via-white/10 to-transparent blur-[5px]"
+                style={{ "--st": "6.4s", "--sd": "-2.6s" } as React.CSSProperties}
+              />
+            </div>
+
+            {/* 4. Subtle cyan magical pulse on the carved Briar Glen rune stone on the shelf */}
+            <div className="anim-rune absolute left-[54.2%] top-[32.5%] h-[9.5%] w-[4.2%] rounded-full bg-[#38bdf8]/35" />
+
+            {/* 5. Faint floating dust motes where illuminated by the lamp & shelf spotlights */}
+            {lampOn &&
+              dustMotes.map((m, i) => (
+                <span
+                  key={i}
+                  className="particle absolute rounded-full bg-[#ffe2a8]"
+                  style={
+                    {
+                      left: m.left,
+                      top: m.top,
+                      width: m.size,
+                      height: m.size,
+                      "--t": `${m.t}s`,
+                      "--d": `${m.d}s`,
+                      "--dx": `${m.dx}px`,
+                      "--o": m.o,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+          </div>
+
+          {/* =================================================================
+              2. LAYERED PHYSICAL OBJECTS & EXACT-PERSPECTIVE OFFICIAL BRANDING
+             ================================================================= */}
+
+          {/* ── Bookcase Landmark Container for Automated Tests ── */}
+          <div
+            data-testid="workspace-bookshelf"
+            aria-hidden="true"
+            className="pointer-events-none absolute left-[48.5%] top-[0%] z-10 h-[56%] w-[49.5%]"
+          />
+
+          {/* -----------------------------------------------------------------
+              OBJECT 7 (ESSENTIAL): FRAMED IHBNF WALL LOGO
+              Overlays the official primary hands/soil/seedling emblem
+              (/media/brand/ihbnf-icon.svg) seamlessly inside the ornate gold frame
+              on the wall between the rain window and bookshelf.
              ----------------------------------------------------------------- */}
           <button
             type="button"
@@ -337,793 +394,576 @@ export function LivingWorkspace() {
             onBlur={() => setHovered(null)}
             aria-haspopup="dialog"
             aria-expanded={activeModal === "brand"}
-            aria-label="IHBNF — Idle Hands Bear No Fruit: Inspect the meaning of IHBNF"
-            className="group absolute left-[6%] top-[3%] z-10 w-[36%] max-w-[430px] cursor-pointer text-left outline-none transition-transform duration-500 hover:scale-[1.02] focus-visible:scale-[1.02] sm:left-[8%] lg:left-[10%] lg:w-[33%]"
+            aria-label="Framed IHBNF Wall Emblem — Idle Hands Bear No Fruit: Click to inspect the meaning of IHBNF"
+            style={{
+              left: "26.6%",
+              top: "2.2%",
+              width: "17.4%",
+              height: "39.8%",
+            }}
+            className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.018] focus-visible:scale-[1.018]"
           >
-            <span aria-hidden="true" className="absolute -inset-2" />
-            {/* Brass Picture Light mounted above the frame */}
-            <div aria-hidden="true" className="mx-auto mb-1.5 flex w-36 flex-col items-center">
-              <div className="h-2 w-24 rounded-full border border-[#d8b46a]/60 bg-gradient-to-r from-[#4a3219] via-[#e2be78] to-[#4a3219] shadow-[0_6px_24px_rgba(255,198,110,0.6)]" />
-              <div className="h-1.5 w-1.5 bg-[#8a6432]" />
-            </div>
-
-            {/* Ornate Dark Walnut & Brushed Brass Gallery Frame on the Wall */}
+            {/* Subtle warm gallery highlight around the ornate gold frame on hover/focus */}
             <div
-              className={`relative overflow-hidden rounded-[6px] border-[6px] border-[#2e1b0f] bg-[#0b0806] p-2.5 transition-all duration-500 sm:border-[8px] sm:p-3.5 ${
+              aria-hidden="true"
+              className={`pointer-events-none absolute -inset-1.5 rounded-[6px] transition-all duration-300 ${
                 hovered === "brand"
-                  ? "shadow-[0_28px_60px_rgba(0,0,0,0.92),0_0_32px_rgba(201,164,92,0.45),inset_0_0_0_1px_rgba(255,216,138,0.85)]"
-                  : "shadow-[0_28px_60px_rgba(0,0,0,0.92),0_4px_12px_rgba(0,0,0,0.8),inset_0_0_0_1px_rgba(201,164,92,0.45)]"
+                  ? "ring-2 ring-[#ffd584]/90 shadow-[0_0_38px_rgba(255,204,112,0.55)]"
+                  : "ring-0"
+              }`}
+            />
+
+            {/* Inner Canvas Replacement inside the Ornate Gold Frame:
+                Displays the exact official IHBNF primary hands/soil/seedling artwork without any clipping */}
+            <div
+              style={{
+                left: "11.0%",
+                top: "10.6%",
+                width: "77.2%",
+                height: "77.6%",
+                transform: "perspective(900px) rotateY(4deg) rotateZ(0.6deg)",
+              }}
+              className="absolute flex items-center justify-center overflow-hidden rounded-[2px] bg-[radial-gradient(ellipse_at_50%_42%,#24180d_0%,#0f0a06_68%,#080503_100%)] p-1 shadow-[inset_0_0_18px_rgba(0,0,0,0.92)]"
+            >
+              <Image
+                src="/media/brand/ihbnf-icon.svg"
+                alt="IHBNF — Official Hands, Soil, and Seedling Emblem"
+                fill
+                priority
+                sizes="(min-width: 1024px) 240px, 160px"
+                className="object-contain p-1.5 transition-transform duration-500 group-hover:scale-[1.04]"
+              />
+              {/* Warm picture-light top-down wash & natural canvas vignette */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_85%_70%_at_50%_12%,rgba(255,214,138,0.18)_0%,transparent_62%,rgba(6,4,2,0.55)_100%)]"
+              />
+            </div>
+          </button>
+
+          {/* -----------------------------------------------------------------
+              OBJECT 1: "WHY HENRY?" PHYSICAL 3D HARDCOVER BOOK ON THE SHELF
+              Positioned in the exact left shelf niche (x: 59.0%, y: 21.4%)
+              over the clean walnut niche plate so extracting it leaves NO duplicate cover.
+             ----------------------------------------------------------------- */}
+          <div
+            style={{
+              left: "59.0%",
+              top: "21.4%",
+              width: "9.3%",
+              height: "20.2%",
+            }}
+            className="absolute z-20 flex items-end justify-center"
+          >
+            {/* Warm shelf spotlight glow when hovering Why Henry */}
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(255,200,112,0.42)_0%,transparent_70%)] transition-opacity duration-300 ${
+                hovered === "why-henry" && !isWhyHenryOut ? "opacity-100" : "opacity-0"
+              }`}
+            />
+
+            <button
+              ref={whyHenryBookRef}
+              type="button"
+              data-testid="why-henry-shelf-book"
+              onClick={() => handleExtractShelfBook("why-henry")}
+              onMouseEnter={() => setHovered("why-henry")}
+              onMouseLeave={() => setHovered(null)}
+              onFocus={() => setHovered("why-henry")}
+              onBlur={() => setHovered(null)}
+              aria-haspopup="dialog"
+              aria-expanded={isWhyHenryOut}
+              aria-label="The Unwritten Journey — Book One: Why Henry? — Pull book from the shelf and open it"
+              style={{
+                transform: isWhyHenryOut
+                  ? "perspective(800px) rotateY(-8deg) scale(0.9)"
+                  : hovered === "why-henry"
+                    ? "perspective(800px) rotateY(-4deg) rotateX(2deg) translateY(-5px) scale(1.045)"
+                    : "perspective(800px) rotateY(-7deg) rotateX(2deg) rotateZ(-0.5deg)",
+              }}
+              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isWhyHenryOut ? "pointer-events-none opacity-0" : "opacity-100"
               }`}
             >
-              <div className="relative overflow-hidden rounded-[2px] border border-[#c9a45c]/30 bg-gradient-to-b from-[#16100b] via-[#0d0907] to-[#080604] px-4 py-3 shadow-[inset_0_4px_18px_rgba(0,0,0,0.9)]">
+              <span aria-hidden="true" className="absolute -inset-2" />
+
+              {/* Realistic contact shadow cast onto the walnut shelf back panel */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-1.5 -left-2.5 -right-2 top-1.5 rounded-[3px] bg-black/85 blur-[6px] transition-all duration-500 group-hover:translate-x-1 group-hover:translate-y-1 group-hover:bg-black/95"
+              />
+
+              {/* Left 3D Hardcover Spine Edge */}
+              <div
+                aria-hidden="true"
+                className="h-full w-[6px] shrink-0 rounded-l-[2px] border-y border-l border-[#a67846]/55 bg-gradient-to-r from-[#1c0f06] via-[#4a2b13] to-[#140a04] shadow-inner"
+              />
+
+              {/* Exact Official "Why Henry?" Book Cover Artwork */}
+              <div
+                className={`relative h-full flex-1 overflow-hidden rounded-r-[2px] bg-[#0c0907] shadow-[8px_12px_24px_rgba(0,0,0,0.92)] transition-all duration-300 ${
+                  hovered === "why-henry"
+                    ? "ring-2 ring-[#ffd584] shadow-[0_14px_34px_rgba(255,196,102,0.5)]"
+                    : "ring-1 ring-[#d8b46a]/35"
+                }`}
+              >
+                <Image
+                  src="/media/why-henry/cover.webp"
+                  alt="Cover of The Unwritten Journey — Book One: Why Henry? by Javier Huertas"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 180px, 130px"
+                  className="object-fill"
+                />
+                {/* Top shelf downlight sheen */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_65%_at_50%_15%,rgba(255,208,132,0.18),transparent_72%)]"
-                />
-                <Image
-                  src="/media/brand/ihbnf-secondary.svg"
-                  alt="IHBNF — Idle Hands Bear No Fruit"
-                  width={1200}
-                  height={800}
-                  priority
-                  className="relative z-10 mx-auto h-auto w-full object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.85)]"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#ffe2a8]/12 via-transparent to-black/35"
                 />
               </div>
 
-              {/* Engraved Brass Gallery Plate on Frame Bottom */}
-              <div className="mt-1.5 flex items-center justify-between px-1 text-[0.58rem] uppercase tracking-[0.22em] text-[#d6b26a]/85 sm:text-[0.64rem]">
-                <span>{site.founder.name}</span>
-                <span className="font-display italic normal-case tracking-normal text-bone/80">
-                  “Idle Hands Bear No Fruit”
+              {/* Right 3D Page Block Thickness */}
+              <div
+                aria-hidden="true"
+                className="h-[97%] w-[5px] shrink-0 self-center rounded-r-[1px] bg-gradient-to-r from-[#dfd0b2] via-[#b8a07a] to-[#7a6444] shadow-[3px_0_6px_rgba(0,0,0,0.85)]"
+              />
+            </button>
+          </div>
+
+          {/* -----------------------------------------------------------------
+              OBJECT 2: "THE DREAM OF THE PAYOFF" PHYSICAL 3D HARDCOVER BOOK ON THE SHELF
+              Positioned in the exact right shelf niche (x: 71.1%, y: 20.5%)
+              over the clean walnut niche plate so extracting it leaves NO duplicate cover.
+             ----------------------------------------------------------------- */}
+          <div
+            style={{
+              left: "71.1%",
+              top: "20.5%",
+              width: "9.4%",
+              height: "20.9%",
+            }}
+            className="absolute z-20 flex items-end justify-center"
+          >
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(255,200,112,0.42)_0%,transparent_70%)] transition-opacity duration-300 ${
+                hovered === "dream-payoff" && !isDreamPayoffOut ? "opacity-100" : "opacity-0"
+              }`}
+            />
+
+            <button
+              ref={dreamPayoffBookRef}
+              type="button"
+              data-testid="dream-payoff-shelf-book"
+              onClick={() => handleExtractShelfBook("dream-payoff")}
+              onMouseEnter={() => setHovered("dream-payoff")}
+              onMouseLeave={() => setHovered(null)}
+              onFocus={() => setHovered("dream-payoff")}
+              onBlur={() => setHovered(null)}
+              aria-haspopup="dialog"
+              aria-expanded={isDreamPayoffOut}
+              aria-label="The Dream of the Payoff — Pull published memoir book from the shelf and open it"
+              style={{
+                transform: isDreamPayoffOut
+                  ? "perspective(800px) rotateY(-8deg) scale(0.9)"
+                  : hovered === "dream-payoff"
+                    ? "perspective(800px) rotateY(-5deg) rotateX(2deg) translateY(-5px) scale(1.045)"
+                    : "perspective(800px) rotateY(-8deg) rotateX(2deg) rotateZ(-0.5deg)",
+              }}
+              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isDreamPayoffOut ? "pointer-events-none opacity-0" : "opacity-100"
+              }`}
+            >
+              <span aria-hidden="true" className="absolute -inset-2" />
+
+              {/* Realistic contact shadow cast onto the walnut shelf back panel */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-1.5 -left-2.5 -right-2 top-1.5 rounded-[3px] bg-black/85 blur-[6px] transition-all duration-500 group-hover:translate-x-1 group-hover:translate-y-1 group-hover:bg-black/95"
+              />
+
+              {/* Left 3D Hardcover Spine Edge */}
+              <div
+                aria-hidden="true"
+                className="h-full w-[6px] shrink-0 rounded-l-[2px] border-y border-l border-[#c9a45c]/55 bg-gradient-to-r from-[#1c1007] via-[#4a2e14] to-[#140b04] shadow-inner"
+              />
+
+              {/* Exact Official Published "The Dream of the Payoff" Book Cover */}
+              <div
+                className={`relative h-full flex-1 overflow-hidden rounded-r-[2px] bg-[#120d09] shadow-[8px_12px_24px_rgba(0,0,0,0.92)] transition-all duration-300 ${
+                  hovered === "dream-payoff"
+                    ? "ring-2 ring-[#ffd584] shadow-[0_14px_34px_rgba(255,196,102,0.5)]"
+                    : "ring-1 ring-[#d8b46a]/35"
+                }`}
+              >
+                <Image
+                  src="/media/memoir/dream-payoff-cover.svg"
+                  alt="Cover of The Dream of the Payoff by Javier Huertas"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 180px, 130px"
+                  className="object-fill"
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#ffe2a8]/12 via-transparent to-black/30"
+                />
+              </div>
+
+              {/* Right 3D Page Block Thickness */}
+              <div
+                aria-hidden="true"
+                className="h-[97%] w-[5px] shrink-0 self-center rounded-r-[1px] bg-gradient-to-r from-[#dfd0b2] via-[#b8a07a] to-[#7a6444] shadow-[3px_0_6px_rgba(0,0,0,0.85)]"
+              />
+            </button>
+          </div>
+
+          {/* -----------------------------------------------------------------
+              OBJECT 4: STUDIO LAPTOP SHOWING OFFICIAL SPORTS WAGER HELPER
+              Composited directly into the physical laptop bezel on the desk
+             ----------------------------------------------------------------- */}
+          <button
+            type="button"
+            data-testid="workspace-laptop"
+            onClick={() => openRoomModal("laptop")}
+            onMouseEnter={() => setHovered("laptop")}
+            onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered("laptop")}
+            onBlur={() => setHovered(null)}
+            aria-haspopup="dialog"
+            aria-expanded={activeModal === "laptop"}
+            aria-label="Studio Laptop on desk: Open Sports Wager Helper in-room presentation"
+            style={{
+              left: "43.4%",
+              top: "43.2%",
+              width: "23.6%",
+              height: "30.0%",
+            }}
+            className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.015] focus-visible:scale-[1.015]"
+          >
+            {/* Soft green ambient screen glow & hover highlight */}
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-x-[4%] top-[2%] h-[72%] rounded-[10px] transition-all duration-300 ${
+                hovered === "laptop"
+                  ? "ring-2 ring-[#a3e635] shadow-[0_0_36px_rgba(163,230,53,0.48)]"
+                  : "shadow-[0_0_22px_rgba(163,230,53,0.12)]"
+              }`}
+            />
+
+            {/* Official Sports Wager Helper Screen Composite inside the Laptop Bezel */}
+            <div
+              style={{
+                left: "5.8%",
+                top: "5.2%",
+                width: "77.2%",
+                height: "66.5%",
+                transform: "perspective(900px) rotateY(-3.5deg) rotateX(1.8deg) rotateZ(-0.5deg)",
+              }}
+              className="absolute overflow-hidden rounded-[4px] bg-[#070b08]"
+            >
+              <Image
+                src="/media/sports-wager-helper/og-image.png"
+                alt="Sports Wager Helper running on the laptop screen"
+                fill
+                sizes="(min-width: 1024px) 340px, 220px"
+                className="object-contain object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/15" />
+              <div className="absolute inset-x-1.5 bottom-1 flex items-center justify-between rounded border border-[#a3e635]/40 bg-black/85 px-1.5 py-0.5 backdrop-blur-xs">
+                <div className="flex items-center gap-1">
+                  <div className="relative h-3.5 w-3.5 shrink-0 overflow-hidden rounded-xs bg-black">
+                    <Image
+                      src="/media/sports-wager-helper/swh-brand-logo.svg"
+                      alt=""
+                      fill
+                      sizes="16px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <span className="font-mono text-[0.42rem] font-semibold tracking-wider text-bone sm:text-[0.48rem]">
+                    SPORTS WAGER HELPER
+                  </span>
+                </div>
+                <span className="rounded-xs bg-[#a3e635] px-1 py-0.2 font-mono text-[0.38rem] font-bold text-black">
+                  S.A.L.
                 </span>
               </div>
             </div>
           </button>
 
           {/* -----------------------------------------------------------------
-              B. HANDCRAFTED WALNUT BOOKSHELF (STANDING BEHIND RIGHT SIDE OF DESK)
+              OBJECT 3: SMARTPHONE IN WOODEN DOCK SHOWING REAL UNFILTR SCREEN
+              Composited directly onto the angled phone glass on the desk
              ----------------------------------------------------------------- */}
-          <div
-            data-testid="workspace-bookshelf"
-            className="absolute right-[3%] top-[1%] z-10 flex h-[64%] w-[49%] max-w-[650px] flex-col justify-between rounded-t-[8px] border-x-[10px] border-t-[12px] border-[#2d1a0e] bg-[#120a05] shadow-[-24px_30px_70px_rgba(0,0,0,0.95),inset_0_0_40px_rgba(0,0,0,0.9)] sm:right-[4%] sm:w-[46%] sm:border-x-[14px] sm:border-t-[16px]"
+          <button
+            type="button"
+            data-testid="workspace-smartphone"
+            onClick={() => openRoomModal("smartphone")}
+            onMouseEnter={() => setHovered("smartphone")}
+            onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered("smartphone")}
+            onBlur={() => setHovered(null)}
+            aria-haspopup="dialog"
+            aria-expanded={activeModal === "smartphone"}
+            aria-label="Smartphone on wooden dock: Open Unfiltr by Javier in-room presentation"
+            style={{
+              left: "67.8%",
+              top: "50.5%",
+              width: "8.8%",
+              height: "24.8%",
+            }}
+            className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:scale-[1.03] focus-visible:-translate-y-1 focus-visible:scale-[1.03]"
           >
-            {/* Top Crown Molding of the Walnut Bookcase */}
+            {/* Soft violet screen glow & hover ring */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -inset-x-[18px] -top-[20px] h-5 rounded-t-[4px] border-t border-[#9c6b3b]/45 bg-gradient-to-b from-[#4a2c17] via-[#331d0e] to-[#1d1008] shadow-[0_8px_20px_rgba(0,0,0,0.85)]"
+              className={`pointer-events-none absolute inset-x-[12%] top-[2%] bottom-[12%] rounded-[14px] transition-all duration-300 ${
+                hovered === "smartphone"
+                  ? "ring-2 ring-violet shadow-[0_0_32px_rgba(169,156,255,0.65)]"
+                  : "shadow-[0_0_18px_rgba(139,92,246,0.22)]"
+              }`}
             />
 
-            {/* Back Panel Vertical Walnut Planks inside the Bookcase */}
+            {/* Real Unfiltr Screenshot mapped to the angled phone glass */}
             <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-40"
               style={{
-                backgroundImage:
-                  "repeating-linear-gradient(90deg, #160c06 0px, #160c06 38px, #090502 39px, #24140a 40px)",
+                left: "21.5%",
+                top: "4.2%",
+                width: "63.5%",
+                height: "78.5%",
+                transform:
+                  "perspective(600px) rotateX(10deg) rotateY(-12deg) rotateZ(9.2deg)",
               }}
-            />
-
-            {/* Warm Brass Library Light mounted to top cornice */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-[radial-gradient(ellipse_65%_90%_at_52%_0%,rgba(255,202,120,0.32),transparent_75%)]"
-            />
-
-            {/* ── UPPER SHELF: Reference Volumes, Six Glowing Stone Markers & Author Frame ── */}
-            <div className="relative z-10 flex h-[38%] w-full items-end justify-between px-3 pt-3 sm:px-5">
-              <div aria-hidden="true" className="flex h-full items-end gap-[3px]">
-                {upperShelfLeftSpines.map((b, i) => (
-                  <div
-                    key={i}
-                    className={`${b.h} ${b.w} rounded-t-[2px] border-t border-white/10 bg-gradient-to-r ${b.bg} shadow-[2px_0_6px_rgba(0,0,0,0.8)]`}
-                  >
-                    <div className="mt-2 h-0.5 w-full bg-[#c9a45c]/40" />
-                    <div className="mt-auto mb-2 h-0.5 w-full bg-[#c9a45c]/30" />
-                  </div>
-                ))}
-              </div>
-
-              {/* Briar Glen Six Carved Stone Markers resting on a dark velvet plinth */}
-              <div
-                aria-hidden="true"
-                className="mx-auto flex flex-col items-center pb-0.5"
-                title="Six Mysterious Stone Markers of Briar Glen"
-              >
-                <div className="flex items-end gap-1.5 px-2">
-                  {[16, 24, 14, 26, 18, 22].map((h, i) => (
-                    <span
-                      key={i}
-                      style={{ height: h }}
-                      className="block w-2 rounded-t-full bg-gradient-to-t from-[#5c3818] via-[#d98c3f] to-[#ffe4a8] shadow-[0_0_10px_rgba(242,213,156,0.55)]"
-                    />
-                  ))}
-                </div>
-                <div className="h-1.5 w-28 rounded-t-sm border-t border-[#c9a45c]/35 bg-[#2a190d] shadow-md" />
-              </div>
-
-              {/* Framed Author Portrait standing on upper right shelf (opens Javier's story & writing in-room) */}
-              <button
-                type="button"
-                data-testid="hero-meet-creator-btn"
-                onClick={() => openRoomModal("notebook")}
-                onMouseEnter={() => setHovered("notebook")}
-                onMouseLeave={() => setHovered(null)}
-                onFocus={() => setHovered("notebook")}
-                onBlur={() => setHovered(null)}
-                aria-label={`Meet the Creator: ${site.founder.name}`}
-                className="group relative mb-0.5 aspect-[4/5] h-[82%] cursor-pointer overflow-hidden rounded-[3px] border-[3px] border-[#5c3c20] bg-[#1a110a] p-0 shadow-[-6px_6px_16px_rgba(0,0,0,0.85)] transition-all duration-300 hover:scale-105 hover:border-[#ffd584] focus-visible:scale-105"
-              >
-                <Image
-                  src={site.founder.photo.src}
-                  alt={site.founder.photo.alt}
-                  fill
-                  sizes="90px"
-                  className="object-cover object-[50%_38%]"
-                />
-                <div className="absolute inset-0 ring-1 ring-inset ring-[#c9a45c]/35 group-hover:ring-[#ffd584]/80" />
-              </button>
-            </div>
-
-            {/* Solid Walnut Middle Shelf Plank */}
-            <div
-              aria-hidden="true"
-              className="relative z-20 h-3.5 w-full border-t border-[#a67342]/45 bg-gradient-to-b from-[#4f2e17] via-[#341d0e] to-[#1a0d05] shadow-[0_10px_22px_rgba(0,0,0,0.92)] sm:h-4"
-            />
-
-            {/* ── MAIN EYE-LEVEL SHELF: "WHY HENRY?" AND "THE DREAM OF THE PAYOFF" BOOKS ── */}
-            <div className="relative z-10 flex h-[58%] w-full items-end justify-between px-3 pt-2 sm:px-5">
-              {/* Under-shelf shadow cast downward */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-black/80 to-transparent"
-              />
-
-              {/* Left Neighboring Hardcover Spines */}
-              <div aria-hidden="true" className="flex h-full items-end gap-[3px] pb-[1px]">
-                {shelfLeftSpines.map((spine, idx) => (
-                  <div
-                    key={idx}
-                    className={`relative flex ${spine.h} ${spine.w} flex-col justify-between rounded-t-[2px] border-l border-t border-white/10 bg-gradient-to-r ${spine.bg} py-2 shadow-[4px_0_10px_rgba(0,0,0,0.85)]`}
-                  >
-                    <div className={`h-[2px] w-full ${spine.band}`} />
-                    <span className="writing-vertical-rl mx-auto rotate-180 text-[0.4rem] tracking-[0.2em] text-[#e6d5b8]/65">
-                      {spine.title}
-                    </span>
-                    <div className={`h-[2px] w-full ${spine.band}`} />
-                  </div>
-                ))}
-              </div>
-
-              {/* ★ HERO BOOK 1: THE ACTUAL "WHY HENRY?" HARDCOVER ON THE SHELF ★ */}
-              <div className="relative z-30 flex h-full items-end pb-[2px]">
-                <div
-                  aria-hidden="true"
-                  className={`pointer-events-none absolute inset-x-1 bottom-[2px] h-[90%] rounded-[3px] border border-amber/15 bg-black/80 shadow-[inset_0_0_24px_rgba(0,0,0,0.98)] transition-opacity duration-500 ${
-                    isWhyHenryOut ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-                <div
-                  aria-hidden="true"
-                  className={`pointer-events-none absolute -inset-5 rounded-full bg-[radial-gradient(circle,rgba(255,194,102,0.38)_0%,transparent_70%)] transition-opacity duration-500 ${
-                    hovered === "why-henry" ? "opacity-100" : "opacity-65"
-                  }`}
-                />
-
-                <button
-                  ref={whyHenryBookRef}
-                  type="button"
-                  data-testid="why-henry-shelf-book"
-                  onClick={() => handleExtractShelfBook("why-henry")}
-                  onMouseEnter={() => setHovered("why-henry")}
-                  onMouseLeave={() => setHovered(null)}
-                  onFocus={() => setHovered("why-henry")}
-                  onBlur={() => setHovered(null)}
-                  aria-haspopup="dialog"
-                  aria-expanded={isWhyHenryOut}
-                  aria-label="The Unwritten Journey — Book One: Why Henry? — Pull book from the shelf and open it"
-                  className={`group relative flex h-[92%] aspect-[1125/2000] cursor-pointer items-end p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                    isWhyHenryOut
-                      ? "pointer-events-none scale-90 opacity-0"
-                      : "hover:-translate-y-2.5 hover:scale-[1.05] focus-visible:-translate-y-2.5 focus-visible:scale-[1.05]"
-                  }`}
-                >
-                  <span aria-hidden="true" className="absolute -inset-2.5" />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-1 -left-3 -right-4 top-2 rounded-[4px] bg-black/85 blur-md transition-all duration-500 group-hover:-bottom-3 group-hover:bg-black/95 group-hover:blur-lg"
-                  />
-                  {/* Left 3D Hardcover Spine Edge */}
-                  <div
-                    aria-hidden="true"
-                    className="h-full w-[8px] shrink-0 rounded-l-[2px] border-y border-l border-[#a67846]/50 bg-gradient-to-r from-[#241409] via-[#4d2d16] to-[#1a0e06] shadow-inner"
-                  />
-                  {/* Official "Why Henry?" Book Cover Face */}
-                  <div className="relative h-full w-full overflow-hidden rounded-r-[3px] bg-[#0d0a08] shadow-[10px_14px_28px_rgba(0,0,0,0.92)] ring-1 ring-[#e8c47c]/40 transition-all duration-300 group-hover:shadow-[0_18px_38px_rgba(217,140,63,0.45)] group-hover:ring-2 group-hover:ring-[#ffd584] group-focus-visible:ring-2 group-focus-visible:ring-[#ffd584]">
-                    <Image
-                      src="/media/why-henry/cover.webp"
-                      alt="Cover of The Unwritten Journey — Book One: Why Henry? by Javier Huertas"
-                      fill
-                      priority
-                      sizes="(min-width: 1024px) 160px, 120px"
-                      className="object-contain"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.08] to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100"
-                    />
-                  </div>
-                  {/* Right Gilded Page Block Edge */}
-                  <div
-                    aria-hidden="true"
-                    className="h-[97%] w-[4px] shrink-0 self-center rounded-r-[1px] bg-gradient-to-r from-[#d8c7a8] via-[#b8a27e] to-[#8c7654] shadow-[2px_0_4px_rgba(0,0,0,0.8)]"
-                  />
-                  {/* Brass Bookstand Lip */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-[3px] left-1/2 h-[4px] w-[70%] -translate-x-1/2 rounded-t-sm bg-gradient-to-r from-[#7a5828] via-[#e2be74] to-[#7a5828] shadow-sm"
-                  />
-                </button>
-              </div>
-
-              {/* ★ HERO BOOK 2: "THE DREAM OF THE PAYOFF" HARDCOVER ON THE SHELF ★ */}
-              <div className="relative z-30 flex h-full items-end pb-[2px]">
-                <div
-                  aria-hidden="true"
-                  className={`pointer-events-none absolute inset-x-1 bottom-[2px] h-[86%] rounded-[3px] border border-gold/15 bg-black/80 shadow-[inset_0_0_24px_rgba(0,0,0,0.98)] transition-opacity duration-500 ${
-                    isDreamPayoffOut ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-                <div
-                  aria-hidden="true"
-                  className={`pointer-events-none absolute -inset-5 rounded-full bg-[radial-gradient(circle,rgba(201,164,92,0.34)_0%,transparent_70%)] transition-opacity duration-500 ${
-                    hovered === "dream-payoff" ? "opacity-100" : "opacity-50"
-                  }`}
-                />
-
-                <button
-                  ref={dreamPayoffBookRef}
-                  type="button"
-                  data-testid="dream-payoff-shelf-book"
-                  onClick={() => handleExtractShelfBook("dream-payoff")}
-                  onMouseEnter={() => setHovered("dream-payoff")}
-                  onMouseLeave={() => setHovered(null)}
-                  onFocus={() => setHovered("dream-payoff")}
-                  onBlur={() => setHovered(null)}
-                  aria-haspopup="dialog"
-                  aria-expanded={isDreamPayoffOut}
-                  aria-label="The Dream of the Payoff — Pull memoir book from the shelf and open it"
-                  className={`group relative flex h-[86%] aspect-[2/3] cursor-pointer items-end p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                    isDreamPayoffOut
-                      ? "pointer-events-none scale-90 opacity-0"
-                      : "hover:-translate-y-2.5 hover:scale-[1.05] focus-visible:-translate-y-2.5 focus-visible:scale-[1.05]"
-                  }`}
-                >
-                  <span aria-hidden="true" className="absolute -inset-2.5" />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-1 -left-2 -right-3 top-2 rounded-[4px] bg-black/85 blur-md transition-all duration-500 group-hover:-bottom-3 group-hover:bg-black/95 group-hover:blur-lg"
-                  />
-                  {/* Left 3D Hardcover Spine Edge */}
-                  <div
-                    aria-hidden="true"
-                    className="h-full w-[7px] shrink-0 rounded-l-[2px] border-y border-l border-[#c9a45c]/50 bg-gradient-to-r from-[#1f1308] via-[#4a3016] to-[#170d05] shadow-inner"
-                  />
-                  {/* Official "The Dream of the Payoff" Cover Face */}
-                  <div className="relative h-full w-full overflow-hidden rounded-r-[3px] bg-[#120d09] shadow-[10px_14px_28px_rgba(0,0,0,0.92)] ring-1 ring-[#c9a45c]/45 transition-all duration-300 group-hover:shadow-[0_18px_38px_rgba(201,164,92,0.45)] group-hover:ring-2 group-hover:ring-[#ffd584] group-focus-visible:ring-2 group-focus-visible:ring-[#ffd584]">
-                    <Image
-                      src="/media/memoir/dream-payoff-cover.svg"
-                      alt="Cover of The Dream of the Payoff by Javier Huertas"
-                      fill
-                      sizes="(min-width: 1024px) 150px, 110px"
-                      className="object-cover"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.08] to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100"
-                    />
-                  </div>
-                  {/* Right Gilded Page Block Edge */}
-                  <div
-                    aria-hidden="true"
-                    className="h-[97%] w-[4px] shrink-0 self-center rounded-r-[1px] bg-gradient-to-r from-[#d8c7a8] via-[#b8a27e] to-[#8c7654] shadow-[2px_0_4px_rgba(0,0,0,0.8)]"
-                  />
-                  {/* Brass Bookstand Lip */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-[3px] left-1/2 h-[4px] w-[70%] -translate-x-1/2 rounded-t-sm bg-gradient-to-r from-[#7a5828] via-[#e2be74] to-[#7a5828] shadow-sm"
-                  />
-                </button>
-              </div>
-
-              {/* Right Neighboring Hardcover Spines */}
-              <div aria-hidden="true" className="flex h-full items-end gap-[3px] pb-[1px]">
-                {shelfRightSpines.map((spine, idx) => (
-                  <div
-                    key={idx}
-                    className={`relative flex ${spine.h} ${spine.w} flex-col justify-between rounded-t-[2px] border-l border-t border-white/10 bg-gradient-to-r ${spine.bg} py-2 shadow-[-3px_0_10px_rgba(0,0,0,0.85)] ${
-                      idx === shelfRightSpines.length - 1 ? "origin-bottom-left -rotate-[5deg] mr-1" : ""
-                    }`}
-                  >
-                    <div className={`h-[2px] w-full ${spine.band}`} />
-                    <span className="writing-vertical-rl mx-auto rotate-180 text-[0.4rem] tracking-[0.18em] text-[#e6d5b8]/65">
-                      {spine.title}
-                    </span>
-                    <div className={`h-[2px] w-full ${spine.band}`} />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Solid Walnut Main Shelf Plank (with dual brass catalog plates) */}
-            <div
-              aria-hidden="true"
-              className="relative z-20 flex h-4 w-full items-center justify-center gap-20 border-t border-[#b8834c]/55 bg-gradient-to-b from-[#59341a] via-[#381f0e] to-[#1c0e05] shadow-[0_14px_28px_rgba(0,0,0,0.95)] sm:h-5"
+              className="absolute overflow-hidden rounded-[10px] border border-[#5a4e7c]/60 bg-black shadow-inner"
             >
-              <div className="h-2 w-12 rounded-[1px] border border-[#e5c178]/50 bg-gradient-to-r from-[#6e4e23] via-[#d8b467] to-[#6e4e23] shadow-sm" />
-              <div className="h-2 w-12 rounded-[1px] border border-[#e5c178]/50 bg-gradient-to-r from-[#6e4e23] via-[#d8b467] to-[#6e4e23] shadow-sm" />
+              <Image
+                src="/media/unfiltr/kai-tropical-chat.jpg"
+                alt="Unfiltr by Javier real app screen on smartphone"
+                fill
+                sizes="110px"
+                className="object-cover"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/25 via-transparent to-white/10" />
             </div>
-          </div>
+          </button>
 
           {/* -----------------------------------------------------------------
-              C. THE PHYSICAL WALNUT DESK & FOREGROUND OBJECTS
+              OBJECT 5: OPEN LEATHER WRITING JOURNAL ON THE DESK
+             ----------------------------------------------------------------- */}
+          <button
+            type="button"
+            data-testid="workspace-notebook"
+            onClick={() => openRoomModal("notebook")}
+            onMouseEnter={() => setHovered("notebook")}
+            onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered("notebook")}
+            onBlur={() => setHovered(null)}
+            aria-haspopup="dialog"
+            aria-expanded={activeModal === "notebook"}
+            aria-label="Open Leather Writing Journal on the desk: Open Javier Huertas's writing and creative journey"
+            style={{
+              left: "15.5%",
+              top: "67.5%",
+              width: "35.5%",
+              height: "20.5%",
+            }}
+            className="group absolute z-20 cursor-pointer rounded-[12px] p-0 text-left outline-none transition-all duration-300"
+          >
+            <div
+              aria-hidden="true"
+              style={{
+                transform: "perspective(800px) rotateX(28deg) rotateZ(-4deg)",
+              }}
+              className={`pointer-events-none h-full w-full rounded-[10px] transition-all duration-300 ${
+                hovered === "notebook"
+                  ? "ring-2 ring-[#ffd584]/90 bg-[#ffd584]/[0.07] shadow-[0_0_35px_rgba(255,208,128,0.45)]"
+                  : "ring-0"
+              }`}
+            />
+          </button>
+
+          {/* Secondary trigger for Creator Story (`hero-meet-creator-btn` compatibility) */}
+          <button
+            type="button"
+            data-testid="hero-meet-creator-btn"
+            onClick={() => openRoomModal("notebook")}
+            className="sr-only"
+          >
+            Meet the Creator: {site.founder.name}
+          </button>
+
+          {/* -----------------------------------------------------------------
+              OBJECT 6: BRASS RING-BOUND DESK CALENDAR
+             ----------------------------------------------------------------- */}
+          <button
+            type="button"
+            data-testid="workspace-calendar"
+            onClick={() => openRoomModal("calendar")}
+            onMouseEnter={() => setHovered("calendar")}
+            onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered("calendar")}
+            onBlur={() => setHovered(null)}
+            aria-haspopup="dialog"
+            aria-expanded={activeModal === "calendar"}
+            aria-label="Desk Calendar: Open confirmed project milestones and announcements"
+            style={{
+              left: "77.8%",
+              top: "49.5%",
+              width: "14.2%",
+              height: "23.5%",
+            }}
+            className="group absolute z-20 cursor-pointer rounded-[10px] p-0 text-left outline-none transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            <div
+              aria-hidden="true"
+              style={{
+                transform: "perspective(700px) rotateX(8deg) rotateY(-12deg) rotateZ(4deg)",
+              }}
+              className={`pointer-events-none h-full w-full rounded-[8px] transition-all duration-300 ${
+                hovered === "calendar"
+                  ? "ring-2 ring-[#ffd584]/90 bg-[#ffd584]/[0.07] shadow-[0_0_32px_rgba(255,208,128,0.45)]"
+                  : "ring-0"
+              }`}
+            />
+          </button>
+
+          {/* -----------------------------------------------------------------
+              OBJECT 8: WAX-SEALED LETTER ON THE DESK (CONTACT & SOCIALS)
+             ----------------------------------------------------------------- */}
+          <button
+            type="button"
+            data-testid="workspace-contact"
+            onClick={() => openRoomModal("contact")}
+            onMouseEnter={() => setHovered("contact")}
+            onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered("contact")}
+            onBlur={() => setHovered(null)}
+            aria-haspopup="dialog"
+            aria-expanded={activeModal === "contact"}
+            aria-label="Wax-Sealed Letter on the desk: Open verified contact information and social links"
+            style={{
+              left: "73.5%",
+              top: "71.0%",
+              width: "19.8%",
+              height: "14.5%",
+            }}
+            className="group absolute z-20 cursor-pointer rounded-[10px] p-0 text-left outline-none transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            <div
+              aria-hidden="true"
+              style={{
+                transform: "perspective(700px) rotateX(24deg) rotateZ(8deg)",
+              }}
+              className={`pointer-events-none h-full w-full rounded-[8px] transition-all duration-300 ${
+                hovered === "contact"
+                  ? "ring-2 ring-[#ffd584]/90 bg-[#ffd584]/[0.08] shadow-[0_0_32px_rgba(255,204,112,0.5)]"
+                  : "ring-0"
+              }`}
+            />
+          </button>
+
+          {/* -----------------------------------------------------------------
+              GREEN GLASS BANKER'S LAMP ON THE DESK (INTERACTIVE LIGHT TOGGLE)
+             ----------------------------------------------------------------- */}
+          <button
+            type="button"
+            data-testid="workspace-lamp"
+            onClick={() => setLampOn((v) => !v)}
+            onMouseEnter={() => setHovered("lamp")}
+            onMouseLeave={() => setHovered(null)}
+            onFocus={() => setHovered("lamp")}
+            onBlur={() => setHovered(null)}
+            aria-pressed={lampOn}
+            aria-label="Classic green glass banker's lamp — toggle warm reading light"
+            style={{
+              left: "13.5%",
+              top: "34.5%",
+              width: "17.5%",
+              height: "33.5%",
+            }}
+            className="group absolute z-20 cursor-pointer rounded-[16px] p-0 text-left outline-none"
+          >
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none h-full w-full rounded-[16px] transition-all duration-300 ${
+                hovered === "lamp"
+                  ? "ring-2 ring-[#ffd584]/80 shadow-[0_0_36px_rgba(255,214,128,0.5)]"
+                  : "ring-0"
+              }`}
+            />
+          </button>
+
+          {/* -----------------------------------------------------------------
+              DISCREET IN-SCENE CAPTION PILL (BOTTOM EDGE OF THE STUDY)
              ----------------------------------------------------------------- */}
           <div
-            data-testid="walnut-desk-surface"
-            className="absolute inset-x-0 bottom-0 z-20 h-[47%] w-full"
+            aria-live="polite"
+            className="pointer-events-none absolute inset-x-0 bottom-[2.2%] z-30 flex justify-center px-4"
           >
-            {/* ── 1. Perspective Trapezoid Walnut Tabletop Surface ── */}
             <div
-              aria-hidden="true"
-              className="absolute inset-x-[1%] top-[12%] bottom-[16%] rounded-t-[18px] border-t border-[#a87442]/50 shadow-[0_-20px_60px_rgba(0,0,0,0.85),0_30px_80px_rgba(0,0,0,0.95)]"
-              style={{
-                background:
-                  "radial-gradient(ellipse 75% 70% at 38% 35%, #5c361c 0%, #3a2010 48%, #211108 82%, #130904 100%)",
-                transform: "perspective(1100px) rotateX(22deg)",
-                transformOrigin: "bottom center",
-              }}
+              className={`inline-flex items-center gap-2.5 rounded-full border border-[#c9a45c]/40 bg-[#0d0805]/88 px-4 py-1.5 text-xs text-bone/95 shadow-[0_10px_28px_rgba(0,0,0,0.9)] backdrop-blur-md transition-opacity duration-300 ${
+                hovered ? "opacity-100" : "opacity-85"
+              }`}
             >
-              {/* Natural Horizontal Walnut Burl & Wood Grain Streaks */}
-              <div
-                className="absolute inset-0 opacity-35"
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(180deg, rgba(16,8,3,0) 0px, rgba(16,8,3,0) 9px, rgba(10,4,1,0.45) 11px, rgba(176,112,62,0.12) 13px, rgba(16,8,3,0) 19px)",
-                }}
-              />
-
-              {lampOn && (
-                <div className="absolute left-[6%] top-[8%] h-[75%] w-[42%] rounded-full bg-[radial-gradient(ellipse,rgba(255,194,102,0.28)_0%,transparent_70%)] blur-xl" />
-              )}
-              <div className="absolute left-[36%] top-[12%] h-[65%] w-[32%] rounded-full bg-[radial-gradient(ellipse,rgba(163,230,53,0.09)_0%,transparent_70%)] blur-xl" />
-
-              {/* Center Leather Desk Blotter Mat */}
-              <div className="absolute inset-x-[16%] top-[16%] bottom-[10%] rounded-[10px] border border-[#c9a45c]/25 bg-gradient-to-b from-[#17110d] to-[#0f0a07] shadow-[0_8px_24px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                <div className="absolute inset-1.5 rounded-[7px] border border-[#c9a45c]/20" />
-              </div>
-            </div>
-
-            {/* ── 2. Front Carved Walnut Desk Apron, Bevel Edge & Drawer Pulls ── */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex h-[17%] flex-col"
-            >
-              <div className="h-3.5 w-full rounded-t-[4px] border-t border-[#c89358]/55 bg-gradient-to-b from-[#5e371c] via-[#3b2110] to-[#1c0e06] shadow-[0_4px_12px_rgba(0,0,0,0.9)]" />
-              <div className="h-[2px] w-full bg-gradient-to-r from-[#2e1a0c] via-[#c9a45c]/65 to-[#2e1a0c]" />
-
-              <div className="grid flex-1 grid-cols-12 gap-3 border-t border-black/80 bg-gradient-to-b from-[#1f1007] via-[#140a04] to-[#090402] px-6 py-1.5 shadow-[inset_0_8px_20px_rgba(0,0,0,0.9)] sm:px-14">
-                <div className="col-span-3 flex items-center justify-center rounded-[2px] border border-[#4a2c17]/40 bg-[#120904]/80">
-                  <div className="h-1.5 w-10 rounded-full border border-[#c9a45c]/50 bg-gradient-to-b from-[#e0be78] to-[#6e4c1e] shadow-md" />
-                </div>
-                <div className="col-span-6 flex items-center justify-center rounded-[2px] border border-[#4a2c17]/45 bg-[#120904]/90">
-                  <div className="h-1.5 w-16 rounded-full border border-[#c9a45c]/55 bg-gradient-to-b from-[#e0be78] to-[#6e4c1e] shadow-md" />
-                </div>
-                <div className="col-span-3 flex items-center justify-center rounded-[2px] border border-[#4a2c17]/40 bg-[#120904]/80">
-                  <div className="h-1.5 w-10 rounded-full border border-[#c9a45c]/50 bg-gradient-to-b from-[#e0be78] to-[#6e4c1e] shadow-md" />
-                </div>
-              </div>
-            </div>
-
-            {/* =================================================================
-                3. NATURAL INTERACTIVE OBJECTS SITTING ON THE WALNUT DESK
-               ================================================================= */}
-
-            {/* ── OBJECT 1: BANKER'S BRASS & AMBER GLASS DESK LAMP (FAR LEFT) ── */}
-            <button
-              type="button"
-              data-testid="workspace-lamp"
-              onClick={() => setLampOn((v) => !v)}
-              onMouseEnter={() => setHovered("lamp")}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered("lamp")}
-              onBlur={() => setHovered(null)}
-              aria-pressed={lampOn}
-              aria-label="Banker's brass studio lamp — toggle warm reading light"
-              className="group absolute bottom-[48%] left-[3%] z-30 flex h-[68%] w-[14%] max-w-[165px] cursor-pointer flex-col items-center justify-end outline-none sm:left-[4%]"
-            >
-              <div
-                className={`relative z-20 h-[28%] w-full rounded-t-[36px] rounded-b-[8px] border transition-all duration-500 ${
-                  lampOn
-                    ? "border-[#ffd584] bg-gradient-to-b from-[#ffdf9e] via-[#e08b34] to-[#9e4f14] shadow-[0_18px_55px_rgba(255,186,92,0.85),inset_0_-6px_16px_rgba(255,240,200,0.8)]"
-                    : "border-[#e6be74]/40 bg-gradient-to-b from-[#4a321c] via-[#2e1e10] to-[#1a1008] shadow-[0_10px_25px_rgba(0,0,0,0.9)]"
-                } group-hover:ring-2 group-hover:ring-[#ffd584]/70 group-focus-visible:ring-2 group-focus-visible:ring-[#ffd584]`}
-              >
-                <div className="mx-auto -mt-2 h-2 w-8 rounded-t-full bg-gradient-to-r from-[#5c401c] via-[#e2be74] to-[#5c401c]" />
-              </div>
-
-              {lampOn && (
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-[26%] h-[60%] w-[150%] rounded-full bg-[radial-gradient(ellipse_at_top,rgba(255,214,138,0.65)_0%,rgba(224,140,56,0.22)_50%,transparent_80%)] blur-md"
-                />
-              )}
-
-              <div className="relative flex h-[54%] w-full justify-center">
-                <div className="h-full w-2.5 rounded-full border-x border-[#f0d28c]/40 bg-gradient-to-r from-[#593e1c] via-[#d8b264] to-[#473014] shadow-lg" />
-                <div className="absolute right-[32%] top-1 flex flex-col items-center transition-transform duration-300 group-hover:translate-y-1">
-                  <div className="h-7 w-[1.5px] bg-[#d8b264]" />
-                  <div className="h-2.5 w-1.5 rounded-full bg-[#e8c87c] shadow-sm" />
-                </div>
-              </div>
-
-              <div className="relative z-10 h-[12%] w-[74%] rounded-t-[10px] border-t border-[#f2d59c]/60 bg-gradient-to-r from-[#3d2912] via-[#cfa858] to-[#33210d] shadow-[0_10px_24px_rgba(0,0,0,0.95)]" />
-              <div className="h-[5%] w-[88%] rounded-full bg-black/85 blur-[2px]" />
-            </button>
-
-            {/* ── OBJECT 2: OPEN LEATHER NOTEBOOK & FOUNTAIN PEN (LEFT-FRONT ON DESK)
-                Opens Javier's writing, creative journey, and the IHBNF philosophy inside the room ── */}
-            <button
-              type="button"
-              data-testid="workspace-notebook"
-              onClick={() => openRoomModal("notebook")}
-              onMouseEnter={() => setHovered("notebook")}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered("notebook")}
-              onBlur={() => setHovered(null)}
-              aria-haspopup="dialog"
-              aria-expanded={activeModal === "notebook"}
-              aria-label="Open Leather Field Notebook: Javier Huertas's Writing & Creative Journey"
-              className="group absolute bottom-[22%] left-[14%] z-30 h-[34%] w-[23%] max-w-[290px] cursor-pointer text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.03] focus-visible:-translate-y-1.5 focus-visible:scale-[1.03] sm:left-[15%]"
-              style={{
-                transform: "perspective(900px) rotateX(24deg) rotateZ(-6deg)",
-              }}
-            >
-              <span aria-hidden="true" className="absolute -inset-2" />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -inset-1.5 translate-y-2 rounded-[8px] bg-black/85 blur-md transition-all group-hover:translate-y-3 group-hover:blur-lg"
-              />
-
-              <div className="relative grid h-full w-full grid-cols-2 overflow-hidden rounded-[6px] border-[3px] border-[#29170b] bg-[#efe3cc] p-1 shadow-[0_14px_30px_rgba(0,0,0,0.9)] ring-1 ring-[#c9a45c]/30 transition-all duration-300 group-hover:shadow-[0_18px_38px_rgba(201,164,92,0.35)] group-hover:ring-2 group-hover:ring-[#ffd584] group-focus-visible:ring-2 group-focus-visible:ring-[#ffd584]">
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-2.5 -translate-x-1/2 bg-gradient-to-r from-black/15 via-black/35 to-black/15"
-                />
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -bottom-2 left-[49%] z-20 h-6 w-1.5 rotate-6 bg-[#8f2419] shadow-sm"
-                />
-
-                {/* Left Parchment Page */}
-                <div
-                  className="flex flex-col justify-between p-1.5 pr-2 text-[#24190e] sm:p-2.5"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(138,108,68,0.18) 12px)",
-                  }}
-                >
-                  <div>
-                    <span className="block font-mono text-[0.42rem] uppercase tracking-[0.18em] text-[#7a582e] sm:text-[0.48rem]">
-                      Creator&apos;s Journal
-                    </span>
-                    <p className="mt-0.5 font-display text-[0.65rem] leading-none font-semibold text-[#1a1109] sm:text-sm">
-                      Writing &amp; Craft
-                    </p>
-                  </div>
-                  <p className="font-display text-[0.52rem] italic leading-tight text-[#4a341d] sm:text-[0.65rem]">
-                    “Build it. Break it. Fix it. Keep moving.”
-                  </p>
-                </div>
-
-                {/* Right Parchment Page */}
-                <div
-                  className="relative flex flex-col justify-between p-1.5 pl-2 text-[#2c1f12] sm:p-2.5"
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(138,108,68,0.18) 12px)",
-                  }}
-                >
-                  <div>
-                    <span className="block font-mono text-[0.42rem] uppercase tracking-[0.16em] text-[#7a582e] sm:text-[0.48rem]">
-                      Field Notes
-                    </span>
-                    <p className="mt-1 font-display text-[0.55rem] italic leading-tight text-[#3b2916] sm:text-[0.68rem]">
-                      Stories in the works &amp; the journey so far.
-                    </p>
-                  </div>
-                  <p className="text-right font-display text-[0.55rem] italic text-[#5c4022] sm:text-xs">
-                    — Javier
-                  </p>
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute bottom-2 -right-2 h-1.5 w-[85%] -rotate-[22deg] rounded-full bg-gradient-to-r from-[#d8b467] via-[#1c1612] to-[#c9a45c] shadow-[0_3px_6px_rgba(0,0,0,0.65)]"
-                  />
-                </div>
-              </div>
-            </button>
-
-            {/* ── OBJECT 3: STUDIO LAPTOP WORKSTATION (CENTER OF THE WALNUT DESK)
-                Activates the in-room Sports Wager Helper presentation ── */}
-            <button
-              type="button"
-              data-testid="workspace-laptop"
-              onClick={() => openRoomModal("laptop")}
-              onMouseEnter={() => setHovered("laptop")}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered("laptop")}
-              onBlur={() => setHovered(null)}
-              aria-haspopup="dialog"
-              aria-expanded={activeModal === "laptop"}
-              aria-label="Studio Laptop: Open Sports Wager Helper in-room presentation"
-              className="group absolute bottom-[27%] left-1/2 z-30 flex w-[30%] max-w-[380px] -translate-x-[48%] cursor-pointer flex-col items-center p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.025] focus-visible:-translate-y-1.5 focus-visible:scale-[1.025]"
-            >
-              <span aria-hidden="true" className="absolute -inset-2" />
-              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-[12px] border-[3px] border-[#38312c] bg-[#070a08] p-1.5 shadow-[0_24px_50px_rgba(0,0,0,0.95),0_0_30px_rgba(132,204,22,0.12)] transition-all duration-300 group-hover:border-[#a3e635] group-hover:shadow-[0_24px_55px_rgba(132,204,22,0.32)] group-focus-visible:border-[#a3e635]">
-                <div className="mx-auto mb-1 h-1 w-10 rounded-full bg-[#1a1816]" />
-
-                <div className="relative h-[calc(100%-6px)] w-full overflow-hidden rounded-[6px] bg-[#060906]">
-                  <Image
-                    src="/media/sports-wager-helper/og-image.png"
-                    alt="Sports Wager Helper running on studio laptop"
-                    fill
-                    sizes="(min-width: 1024px) 380px, 40vw"
-                    className="object-cover object-center"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-                  <div className="absolute inset-x-2 bottom-1.5 flex items-center justify-between rounded-md border border-[#a3e635]/35 bg-black/80 px-2 py-1 backdrop-blur-sm">
-                    <div className="flex items-center gap-1.5">
-                      <div className="relative h-4 w-4 shrink-0 overflow-hidden rounded bg-black">
-                        <Image
-                          src="/media/sports-wager-helper/swh-brand-logo.svg"
-                          alt=""
-                          fill
-                          sizes="20px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="font-mono text-[0.5rem] font-semibold tracking-wider text-bone sm:text-[0.6rem]">
-                        SPORTS WAGER HELPER
-                      </span>
-                    </div>
-                    <span className="rounded bg-[#a3e635] px-1.5 py-0.5 font-mono text-[0.45rem] font-bold text-black">
-                      S.A.L. LIVE
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                aria-hidden="true"
-                className="relative h-4 w-[108%] rounded-b-[10px] border-x border-b border-white/20 bg-gradient-to-b from-[#4a433e] via-[#2e2925] to-[#171412] shadow-[0_18px_32px_rgba(0,0,0,0.95)]"
-              >
-                <div className="mx-auto mt-1 h-1 w-12 rounded-full bg-black/50" />
-              </div>
-            </button>
-
-            {/* ── OBJECT 4: SMARTPHONE RUNNING UNFILTR BY JAVIER (RIGHT OF LAPTOP)
-                Activates the in-room Unfiltr presentation with real screenshots & store links ── */}
-            <button
-              type="button"
-              data-testid="workspace-smartphone"
-              onClick={() => openRoomModal("smartphone")}
-              onMouseEnter={() => setHovered("smartphone")}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered("smartphone")}
-              onBlur={() => setHovered(null)}
-              aria-haspopup="dialog"
-              aria-expanded={activeModal === "smartphone"}
-              aria-label="Smartphone on desk: Open Unfiltr by Javier in-room presentation"
-              className="group absolute bottom-[23%] right-[26%] z-30 aspect-[9/19] w-[8.2%] min-w-[54px] max-w-[100px] cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-2 hover:scale-105 focus-visible:-translate-y-2 focus-visible:scale-105 sm:right-[27%]"
-              style={{
-                transform: "perspective(800px) rotateX(18deg) rotateY(-12deg) rotateZ(7deg)",
-              }}
-            >
-              <span aria-hidden="true" className="absolute -inset-3" />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -inset-1 translate-y-2 rounded-[18px] bg-black/90 blur-md"
-              />
-
-              <div className="relative h-full w-full overflow-hidden rounded-[14px] border-[2px] border-[#6e6478] bg-black p-[3px] shadow-[0_16px_35px_rgba(98,76,224,0.45)] transition-all duration-300 group-hover:border-violet group-hover:shadow-[0_18px_42px_rgba(169,156,255,0.55)] group-focus-visible:border-violet">
-                <div className="relative h-full w-full overflow-hidden rounded-[11px] bg-black">
-                  <Image
-                    src="/media/unfiltr/kai-tropical-chat.jpg"
-                    alt="Unfiltr by Javier live screen on smartphone"
-                    fill
-                    sizes="110px"
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-            </button>
-
-            {/* ── OBJECT 5: BRASS FLIP DESK CALENDAR (RIGHT WING OF DESK)
-                Flips open to confirmed project announcements & milestones ── */}
-            <button
-              type="button"
-              data-testid="workspace-calendar"
-              onClick={() => openRoomModal("calendar")}
-              onMouseEnter={() => setHovered("calendar")}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered("calendar")}
-              onBlur={() => setHovered(null)}
-              aria-haspopup="dialog"
-              aria-expanded={activeModal === "calendar"}
-              aria-label="Brass Desk Calendar: Open confirmed project milestones and announcements"
-              className="group absolute bottom-[27%] right-[12%] z-30 flex h-[27%] w-[13%] max-w-[165px] cursor-pointer flex-col justify-between p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.03] focus-visible:-translate-y-1.5 focus-visible:scale-[1.03] sm:right-[13%]"
-              style={{
-                transform: "perspective(850px) rotateX(14deg) rotateY(-14deg) rotateZ(-3deg)",
-              }}
-            >
-              <span aria-hidden="true" className="absolute -inset-2" />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -inset-1 translate-y-2 rounded-lg bg-black/85 blur-md"
-              />
-
-              <div aria-hidden="true" className="relative z-20 mx-auto -mb-1.5 flex w-[76%] justify-around">
-                {[0, 1, 2, 3].map((r) => (
-                  <span
-                    key={r}
-                    className="h-3 w-1.5 rounded-full border border-[#f5d996]/60 bg-gradient-to-b from-[#e8c67a] to-[#5e4018] shadow-sm"
-                  />
-                ))}
-              </div>
-
-              <div className="relative flex flex-1 flex-col justify-between overflow-hidden rounded-[6px] border-2 border-[#7a582e] bg-gradient-to-b from-[#f3ead8] to-[#dfd0b4] p-2 text-[#1e150c] shadow-[0_16px_32px_rgba(0,0,0,0.9)] transition-all duration-300 group-hover:border-[#ffd584] group-hover:shadow-[0_18px_40px_rgba(201,164,92,0.4)] group-focus-visible:border-[#ffd584]">
-                <div className="flex items-center justify-between border-b border-[#8a683c]/30 pb-1">
-                  <span className="font-mono text-[0.42rem] font-bold uppercase tracking-[0.18em] text-[#7a4b19] sm:text-[0.5rem]">
-                    STUDIO SLATE
-                  </span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#b83227]" />
-                </div>
-
-                <div className="my-auto flex items-baseline justify-between gap-1.5 pt-0.5">
-                  <span className="font-display text-lg leading-none font-bold text-[#1a1109] sm:text-2xl">
-                    LIVE
-                  </span>
-                  <div className="text-right">
-                    <span className="block font-mono text-[0.4rem] uppercase tracking-wider text-[#6e4e28] sm:text-[0.46rem]">
-                      CONFIRMED
-                    </span>
-                    <span className="block font-display text-[0.55rem] italic text-[#2b1d0f] sm:text-[0.68rem]">
-                      4 Active Works
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-0.5 border-t border-[#8a683c]/25 pt-1 text-center font-mono text-[0.36rem] text-[#5c4328] sm:text-[0.42rem]">
-                  <span className="rounded-xs bg-amber/30 font-bold text-[#3b230c]">BOOK</span>
-                  <span className="rounded-xs bg-violet/30 font-bold text-[#231942]">APP</span>
-                  <span className="rounded-xs bg-[#a3e635]/35 font-bold text-[#1c2e05]">SWH</span>
-                  <span className="rounded-xs bg-gold/30 font-bold text-[#3b2810]">NEXT</span>
-                </div>
-              </div>
-
-              <div className="h-2 w-full rounded-b-sm bg-gradient-to-r from-[#2e1a0c] via-[#5c361c] to-[#2e1a0c] shadow-md" />
-            </button>
-
-            {/* ── OBJECT 6: BRASS WAX-SEALED LETTER & CARD HOLDER (FAR RIGHT OF DESK)
-                Opens verified contact & social channels in-room ── */}
-            <button
-              type="button"
-              data-testid="workspace-contact"
-              onClick={() => openRoomModal("contact")}
-              onMouseEnter={() => setHovered("contact")}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered("contact")}
-              onBlur={() => setHovered(null)}
-              aria-haspopup="dialog"
-              aria-expanded={activeModal === "contact"}
-              aria-label="Brass Correspondence Tray & Wax-Sealed Letter: Open verified contact and social links"
-              className="group absolute bottom-[21%] right-[2%] z-30 flex h-[20%] w-[9.5%] min-w-[68px] max-w-[125px] cursor-pointer flex-col items-center justify-end p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-105 focus-visible:-translate-y-1.5 focus-visible:scale-105 sm:right-[3%]"
-              style={{
-                transform: "perspective(800px) rotateX(20deg) rotateY(-10deg) rotateZ(5deg)",
-              }}
-            >
-              <span aria-hidden="true" className="absolute -inset-2.5" />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -inset-1 translate-y-2 rounded-md bg-black/85 blur-md"
-              />
-
-              {/* Cream Linen Envelope with Crimson IHBNF Wax Seal resting in a Brass Holder */}
-              <div className="relative flex h-[82%] w-full flex-col items-center justify-center overflow-hidden rounded-[4px] border border-[#c9a45c]/60 bg-gradient-to-br from-[#f5ecda] via-[#e9dac0] to-[#d5c09e] p-1.5 shadow-[0_12px_28px_rgba(0,0,0,0.9)] transition-all duration-300 group-hover:border-[#ffd584] group-hover:shadow-[0_14px_34px_rgba(201,164,92,0.45)] group-focus-visible:border-[#ffd584]">
-                {/* Envelope V-flap lines */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 top-0 h-[58%] border-b border-[#8a683c]/35 bg-gradient-to-b from-[#fbf5e8]/80 to-[#e2d0b0]/60 [clip-path:polygon(0_0,100%_0,50%_100%)]"
-                />
-                {/* Crimson Wax Seal */}
-                <div className="relative z-10 flex h-5 w-5 items-center justify-center rounded-full border border-[#f2d59c]/45 bg-gradient-to-br from-[#a82419] via-[#7c160e] to-[#4a0b06] text-[0.42rem] font-bold tracking-tighter text-[#f5dfb2] shadow-[0_3px_8px_rgba(0,0,0,0.65)] sm:h-6 sm:w-6">
-                  JH
-                </div>
-                <span className="mt-1 font-mono text-[0.38rem] font-bold uppercase tracking-[0.18em] text-[#5c4022] sm:text-[0.44rem]">
-                  CONNECT
+              <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_#c9a45c]" />
+              {hovered === "why-henry" && (
+                <span>
+                  <strong className="font-medium text-amber">The Unwritten Journey — Book One: Why Henry?</strong> · Pull hardcover from shelf
                 </span>
-              </div>
-
-              {/* Brass Letter Tray Base */}
-              <div className="h-1.5 w-[92%] rounded-b-sm bg-gradient-to-r from-[#5c401c] via-[#e2be74] to-[#5c401c] shadow-md" />
-            </button>
-
-            {/* ── SUBTLE IN-SCENE BRASS NAMEPLATE ON FRONT BULLNOSE OF DESK (HOVER FEEDBACK ONLY) ── */}
-            <div
-              aria-live="polite"
-              className="pointer-events-none absolute inset-x-0 bottom-[2.5%] z-40 flex justify-center px-4"
-            >
-              <div
-                className={`inline-flex items-center gap-2.5 rounded-full border border-[#c9a45c]/35 bg-[#120b06]/90 px-4 py-1 text-xs text-bone/90 shadow-[0_8px_24px_rgba(0,0,0,0.85)] backdrop-blur-md transition-opacity duration-300 ${
-                  hovered ? "opacity-100" : "opacity-80"
-                }`}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_#c9a45c]" />
-                {hovered === "why-henry" && (
-                  <span>
-                    <strong className="font-medium text-amber">The Unwritten Journey — Book One: Why Henry?</strong> · Pull book from shelf
-                  </span>
-                )}
-                {hovered === "dream-payoff" && (
-                  <span>
-                    <strong className="font-medium text-gold">The Dream of the Payoff</strong> · Pull memoir book from shelf
-                  </span>
-                )}
-                {hovered === "laptop" && (
-                  <span>
-                    <strong className="font-medium text-[#a3e635]">Sports Wager Helper</strong> · Open S.A.L. Workstation
-                  </span>
-                )}
-                {hovered === "smartphone" && (
-                  <span>
-                    <strong className="font-medium text-violet">Unfiltr by Javier</strong> · Inspect iOS &amp; Android Companion
-                  </span>
-                )}
-                {hovered === "notebook" && (
-                  <span>
-                    <strong className="font-medium text-gold">Javier&apos;s Field Notebook</strong> · Open Writing &amp; Creative Journey
-                  </span>
-                )}
-                {hovered === "calendar" && (
-                  <span>
-                    <strong className="font-medium text-bone">Studio Desk Calendar</strong> · Flip to Confirmed Milestones
-                  </span>
-                )}
-                {hovered === "contact" && (
-                  <span>
-                    <strong className="font-medium text-gold">Correspondence &amp; Socials</strong> · Open Verified Contact Links
-                  </span>
-                )}
-                {hovered === "lamp" && (
-                  <span>
-                    <strong className="font-medium text-gold">Banker&apos;s Studio Lamp</strong> · Click pull-chain to switch lighting
-                  </span>
-                )}
-                {hovered === "brand" && (
-                  <span>
-                    <strong className="font-medium text-gold">IHBNF — Idle Hands Bear No Fruit</strong> · Inspect Wall Emblem &amp; Meaning
-                  </span>
-                )}
-                {!hovered && (
-                  <span className="text-mute">
-                    Select any object in the study — the <strong className="font-normal text-gold">IHBNF Wall Emblem</strong>,{" "}
-                    <strong className="font-normal text-amber">books on the shelf</strong>,{" "}
-                    <strong className="font-normal text-[#a3e635]">laptop</strong>,{" "}
-                    <strong className="font-normal text-violet">phone</strong>,{" "}
-                    <strong className="font-normal text-gold">notebook</strong>,{" "}
-                    <strong className="font-normal text-bone">calendar</strong>, or{" "}
-                    <strong className="font-normal text-gold">letter</strong>
-                  </span>
-                )}
-              </div>
+              )}
+              {hovered === "dream-payoff" && (
+                <span>
+                  <strong className="font-medium text-gold">The Dream of the Payoff</strong> · Pull published memoir from shelf
+                </span>
+              )}
+              {hovered === "laptop" && (
+                <span>
+                  <strong className="font-medium text-[#a3e635]">Sports Wager Helper</strong> · Inspect S.A.L. Workstation
+                </span>
+              )}
+              {hovered === "smartphone" && (
+                <span>
+                  <strong className="font-medium text-violet">Unfiltr by Javier</strong> · Inspect iOS &amp; Android AI Companion
+                </span>
+              )}
+              {hovered === "notebook" && (
+                <span>
+                  <strong className="font-medium text-gold">Writing Journal</strong> · Open Javier&apos;s Writing &amp; Creative Journey
+                </span>
+              )}
+              {hovered === "calendar" && (
+                <span>
+                  <strong className="font-medium text-bone">Desk Calendar</strong> · Confirmed Milestones &amp; Updates
+                </span>
+              )}
+              {hovered === "contact" && (
+                <span>
+                  <strong className="font-medium text-gold">Wax-Sealed Letter</strong> · Open Verified Contact &amp; Social Links
+                </span>
+              )}
+              {hovered === "lamp" && (
+                <span>
+                  <strong className="font-medium text-gold">Green Banker&apos;s Lamp</strong> · Click to toggle warm reading light
+                </span>
+              )}
+              {hovered === "brand" && (
+                <span>
+                  <strong className="font-medium text-gold">IHBNF — Idle Hands Bear No Fruit</strong> · Inspect Framed Wall Emblem
+                </span>
+              )}
+              {!hovered && (
+                <span className="text-mute">
+                  Explore the study — select the <strong className="font-normal text-gold">Framed IHBNF Emblem</strong>,{" "}
+                  <strong className="font-normal text-amber">books on the shelf</strong>,{" "}
+                  <strong className="font-normal text-[#a3e635]">laptop</strong>,{" "}
+                  <strong className="font-normal text-violet">phone</strong>,{" "}
+                  <strong className="font-normal text-gold">journal</strong>,{" "}
+                  <strong className="font-normal text-bone">calendar</strong>, or{" "}
+                  <strong className="font-normal text-gold">sealed letter</strong>
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -1150,7 +990,7 @@ export function LivingWorkspace() {
           <div
             data-testid="why-henry-stage-backdrop"
             onClick={handleReturnShelfBook}
-            className={`fixed inset-0 bg-[#050302]/72 backdrop-blur-[4px] transition-opacity duration-500 ${
+            className={`fixed inset-0 bg-[#050302]/68 backdrop-blur-[4px] transition-opacity duration-500 ${
               bookStage === "extracting" || bookStage === "open" ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -1280,7 +1120,7 @@ export function LivingWorkspace() {
                     </div>
                   </div>
 
-                  {/* ── WHY HENRY: RIGHT OPEN PAGE (TITLE, OFFICIAL SYNOPSIS, CHARACTERS & AMAZON ACTION) ── */}
+                  {/* ── WHY HENRY: RIGHT OPEN PAGE (TITLE, OFFICIAL SYNOPSIS & AMAZON ACTION) ── */}
                   <div
                     data-testid="why-henry-right-page"
                     className="relative flex flex-col justify-between overflow-hidden rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
@@ -1378,7 +1218,7 @@ export function LivingWorkspace() {
                 </>
               ) : (
                 <>
-                  {/* ── THE DREAM OF THE PAYOFF: LEFT OPEN PAGE (OFFICIAL COVER & ARTWORK) ── */}
+                  {/* ── THE DREAM OF THE PAYOFF: LEFT OPEN PAGE (OFFICIAL PUBLISHED COVER & ARTWORK) ── */}
                   <div
                     data-testid="dream-payoff-left-page"
                     className={`relative flex flex-col justify-between overflow-hidden rounded-t-[6px] border border-[#b89b72]/45 bg-gradient-to-br from-[#f3ead8] via-[#eadbc0] to-[#dcc69e] p-5 text-[#22170d] shadow-[inset_-18px_0_32px_rgba(68,42,18,0.22)] transition-all duration-500 sm:p-7 md:rounded-l-[6px] md:rounded-tr-none ${
@@ -1437,13 +1277,13 @@ export function LivingWorkspace() {
 
                     <div className="flex items-center justify-between border-t border-[#8a683c]/30 pt-2.5 text-xs text-[#5c4022]">
                       <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em]">
-                        Autobiographical Non-Fiction
+                        Published Memoir · Non-Fiction
                       </span>
                       <span className="font-display italic">A true story.</span>
                     </div>
                   </div>
 
-                  {/* ── THE DREAM OF THE PAYOFF: RIGHT OPEN PAGE (DESCRIPTION & ACTIONS) ── */}
+                  {/* ── THE DREAM OF THE PAYOFF: RIGHT OPEN PAGE (DESCRIPTION & VERIFIED PURCHASE LINK) ── */}
                   <div
                     data-testid="dream-payoff-right-page"
                     className="relative flex flex-col justify-between overflow-hidden rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
@@ -1476,7 +1316,7 @@ export function LivingWorkspace() {
 
                     <div className="my-3.5 space-y-2.5">
                       <p className="font-mono text-[0.64rem] uppercase tracking-[0.26em] text-[#7a4b19]">
-                        Memoir by {site.founder.name}
+                        Published Book by {site.founder.name}
                       </p>
                       <h2
                         id="shelf-open-book-title"
@@ -1497,28 +1337,28 @@ export function LivingWorkspace() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2.5 border-t border-[#8a683c]/30 pt-3.5">
-                      <button
-                        type="button"
-                        data-testid="dream-payoff-follow-updates-btn"
-                        onClick={() => {
-                          setBookStage("shelved");
-                          openRoomModal("contact");
-                        }}
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1c1209] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#f5dfb2] shadow-md transition-colors hover:bg-[#332010]"
-                      >
-                        Follow Memoir Updates →
-                      </button>
-
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-[#8a683c]/30 pt-3.5">
                       <a
                         href={links.amazonWhyHenry}
                         target="_blank"
                         rel="noopener noreferrer"
                         data-testid="dream-payoff-author-amazon-link"
-                        className="inline-flex items-center gap-2 rounded-full border border-[#5c3d1e]/45 bg-[#efe2c8] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#24170b] transition-colors hover:bg-[#e3d0ad]"
+                        className="inline-flex items-center gap-2 rounded-full bg-[#1c1209] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#f5dfb2] shadow-md transition-colors hover:bg-[#332010]"
                       >
-                        Published Book One on Amazon <ExternalArrow className="h-3.5 w-3.5" />
+                        Buy on Amazon <ExternalArrow className="h-3.5 w-3.5" />
                       </a>
+
+                      <button
+                        type="button"
+                        data-testid="dream-payoff-follow-updates-btn"
+                        onClick={() => {
+                          setBookStage("shelved");
+                          openRoomModal("notebook");
+                        }}
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#5c3d1e]/45 bg-[#efe2c8] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#24170b] transition-colors hover:bg-[#e3d0ad]"
+                      >
+                        Read Author&apos;s Journal →
+                      </button>
                     </div>
 
                     {/* 3D HINGED FRONT COVER FOR THE DREAM OF THE PAYOFF */}
@@ -1568,7 +1408,7 @@ export function LivingWorkspace() {
           <div
             data-testid="in-room-modal-backdrop"
             onClick={closeRoomModal}
-            className="fixed inset-0 bg-[#050302]/72 backdrop-blur-[4px] transition-opacity duration-300"
+            className="fixed inset-0 bg-[#050302]/68 backdrop-blur-[4px] transition-opacity duration-300"
           />
 
           {/* -----------------------------------------------------------------
@@ -1594,16 +1434,16 @@ export function LivingWorkspace() {
               <div className="mt-6 grid items-center gap-7 md:grid-cols-12">
                 {/* Official Primary Hands / Soil / Seedling Emblem */}
                 <div className="flex flex-col items-center md:col-span-5">
-                  <div className="relative aspect-square w-full max-w-[240px] overflow-hidden rounded-2xl border border-gold/35 bg-[radial-gradient(circle_at_50%_40%,rgba(201,164,92,0.22),rgba(12,9,6,0.95)_72%)] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.85)]">
+                  <div className="relative aspect-square w-full max-w-[240px] overflow-hidden rounded-2xl border border-gold/35 bg-[radial-gradient(circle_at_50%_40%,rgba(201,164,92,0.22),rgba(12,9,6,0.95)_72%)] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.85)]">
                     <Image
                       src="/media/brand/ihbnf-icon.svg"
                       alt="IHBNF Primary Emblem — Hands holding soil and a growing seedling"
                       fill
                       sizes="240px"
-                      className="object-contain p-3"
+                      className="object-contain p-2"
                     />
                   </div>
-                  <div className="mt-3 relative h-12 w-40 opacity-90">
+                  <div className="relative mt-3 h-12 w-40 opacity-90">
                     <Image
                       src="/media/brand/ihbnf-secondary.svg"
                       alt="IHBNF — Idle Hands Bear No Fruit wordmark"
@@ -1627,11 +1467,11 @@ export function LivingWorkspace() {
                   </h2>
                   <p className="text-base leading-relaxed text-bone/90">
                     Welcome in. <strong className="font-medium text-gold">IHBNF</strong> stands for{" "}
-                    <em>Idle Hands Bear No Fruit</em>—the creative home connecting the books, apps, stories, and independent projects built by{" "}
+                    <em>Idle Hands Bear No Fruit</em>—the creative company and home connecting the books, applications, stories, and independent projects created by{" "}
                     <strong className="font-medium text-bone">{site.founder.name}</strong>.
                   </p>
                   <p className="text-sm leading-relaxed text-mute sm:text-base">
-                    The emblem of hands cradling soil and a living seedling reflects a simple belief: nothing grows on its own. Whether it&apos;s a young-adult fantasy novel (*The Unwritten Journey — Book One: Why Henry?*), an AI companion app that remembers (*Unfiltr by Javier*), a sports research platform (*Sports Wager Helper*), or an honest memoir (*The Dream of the Payoff*), every project in this room comes from putting in the work and making something worth sharing.
+                    The emblem of hands cradling soil and a living seedling reflects a simple conviction: nothing grows on its own. Whether it&apos;s the young-adult fantasy novel <em>The Unwritten Journey — Book One: Why Henry?</em>, the published memoir <em>The Dream of the Payoff</em>, the AI companion app <em>Unfiltr by Javier</em>, or the sports research platform <em>Sports Wager Helper</em>, every project in this study exists because the work was put in to build it.
                   </p>
 
                   {/* Quick Jump to Inspect Objects in the Study */}
@@ -1644,7 +1484,17 @@ export function LivingWorkspace() {
                       }}
                       className="cursor-pointer rounded-full border border-amber/40 bg-amber/15 px-3.5 py-1.5 text-xs font-medium text-amber hover:bg-amber/25"
                     >
-                      Open Why Henry? Book
+                      Open Why Henry?
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveModal(null);
+                        handleExtractShelfBook("dream-payoff");
+                      }}
+                      className="cursor-pointer rounded-full border border-gold/40 bg-gold/15 px-3.5 py-1.5 text-xs font-medium text-gold hover:bg-gold/25"
+                    >
+                      Open The Dream of the Payoff
                     </button>
                     <button
                       type="button"
@@ -1659,16 +1509,6 @@ export function LivingWorkspace() {
                       className="cursor-pointer rounded-full border border-[#a3e635]/40 bg-[#a3e635]/15 px-3.5 py-1.5 text-xs font-medium text-[#a3e635] hover:bg-[#a3e635]/25"
                     >
                       Inspect Sports Wager Helper
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveModal(null);
-                        handleExtractShelfBook("dream-payoff");
-                      }}
-                      className="cursor-pointer rounded-full border border-gold/40 bg-gold/15 px-3.5 py-1.5 text-xs font-medium text-gold hover:bg-gold/25"
-                    >
-                      Open Memoir Book
                     </button>
                   </div>
                 </div>
@@ -1951,7 +1791,7 @@ export function LivingWorkspace() {
                       If you want more, I&apos;ve got more.
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-[#382716]">
-                      Alongside <strong>The Unwritten Journey — Book One: Why Henry?</strong> and the autobiographical memoir <strong>The Dream of the Payoff</strong>, there are more books in the works. I&apos;m giving each one the time it deserves before I put it out there.
+                      Alongside my published books—<strong>The Unwritten Journey — Book One: Why Henry?</strong> and the autobiographical memoir <strong>The Dream of the Payoff</strong>—there are more books in the works. I&apos;m giving each one the time it deserves before I put it out there.
                     </p>
                   </div>
 
@@ -1979,7 +1819,7 @@ export function LivingWorkspace() {
                       }}
                       className="cursor-pointer rounded-full bg-[#26170b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#f3ead8] hover:bg-[#3d2512]"
                     >
-                      Open The Dream of the Payoff Book →
+                      Open The Dream of the Payoff →
                     </button>
                     <button
                       type="button"
@@ -1989,7 +1829,7 @@ export function LivingWorkspace() {
                       }}
                       className="cursor-pointer rounded-full border border-[#5c3d1e]/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#26170b] hover:bg-[#e2cfa8]"
                     >
-                      Open Why Henry? Book →
+                      Open Why Henry? →
                     </button>
                   </div>
                 </div>
@@ -2023,10 +1863,10 @@ export function LivingWorkspace() {
                   id="in-room-presentation-title"
                   className="font-display text-3xl text-bone sm:text-4xl"
                 >
-                  What&apos;s Live &amp; What&apos;s in the Works
+                  Published Works, Live Apps &amp; What&apos;s Next
                 </h2>
                 <p className="mt-2 text-sm text-mute">
-                  Verified project milestones across IHBNF. Future books and updates are shared only when they are ready—no artificial countdowns or unconfirmed release dates.
+                  Verified project milestones across IHBNF. Future books in the series are shared only when they are ready—no artificial countdowns or unconfirmed release dates.
                 </p>
 
                 <div className="mt-5 grid gap-3.5 sm:grid-cols-2">
@@ -2054,7 +1894,33 @@ export function LivingWorkspace() {
                     </a>
                   </div>
 
-                  {/* Milestone 2: Unfiltr */}
+                  {/* Milestone 2: The Dream of the Payoff */}
+                  <div className="rounded-xl border border-gold/35 bg-gold/[0.06] p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gold">
+                        Published &amp; Available Now
+                      </span>
+                      <span className="h-2 w-2 rounded-full bg-gold" />
+                    </div>
+                    <h3 className="mt-2 font-display text-2xl text-bone">
+                      The Dream of the Payoff
+                    </h3>
+                    <p className="mt-1 text-xs leading-relaxed text-mute">
+                      Javier&apos;s autobiographical memoir—a life built through work, sacrifice, family, and persistence.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveModal(null);
+                        handleExtractShelfBook("dream-payoff");
+                      }}
+                      className="mt-3 inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-gold hover:underline"
+                    >
+                      Pull Book from Shelf →
+                    </button>
+                  </div>
+
+                  {/* Milestone 3: Unfiltr */}
                   <div className="rounded-xl border border-violet/35 bg-violet/[0.06] p-4">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-violet">
@@ -2077,7 +1943,7 @@ export function LivingWorkspace() {
                     </button>
                   </div>
 
-                  {/* Milestone 3: Sports Wager Helper */}
+                  {/* Milestone 4: Sports Wager Helper */}
                   <div className="rounded-xl border border-[#a3e635]/35 bg-[#a3e635]/[0.06] p-4">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#a3e635]">
@@ -2100,36 +1966,13 @@ export function LivingWorkspace() {
                       Visit sportswagerhelper.com <ExternalArrow className="h-3.5 w-3.5" />
                     </a>
                   </div>
-
-                  {/* Milestone 4: The Dream of the Payoff & Upcoming Books */}
-                  <div className="rounded-xl border border-gold/35 bg-gold/[0.06] p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gold">
-                        In Development · No Unconfirmed Dates
-                      </span>
-                      <span className="h-2 w-2 rounded-full bg-gold" />
-                    </div>
-                    <h3 className="mt-2 font-display text-2xl text-bone">
-                      The Dream of the Payoff &amp; Future Books
-                    </h3>
-                    <p className="mt-1 text-xs leading-relaxed text-mute">
-                      Javier&apos;s autobiographical memoir and next stories in the works—each given the time it deserves before release.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setActiveModal("contact")}
-                      className="mt-3 inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-gold hover:underline"
-                    >
-                      Follow Along for Confirmed Releases →
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {/* -----------------------------------------------------------------
-              MODAL F: CORRESPONDENCE TRAY — VERIFIED CONTACT & SOCIAL LINKS
+              MODAL F: WAX-SEALED LETTER — VERIFIED CONTACT & SOCIAL LINKS
              ----------------------------------------------------------------- */}
           {activeModal === "contact" && (
             <div className="relative z-10 my-auto w-full max-w-[820px] overflow-hidden rounded-[12px] border-2 border-[#c9a45c]/55 bg-gradient-to-b from-[#17110b] via-[#100b07] to-[#090604] p-5 text-bone shadow-[0_40px_100px_rgba(0,0,0,0.96)] sm:p-8">

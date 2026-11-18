@@ -173,22 +173,22 @@ export const projects: Project[] = [
     tagline: "A life built through work, sacrifice, family, mistakes, and persistence.",
     summary: "An autobiographical project by Javier Huertas.",
     description: [
-      "The Dream of the Payoff is Javier Huertas's autobiographical project: the true story of an ordinary man whose life has been anything but ordinary.",
+      "The Dream of the Payoff is Javier Huertas's autobiographical book: the true story of an ordinary man whose life has been anything but ordinary.",
       "It covers growing up, family, relationships, fatherhood, work, sacrifice, financial struggles, and dreams that never went away.",
       "Underneath all of it is one question: when does all that hard work finally pay off?",
     ],
-    status: "in-development",
-    statusLabel: "In Development",
+    status: "available",
+    statusLabel: "Available Now",
     details: [
       { label: "Type", value: "Memoir · Non-fiction" },
       { label: "Author", value: "Javier Huertas" },
-      { label: "Status", value: "In development" },
+      { label: "Where", value: "Amazon" },
     ],
     card: {
-      kicker: "Memoir · In development",
+      kicker: "Memoir · Available now",
       title: "The Dream of the Payoff",
       description: "A life built through work, sacrifice, family, mistakes, and persistence.",
-      cta: "Learn More",
+      cta: "Explore",
     },
     media: {
       artwork: {
@@ -204,7 +204,7 @@ export const projects: Project[] = [
         height: 480,
       },
     },
-    links: [{ label: "Follow for updates", href: "/#connect" }],
+    links: [{ label: "Buy on Amazon", href: links.amazonWhyHenry, external: true, primary: true }],
     keywords: ["Javier Huertas memoir", "The Dream of the Payoff"],
   },
 ];
