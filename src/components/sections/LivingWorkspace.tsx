@@ -21,16 +21,7 @@ type HoveredItem =
   | "brand"
   | "contact";
 
-/**
- * Five-stage state machine for the physical 3D book interactions on the shelf
- * (used by both "Why Henry?" and "The Dream of the Payoff"):
- * - "shelved": Sitting naturally in its carved walnut shelf niche
- * - "extracting": Sliding out of the shelf niche, moving forward with depth & rotating toward the viewer
- * - "open": Front cover swings open (-165deg) & pages fan open to reveal the parchment spread
- * - "closing-cover": Front cover & pages fold shut back into a closed 3D hardcover
- * - "returning": Book slides back into its exact walnut shelf position
- */
-type BookStage = "shelved" | "extracting" | "open" | "closing-cover" | "returning";
+type BookStage = "shelved" | "opening" | "open";
 type ShelfBookId = "why-henry" | "dream-payoff";
 
 /**
@@ -112,25 +103,93 @@ const philosophySteps = [
  * Highlights the object that is ALREADY painted into the approved study plate.
  * No duplicate composited phone/laptop/frame images: they were the source of
  * visible misregistration and exposed background artwork behind the overlays.
- * SVG is deliberately pointer-events-none; the original semantic button
- * handles touch, keyboard and click interactions.
+ * The same viewBox drives the exact clickable SVG contours and gold surface glow.
  */
-function ArtworkHotspotGlow({ active, color, points }: {
-  active: boolean;
-  color: "gold" | "lime" | "violet";
-  points: string;
+const studyHotspotPoints: Partial<Record<Exclude<HoveredItem, null | "why-henry" | "dream-payoff">, string>> = {
+  brand: "435,0 450,4 600,32 740,56 743,62 741,360 742,368 620,363 510,351 436,333 434,200",
+  laptop: "719,406 720,652 729,674 735,680 758,686 778,707 788,708 794,713 928,710 936,716 1008,715 1017,707 1179,706 1197,703 1195,698 1159,673 1130,647 1121,409 1114,401 727,400",
+  smartphone: "1211,449 1204,457 1201,468 1179,651 1180,665 1183,672 1191,678 1228,678 1276,685 1305,679 1310,676 1302,627 1298,620 1296,548 1307,462 1296,449",
+  notebook: "854,777 837,759 830,747 812,748 791,735 737,680 718,668 644,664 637,659 625,658 615,662 557,661 534,670 512,660 478,659 440,666 382,682 317,690 297,704 282,704 275,707 274,730 257,743 258,751 269,756 271,767 278,774 283,804 297,810 372,806 414,799 478,795 482,797 486,806 547,813 558,810 557,798 562,794 574,795 580,801 591,801 606,793 677,793 730,786 776,789 839,784",
+  calendar: "1375,495 1380,482 1397,478 1410,480 1420,480 1432,483 1450,482 1470,484 1490,485 1502,493 1503,517 1520,523 1530,530 1545,600 1557,650 1568,653 1568,667 1543,677 1487,685 1457,680 1377,663 1320,655 1319,642 1333,633 1330,627 1345,560 1360,510 1370,500",
+  contact: "1271,729 1274,733 1326,744 1348,752 1353,765 1374,773 1380,771 1422,782 1436,776 1460,776 1485,782 1499,781 1511,784 1529,767 1564,742 1568,731 1564,726 1449,705 1431,698 1418,699 1368,689 1347,700 1311,706",
+};
+
+const studyHotspotActions = [
+  { id: "brand", label: "Framed IHBNF emblem", modal: "brand" },
+  { id: "laptop", label: "Sports Wager Helper laptop", modal: "laptop" },
+  { id: "smartphone", label: "Unfiltr smartphone", modal: "smartphone" },
+  { id: "notebook", label: "Writing journal", modal: "notebook" },
+  { id: "calendar", label: "Desk calendar", modal: "calendar" },
+  { id: "contact", label: "Sealed letter and contact links", modal: "contact" },
+] as const;
+
+function StudyObjectHighlight({
+  active,
+  onHover,
+  onSelect,
+}: {
+  active: HoveredItem;
+  onHover: (item: HoveredItem) => void;
+  onSelect: (modal: Exclude<ActiveRoomModal, null>) => void;
 }) {
-  const palette = {
-    gold: { fill: "rgba(255,225,159,0.12)", stroke: "#ffe0a0", glow: "rgba(255,190,81,0.65)" },
-    lime: { fill: "rgba(183,235,138,0.10)", stroke: "#d4f5a6", glow: "rgba(148,208,87,0.48)" },
-    violet: { fill: "rgba(207,174,255,0.13)", stroke: "#ddc3ff", glow: "rgba(168,112,244,0.60)" },
-  }[color];
+  const activePoints = active && active !== "why-henry" && active !== "dream-payoff"
+    ? studyHotspotPoints[active]
+    : undefined;
+  const activePath = activePoints ? `M${activePoints.replaceAll(" ", "L")}Z` : undefined;
   return (
-    <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"
-      className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible transition-opacity duration-300 ${active ? "opacity-100" : "opacity-0"}`}>
-      <polygon points={points} fill={palette.fill} stroke={palette.stroke}
-        strokeWidth="0.9" strokeLinejoin="round"
-        style={{ filter: `drop-shadow(0 0 2px ${palette.stroke}) drop-shadow(0 0 5px ${palette.glow})` }} />
+    <svg
+      viewBox="0 0 1672 941"
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-0 z-[19] h-full w-full overflow-visible"
+    >
+      <defs>
+        <filter id="study-object-gold-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="7" result="soft" />
+          <feMerge><feMergeNode in="soft" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      {studyHotspotActions.map((target) => {
+        const points = studyHotspotPoints[target.id];
+        if (!points) return null;
+        const path = `M${points.replaceAll(" ", "L")}Z`;
+        return (
+          <path
+            key={target.id}
+            d={path}
+            fill="transparent"
+            pointerEvents="all"
+            role="button"
+            tabIndex={0}
+            aria-label={target.label}
+            aria-haspopup="dialog"
+            onPointerEnter={() => onHover(target.id)}
+            onPointerLeave={() => onHover(null)}
+            onFocus={() => onHover(target.id)}
+            onBlur={() => onHover(null)}
+            onClick={() => onSelect(target.modal)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(target.modal);
+              }
+            }}
+          />
+        );
+      })}
+      {activePath && (
+        <>
+          <path d={activePath} fill="rgba(255,205,126,0.10)" style={{ mixBlendMode: "screen" }} />
+          <path
+            d={activePath}
+            fill="none"
+            stroke="rgba(255,218,153,0.9)"
+            strokeWidth="2.2"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            filter="url(#study-object-gold-glow)"
+          />
+        </>
+      )}
     </svg>
   );
 }
@@ -145,11 +204,9 @@ export function LivingWorkspace() {
   const [lampOn, setLampOn] = useState(true);
   const [muted, setMuted] = useState(false);
 
-  // Physical Shelf Book 3D Extraction State (Why Henry & The Dream of the Payoff)
+  // Digital reader state for both books on the shelf
   const [activeShelfBook, setActiveShelfBook] = useState<ShelfBookId>("why-henry");
   const [bookStage, setBookStage] = useState<BookStage>("shelved");
-  const [extractStarted, setExtractStarted] = useState(false);
-  const [flightDelta, setFlightDelta] = useState({ dx: 220, dy: -90, scale: 0.34 });
   const [henryArtIdx, setHenryArtIdx] = useState(0);
 
   // In-Room Object Presentation State (Brand Wall Frame, Phone, Laptop, Notebook, Calendar, Contact)
@@ -162,41 +219,6 @@ export function LivingWorkspace() {
   const closeBookBtnRef = useRef<HTMLButtonElement>(null);
   const closeModalBtnRef = useRef<HTMLButtonElement>(null);
   const stageTimersRef = useRef<number[]>([]);
-
-  // Book sound bank: pull off shelf -> cover creak -> page rustle, then thump shut -> settle on shelf
-  const bookAudioRef = useRef<Record<string, HTMLAudioElement>>({});
-  const mutedRef = useRef(muted);
-  useEffect(() => {
-    mutedRef.current = muted;
-  }, [muted]);
-
-  useEffect(() => {
-    const files: Record<string, string> = {
-      pull: "/media/audio/book-pull.wav",
-      creak: "/media/audio/binding-creak.wav",
-      rustle: "/media/audio/page-rustle.wav",
-      thump: "/media/audio/book-close-thump.wav",
-      settle: "/media/audio/shelf-settle.wav",
-    };
-    Object.entries(files).forEach(([key, src]) => {
-      const audio = new Audio(src);
-      audio.preload = "auto";
-      bookAudioRef.current[key] = audio;
-    });
-  }, []);
-
-  const playBookSound = useCallback((key: string, volume = 0.7) => {
-    if (mutedRef.current) return;
-    const audio = bookAudioRef.current[key];
-    if (!audio) return;
-    try {
-      audio.currentTime = 0;
-      audio.volume = volume;
-      audio.play().catch(() => {});
-    } catch {
-      // Ignore autoplay restrictions
-    }
-  }, []);
 
   const clearStageTimers = useCallback(() => {
     stageTimersRef.current.forEach((id) => window.clearTimeout(id));
@@ -216,83 +238,33 @@ export function LivingWorkspace() {
     }
   }, []);
 
-  // Measure the selected shelf book's exact viewport coordinates so the 3D extraction originates from and returns to its true shelf slot
-  const computeShelfDelta = useCallback((bookId: ShelfBookId) => {
-    if (typeof window === "undefined") return;
-    const targetEl =
-      bookId === "why-henry" ? whyHenryBookRef.current : dreamPayoffBookRef.current;
-    if (!targetEl) return;
-    const rect = targetEl.getBoundingClientRect();
-    const bookCenterX = rect.left + rect.width / 2;
-    const bookCenterY = rect.top + rect.height / 2;
-    const viewportCenterX = window.innerWidth / 2;
-    const viewportCenterY = window.innerHeight / 2;
-    setFlightDelta({
-      dx: Math.round(bookCenterX - viewportCenterX),
-      dy: Math.round(bookCenterY - viewportCenterY),
-      scale: Math.max(0.22, Math.min(0.46, +(rect.height / 480).toFixed(2))),
-    });
-  }, []);
-
-  // Trigger physical extraction & cover opening sequence for either shelf book
-  const handleExtractShelfBook = useCallback(
+  const handleOpenDigitalBook = useCallback(
     (bookId: ShelfBookId) => {
       if (bookStage !== "shelved") return;
       setActiveModal(null);
       clearStageTimers();
       setActiveShelfBook(bookId);
-      computeShelfDelta(bookId);
-      setExtractStarted(false);
-      setBookStage("extracting");
-      playBookSound("pull", 0.8);
-
-      const rafId = window.setTimeout(() => {
-        setExtractStarted(true);
-      }, 25);
+      setBookStage("opening");
 
       const openTimer = window.setTimeout(() => {
         setBookStage("open");
-        playBookSound("creak", 0.7);
-        const rustleTimer = window.setTimeout(() => playBookSound("rustle", 0.55), 230);
-        stageTimersRef.current.push(rustleTimer);
-        window.setTimeout(() => {
-          closeBookBtnRef.current?.focus({ preventScroll: true });
-        }, 120);
-      }, 620);
-
-      stageTimersRef.current.push(rafId, openTimer);
+        closeBookBtnRef.current?.focus({ preventScroll: true });
+      }, 220);
+      stageTimersRef.current.push(openTimer);
     },
-    [bookStage, clearStageTimers, computeShelfDelta, playBookSound],
+    [bookStage, clearStageTimers],
   );
 
-  // Trigger reverse animation: fold cover shut -> slide back into walnut shelf slot
   const handleReturnShelfBook = useCallback(() => {
-    if (bookStage !== "open" && bookStage !== "extracting") return;
+    if (bookStage === "shelved") return;
     clearStageTimers();
-    computeShelfDelta(activeShelfBook);
-    setBookStage("closing-cover");
-
-    const thumpTimer = window.setTimeout(() => playBookSound("thump", 0.75), 400);
-    const settleTimer = window.setTimeout(() => playBookSound("settle", 0.6), 900);
-
-    const returnTimer = window.setTimeout(() => {
-      setExtractStarted(false);
-      setBookStage("returning");
-    }, 520);
-
-    const shelvedTimer = window.setTimeout(() => {
-      setBookStage("shelved");
-      window.setTimeout(() => {
-        const targetEl =
-          activeShelfBook === "why-henry"
-            ? whyHenryBookRef.current
-            : dreamPayoffBookRef.current;
-        targetEl?.focus({ preventScroll: true });
-      }, 60);
-    }, 1080);
-
-    stageTimersRef.current.push(thumpTimer, settleTimer, returnTimer, shelvedTimer);
-  }, [bookStage, activeShelfBook, clearStageTimers, computeShelfDelta, playBookSound]);
+    setBookStage("shelved");
+    const targetEl =
+      activeShelfBook === "why-henry"
+        ? whyHenryBookRef.current
+        : dreamPayoffBookRef.current;
+    targetEl?.focus({ preventScroll: true });
+  }, [bookStage, activeShelfBook, clearStageTimers]);
 
   // Open an in-room object overlay
   const openRoomModal = useCallback((modal: Exclude<ActiveRoomModal, null>) => {
@@ -367,7 +339,7 @@ export function LivingWorkspace() {
             priority
             quality={95}
             sizes="100vw"
-            className="pointer-events-none object-cover"
+            className="pointer-events-none z-0 object-cover"
           />
           <Image
             src="/media/study/study-clean-plate.webp"
@@ -376,10 +348,11 @@ export function LivingWorkspace() {
             priority
             quality={95}
             sizes="100vw"
-            className={`pointer-events-none object-cover transition-opacity duration-300 ${
+            className={`pointer-events-none z-0 object-cover transition-opacity duration-300 ${
               lampOn ? "opacity-100" : "opacity-0"
             }`}
           />
+          <StudyObjectHighlight active={hovered} onHover={setHovered} onSelect={openRoomModal} />
 
           {/* -----------------------------------------------------------------
               AMBIENT LIVING MOTION LAYERS (RESTRAINED, SUBTLE & LIGHTWEIGHT)
@@ -468,6 +441,8 @@ export function LivingWorkspace() {
           <button
             type="button"
             data-testid="hero-title"
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={() => openRoomModal("brand")}
             onMouseEnter={() => setHovered("brand")}
             onMouseLeave={() => setHovered(null)}
@@ -482,16 +457,14 @@ export function LivingWorkspace() {
               width: "17.4%",
               height: "39.8%",
             }}
-            className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.018] focus-visible:scale-[1.018]"
+            className="group pointer-events-none absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
           >
-            <ArtworkHotspotGlow active={hovered === "brand"} color="gold"
-              points="2,2 96,3 99,98 2,97" />
           </button>
 
           {/* -----------------------------------------------------------------
-              OBJECT 1: "WHY HENRY?" PHYSICAL 3D HARDCOVER BOOK ON THE SHELF
+              OBJECT 1: "WHY HENRY?" HARDCOVER BOOK ON THE SHELF
               Positioned in the exact left shelf niche (x: 59.0%, y: 21.4%)
-              over the clean walnut niche plate so extracting it leaves NO duplicate cover.
+              over the walnut shelf scene as a clickable book cover.
              ----------------------------------------------------------------- */}
           <div
             style={{
@@ -502,26 +475,18 @@ export function LivingWorkspace() {
             }}
             className="absolute z-20 flex items-end justify-center"
           >
-            {/* Warm shelf spotlight glow when hovering Why Henry */}
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(255,200,112,0.42)_0%,transparent_70%)] transition-opacity duration-300 ${
-                hovered === "why-henry" && !isWhyHenryOut ? "opacity-100" : "opacity-0"
-              }`}
-            />
-
             <button
               ref={whyHenryBookRef}
               type="button"
               data-testid="why-henry-shelf-book"
-              onClick={() => handleExtractShelfBook("why-henry")}
+              onClick={() => handleOpenDigitalBook("why-henry")}
               onMouseEnter={() => setHovered("why-henry")}
               onMouseLeave={() => setHovered(null)}
               onFocus={() => setHovered("why-henry")}
               onBlur={() => setHovered(null)}
               aria-haspopup="dialog"
               aria-expanded={isWhyHenryOut}
-              aria-label="The Unwritten Journey — Book One: Why Henry? — Pull book from the shelf and open it"
+              aria-label="Open The Unwritten Journey — Book One: Why Henry? as a digital book"
               style={{
                 transform: isWhyHenryOut
                   ? "perspective(800px) rotateY(-8deg) scale(0.9)"
@@ -529,12 +494,10 @@ export function LivingWorkspace() {
                     ? "perspective(800px) rotateY(-4deg) rotateX(2deg) translateY(-5px) scale(1.045)"
                     : "perspective(800px) rotateY(-7deg) rotateX(2deg) rotateZ(-0.5deg)",
               }}
-              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:drop-shadow-[0_0_16px_rgba(255,205,126,0.55)] focus-visible:drop-shadow-[0_0_16px_rgba(255,205,126,0.65)] ${
                 isWhyHenryOut ? "pointer-events-none opacity-0" : "opacity-100"
               }`}
             >
-              <span aria-hidden="true" className="absolute -inset-2" />
-
               {/* Realistic contact shadow cast onto the walnut shelf back panel */}
               <div
                 aria-hidden="true"
@@ -544,24 +507,24 @@ export function LivingWorkspace() {
               {/* Left 3D Hardcover Spine Edge */}
               <div
                 aria-hidden="true"
-                className="h-full w-[6px] shrink-0 rounded-l-[2px] border-y border-l border-[#a67846]/55 bg-gradient-to-r from-[#1c0f06] via-[#4a2b13] to-[#140a04] shadow-inner"
+                className="h-full w-[10px] shrink-0 rounded-l-[3px] border-y border-l border-[#a67846]/65 bg-gradient-to-r from-[#120903] via-[#754719] to-[#2a1609] shadow-[inset_2px_0_3px_rgba(0,0,0,0.75),2px_0_4px_rgba(0,0,0,0.5)]"
               />
 
               {/* Exact Official "Why Henry?" Book Cover Artwork */}
               <div
                 className={`relative h-full flex-1 overflow-hidden rounded-r-[2px] bg-[#0c0907] shadow-[8px_12px_24px_rgba(0,0,0,0.92)] transition-all duration-300 ${
                   hovered === "why-henry"
-                    ? "ring-2 ring-[#ffd584] shadow-[0_14px_34px_rgba(255,196,102,0.5)]"
-                    : "ring-1 ring-[#d8b46a]/35"
+                    ? "brightness-110 shadow-[0_0_28px_rgba(255,196,102,0.45)]"
+                    : "shadow-[8px_12px_24px_rgba(0,0,0,0.92)]"
                 }`}
               >
                 <Image
-                  src="/media/why-henry/cover.webp"
+                  src="/media/why-henry/cover-user.jpg"
                   alt="Cover of The Unwritten Journey — Book One: Why Henry? by Javier Huertas"
                   fill
                   priority
                   sizes="(min-width: 1024px) 180px, 130px"
-                  className="object-fill"
+                  className="object-cover"
                 />
                 {/* Top shelf downlight sheen */}
                 <div
@@ -573,15 +536,15 @@ export function LivingWorkspace() {
               {/* Right 3D Page Block Thickness */}
               <div
                 aria-hidden="true"
-                className="h-[97%] w-[5px] shrink-0 self-center rounded-r-[1px] bg-gradient-to-r from-[#dfd0b2] via-[#b8a07a] to-[#7a6444] shadow-[3px_0_6px_rgba(0,0,0,0.85)]"
+                className="h-[96%] w-[10px] shrink-0 self-center rounded-r-[2px] border-y border-r border-[#f0dfb9]/50 bg-[repeating-linear-gradient(to_bottom,#ead9b7_0px,#ead9b7_2px,#c4aa7f_3px,#ead9b7_4px)] shadow-[3px_0_7px_rgba(0,0,0,0.85)]"
               />
             </button>
           </div>
 
           {/* -----------------------------------------------------------------
-              OBJECT 2: "THE DREAM OF THE PAYOFF" PHYSICAL 3D HARDCOVER BOOK ON THE SHELF
+              OBJECT 2: "THE DREAM OF THE PAYOFF" HARDCOVER BOOK ON THE SHELF
               Positioned in the exact right shelf niche (x: 71.1%, y: 20.5%)
-              over the clean walnut niche plate so extracting it leaves NO duplicate cover.
+              over the walnut shelf scene as a clickable book cover.
              ----------------------------------------------------------------- */}
           <div
             style={{
@@ -592,25 +555,18 @@ export function LivingWorkspace() {
             }}
             className="absolute z-20 flex items-end justify-center"
           >
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(255,200,112,0.42)_0%,transparent_70%)] transition-opacity duration-300 ${
-                hovered === "dream-payoff" && !isDreamPayoffOut ? "opacity-100" : "opacity-0"
-              }`}
-            />
-
             <button
               ref={dreamPayoffBookRef}
               type="button"
               data-testid="dream-payoff-shelf-book"
-              onClick={() => handleExtractShelfBook("dream-payoff")}
+              onClick={() => handleOpenDigitalBook("dream-payoff")}
               onMouseEnter={() => setHovered("dream-payoff")}
               onMouseLeave={() => setHovered(null)}
               onFocus={() => setHovered("dream-payoff")}
               onBlur={() => setHovered(null)}
               aria-haspopup="dialog"
               aria-expanded={isDreamPayoffOut}
-              aria-label="The Dream of the Payoff — Pull published memoir book from the shelf and open it"
+              aria-label="Open The Dream of the Payoff as a digital book"
               style={{
                 transform: isDreamPayoffOut
                   ? "perspective(800px) rotateY(-8deg) scale(0.9)"
@@ -618,12 +574,10 @@ export function LivingWorkspace() {
                     ? "perspective(800px) rotateY(-5deg) rotateX(2deg) translateY(-5px) scale(1.045)"
                     : "perspective(800px) rotateY(-8deg) rotateX(2deg) rotateZ(-0.5deg)",
               }}
-              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:drop-shadow-[0_0_16px_rgba(255,205,126,0.55)] focus-visible:drop-shadow-[0_0_16px_rgba(255,205,126,0.65)] ${
                 isDreamPayoffOut ? "pointer-events-none opacity-0" : "opacity-100"
               }`}
             >
-              <span aria-hidden="true" className="absolute -inset-2" />
-
               {/* Realistic contact shadow cast onto the walnut shelf back panel */}
               <div
                 aria-hidden="true"
@@ -633,15 +587,15 @@ export function LivingWorkspace() {
               {/* Left 3D Hardcover Spine Edge */}
               <div
                 aria-hidden="true"
-                className="h-full w-[6px] shrink-0 rounded-l-[2px] border-y border-l border-[#c9a45c]/55 bg-gradient-to-r from-[#1c1007] via-[#4a2e14] to-[#140b04] shadow-inner"
+                className="h-full w-[10px] shrink-0 rounded-l-[3px] border-y border-l border-[#c9a45c]/65 bg-gradient-to-r from-[#120903] via-[#754719] to-[#2a1609] shadow-[inset_2px_0_3px_rgba(0,0,0,0.75),2px_0_4px_rgba(0,0,0,0.5)]"
               />
 
               {/* Exact Official Published "The Dream of the Payoff" Book Cover */}
               <div
                 className={`relative h-full flex-1 overflow-hidden rounded-r-[2px] bg-[#120d09] shadow-[8px_12px_24px_rgba(0,0,0,0.92)] transition-all duration-300 ${
                   hovered === "dream-payoff"
-                    ? "ring-2 ring-[#ffd584] shadow-[0_14px_34px_rgba(255,196,102,0.5)]"
-                    : "ring-1 ring-[#d8b46a]/35"
+                    ? "brightness-110 shadow-[0_0_28px_rgba(255,196,102,0.45)]"
+                    : "shadow-[8px_12px_24px_rgba(0,0,0,0.92)]"
                 }`}
               >
                 <Image
@@ -650,7 +604,7 @@ export function LivingWorkspace() {
                   fill
                   priority
                   sizes="(min-width: 1024px) 180px, 130px"
-                  className="object-fill"
+                  className="object-cover"
                 />
                 <div
                   aria-hidden="true"
@@ -661,7 +615,7 @@ export function LivingWorkspace() {
               {/* Right 3D Page Block Thickness */}
               <div
                 aria-hidden="true"
-                className="h-[97%] w-[5px] shrink-0 self-center rounded-r-[1px] bg-gradient-to-r from-[#dfd0b2] via-[#b8a07a] to-[#7a6444] shadow-[3px_0_6px_rgba(0,0,0,0.85)]"
+                className="h-[96%] w-[10px] shrink-0 self-center rounded-r-[2px] border-y border-r border-[#f0dfb9]/50 bg-[repeating-linear-gradient(to_bottom,#ead9b7_0px,#ead9b7_2px,#c4aa7f_3px,#ead9b7_4px)] shadow-[3px_0_7px_rgba(0,0,0,0.85)]"
               />
             </button>
           </div>
@@ -673,6 +627,8 @@ export function LivingWorkspace() {
           <button
             type="button"
             data-testid="workspace-laptop"
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={() => openRoomModal("laptop")}
             onMouseEnter={() => setHovered("laptop")}
             onMouseLeave={() => setHovered(null)}
@@ -687,10 +643,8 @@ export function LivingWorkspace() {
               width: "23.6%",
               height: "30.0%",
             }}
-            className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.015] focus-visible:scale-[1.015]"
+            className="group pointer-events-none absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
           >
-            <ArtworkHotspotGlow active={hovered === "laptop"} color="lime"
-              points="3,3 88,3 89,74 99,92 95,99 9,98 1,80" />
           </button>
 
           {/* -----------------------------------------------------------------
@@ -700,6 +654,8 @@ export function LivingWorkspace() {
           <button
             type="button"
             data-testid="workspace-smartphone"
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={() => openRoomModal("smartphone")}
             onMouseEnter={() => setHovered("smartphone")}
             onMouseLeave={() => setHovered(null)}
@@ -714,10 +670,8 @@ export function LivingWorkspace() {
               width: "8.8%",
               height: "24.8%",
             }}
-            className="group absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:scale-[1.03] focus-visible:-translate-y-1 focus-visible:scale-[1.03]"
+            className="group pointer-events-none absolute z-20 cursor-pointer p-0 text-left outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
           >
-            <ArtworkHotspotGlow active={hovered === "smartphone"} color="violet"
-              points="20,3 87,4 83,79 95,90 94,98 8,98 4,90 16,82" />
           </button>
 
           {/* -----------------------------------------------------------------
@@ -726,6 +680,8 @@ export function LivingWorkspace() {
           <button
             type="button"
             data-testid="workspace-notebook"
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={() => openRoomModal("notebook")}
             onMouseEnter={() => setHovered("notebook")}
             onMouseLeave={() => setHovered(null)}
@@ -740,19 +696,8 @@ export function LivingWorkspace() {
               width: "35.5%",
               height: "20.5%",
             }}
-            className="group absolute z-20 cursor-pointer rounded-[12px] p-0 text-left outline-none transition-all duration-300"
+            className="group pointer-events-none absolute z-20 cursor-pointer rounded-[12px] p-0 text-left outline-none transition-all duration-300"
           >
-            <div
-              aria-hidden="true"
-              style={{
-                transform: "perspective(800px) rotateX(28deg) rotateZ(-4deg)",
-              }}
-              className={`pointer-events-none h-full w-full rounded-[10px] transition-all duration-300 ${
-                hovered === "notebook"
-                  ? "ring-2 ring-[#ffd584]/90 bg-[#ffd584]/[0.07] shadow-[0_0_35px_rgba(255,208,128,0.45)]"
-                  : "ring-0"
-              }`}
-            />
           </button>
 
           {/* Secondary trigger for Creator Story (`hero-meet-creator-btn` compatibility) */}
@@ -771,6 +716,8 @@ export function LivingWorkspace() {
           <button
             type="button"
             data-testid="workspace-calendar"
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={() => openRoomModal("calendar")}
             onMouseEnter={() => setHovered("calendar")}
             onMouseLeave={() => setHovered(null)}
@@ -785,19 +732,8 @@ export function LivingWorkspace() {
               width: "14.2%",
               height: "23.5%",
             }}
-            className="group absolute z-20 cursor-pointer rounded-[10px] p-0 text-left outline-none transition-transform duration-300 hover:-translate-y-0.5"
+            className="group pointer-events-none absolute z-20 cursor-pointer rounded-[10px] p-0 text-left outline-none transition-transform duration-300"
           >
-            <div
-              aria-hidden="true"
-              style={{
-                transform: "perspective(700px) rotateX(8deg) rotateY(-12deg) rotateZ(4deg)",
-              }}
-              className={`pointer-events-none h-full w-full rounded-[8px] transition-all duration-300 ${
-                hovered === "calendar"
-                  ? "ring-2 ring-[#ffd584]/90 bg-[#ffd584]/[0.07] shadow-[0_0_32px_rgba(255,208,128,0.45)]"
-                  : "ring-0"
-              }`}
-            />
           </button>
 
           {/* -----------------------------------------------------------------
@@ -806,6 +742,8 @@ export function LivingWorkspace() {
           <button
             type="button"
             data-testid="workspace-contact"
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={() => openRoomModal("contact")}
             onMouseEnter={() => setHovered("contact")}
             onMouseLeave={() => setHovered(null)}
@@ -820,19 +758,8 @@ export function LivingWorkspace() {
               width: "19.8%",
               height: "14.5%",
             }}
-            className="group absolute z-20 cursor-pointer rounded-[10px] p-0 text-left outline-none transition-transform duration-300 hover:-translate-y-0.5"
+            className="group pointer-events-none absolute z-20 cursor-pointer rounded-[10px] p-0 text-left outline-none transition-transform duration-300"
           >
-            <div
-              aria-hidden="true"
-              style={{
-                transform: "perspective(700px) rotateX(24deg) rotateZ(8deg)",
-              }}
-              className={`pointer-events-none h-full w-full rounded-[8px] transition-all duration-300 ${
-                hovered === "contact"
-                  ? "ring-2 ring-[#ffd584]/90 bg-[#ffd584]/[0.08] shadow-[0_0_32px_rgba(255,204,112,0.5)]"
-                  : "ring-0"
-              }`}
-            />
           </button>
 
           {/* -----------------------------------------------------------------
@@ -874,22 +801,22 @@ export function LivingWorkspace() {
               <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_#c9a45c]" />
               {hovered === "why-henry" && (
                 <span>
-                  <strong className="font-medium text-amber">The Unwritten Journey — Book One: Why Henry?</strong> · Pull hardcover from shelf
+                  <strong className="font-medium text-amber">The Unwritten Journey — Book One: Why Henry?</strong> · Open digital book
                 </span>
               )}
               {hovered === "dream-payoff" && (
                 <span>
-                  <strong className="font-medium text-gold">The Dream of the Payoff</strong> · Pull published memoir from shelf
+                  <strong className="font-medium text-gold">The Dream of the Payoff</strong> · Open digital book
                 </span>
               )}
               {hovered === "laptop" && (
                 <span>
-                  <strong className="font-medium text-[#a3e635]">Sports Wager Helper</strong> · Inspect S.A.L. Workstation
+                  <strong className="font-medium text-gold">Sports Wager Helper</strong> · Inspect S.A.L. Workstation
                 </span>
               )}
               {hovered === "smartphone" && (
                 <span>
-                  <strong className="font-medium text-violet">Unfiltr by Javier</strong> · Inspect iOS &amp; Android AI Companion
+                  <strong className="font-medium text-gold">Unfiltr by Javier</strong> · Inspect iOS &amp; Android AI Companion
                 </span>
               )}
               {hovered === "notebook" && (
@@ -921,8 +848,8 @@ export function LivingWorkspace() {
                 <span className="text-mute">
                   Explore the study — select the <strong className="font-normal text-gold">Framed IHBNF Emblem</strong>,{" "}
                   <strong className="font-normal text-amber">books on the shelf</strong>,{" "}
-                  <strong className="font-normal text-[#a3e635]">laptop</strong>,{" "}
-                  <strong className="font-normal text-violet">phone</strong>,{" "}
+                  <strong className="font-normal text-gold">laptop</strong>,{" "}
+                  <strong className="font-normal text-gold">phone</strong>,{" "}
                   <strong className="font-normal text-gold">journal</strong>,{" "}
                   <strong className="font-normal text-bone">calendar</strong>, or{" "}
                   <strong className="font-normal text-gold">sealed letter</strong>
@@ -934,7 +861,7 @@ export function LivingWorkspace() {
       </div>
 
       {/* =====================================================================
-          3. PHYSICAL 3D SHELF BOOK EXTRACTION, OPENING & RETURN STAGE
+          3. DIGITAL BOOK READER
              (Supports BOTH "Why Henry?" AND "The Dream of the Payoff")
          ===================================================================== */}
       {isBookOut && (
@@ -955,55 +882,38 @@ export function LivingWorkspace() {
             data-testid="why-henry-stage-backdrop"
             onClick={handleReturnShelfBook}
             className={`fixed inset-0 bg-[#050302]/68 backdrop-blur-[4px] transition-opacity duration-500 ${
-              bookStage === "extracting" || bookStage === "open" ? "opacity-100" : "opacity-0"
+              bookStage === "opening" || bookStage === "open"
+                ? "opacity-100"
+                : "opacity-0"
             }`}
           />
 
-          {/* 3D Perspective Book Rig that physically travels from the shelf coordinates to the viewer */}
+          {/* Digital reader opens directly over the study without a flying-book effect */}
           <div
-            data-testid="why-henry-3d-rig"
+            data-testid="shelf-digital-reader"
+            className="relative z-10 my-auto flex w-full max-w-[960px] items-center justify-center transition-[opacity,transform] duration-300 ease-out"
             style={{
-              perspective: "2000px",
-              transform:
-                bookStage === "returning" || (bookStage === "extracting" && !extractStarted)
-                  ? `translate3d(${flightDelta.dx}px, ${flightDelta.dy}px, -260px) scale(${flightDelta.scale}) rotateY(-24deg) rotateZ(2deg)`
-                  : bookStage === "extracting"
-                    ? "translate3d(0px, 0px, 0px) scale(0.92) rotateX(6deg) rotateY(-10deg)"
-                    : "translate3d(0px, 0px, 0px) scale(1) rotateX(2deg) rotateY(0deg)",
-              transition:
-                "transform 560ms cubic-bezier(0.22, 1, 0.36, 1), opacity 480ms ease",
-              opacity: bookStage === "returning" ? 0.15 : 1,
+              opacity: bookStage === "open" ? 1 : 0.82,
+              transform: bookStage === "open" ? "scale(1)" : "scale(0.98)",
             }}
-            className="relative z-10 my-auto flex w-full max-w-[960px] items-center justify-center"
           >
-            {/* Deep realistic cast shadow beneath the extracted book */}
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute inset-x-8 -bottom-8 h-16 rounded-full bg-black/90 blur-2xl transition-all duration-500 ${
-                bookStage === "open" ? "scale-x-100 opacity-95" : "scale-x-50 opacity-70"
-              }`}
-            />
-
-            {/* ── THE PHYSICAL HARDCOVER BOOK OBJECT (2-PAGE OPEN SPREAD + HINGED 3D FRONT COVER) ── */}
-            <div
-              style={{ transformStyle: "preserve-3d" }}
-              className="relative grid w-full grid-cols-1 overflow-visible rounded-[8px] md:grid-cols-2"
-            >
-              {/* Leather Hardcover Outer Board & Gilded Page-Block Edges */}
-              <div
-                aria-hidden="true"
-                className={`pointer-events-none absolute -inset-[8px] rounded-[10px] border-2 border-[#6e4926] bg-gradient-to-b from-[#2c190c] via-[#1c0f07] to-[#120904] shadow-[0_35px_90px_rgba(0,0,0,0.95),0_0_50px_rgba(217,140,63,0.18)] transition-opacity duration-300 ${
-                  bookStage === "open" ? "opacity-100" : "opacity-0"
-                }`}
-              />
+            {/* Two-page digital reading view */}
+            <div className="relative grid w-full grid-cols-2 overflow-hidden rounded-lg border border-[#b89b72]/30 bg-[#17100b] p-1 shadow-[0_24px_72px_rgba(0,0,0,0.55)]">
 
               {activeShelfBook === "why-henry" ? (
                 <>
                   {/* ── WHY HENRY: LEFT OPEN PAGE (COVER PLATE & BRIAR GLEN ILLUSTRATION GALLERY) ── */}
                   <div
                     data-testid="why-henry-left-page"
+                    style={{
+                      transformOrigin: "right center",
+                      transform: bookStage === "opening" || bookStage === "open" ? "rotateY(0deg)" : "rotateY(-88deg)",
+                      transition: "transform 480ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease",
+                      backfaceVisibility: "hidden",
+                      zIndex: bookStage === "opening" || bookStage === "open" ? 40 : 0,
+                    }}
                     className={`relative flex flex-col justify-between overflow-hidden rounded-t-[6px] border border-[#b89b72]/45 bg-gradient-to-br from-[#f3ead8] via-[#eadbc0] to-[#dcc69e] p-5 text-[#22170d] shadow-[inset_-18px_0_32px_rgba(68,42,18,0.22)] transition-all duration-500 sm:p-7 md:rounded-l-[6px] md:rounded-tr-none ${
-                      bookStage === "open"
+                      bookStage === "open" || bookStage === "opening"
                         ? "translate-y-0 opacity-100"
                         : "pointer-events-none translate-y-2 opacity-0"
                     }`}
@@ -1019,9 +929,9 @@ export function LivingWorkspace() {
 
                     <div className="my-4 grid grid-cols-12 items-center gap-4">
                       <div className="col-span-5">
-                        <div className="relative aspect-[1125/2000] w-full overflow-hidden rounded-[4px] border border-[#6e4c24]/45 bg-[#0d0a08] shadow-[6px_10px_22px_rgba(0,0,0,0.55)]">
+                        <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[4px] border border-[#6e4c24]/45 bg-[#0d0a08] shadow-[6px_10px_22px_rgba(0,0,0,0.55)]">
                           <Image
-                            src="/media/why-henry/cover.webp"
+                            src="/media/why-henry/cover-user.jpg"
                             alt="Cover of The Unwritten Journey — Book One: Why Henry?"
                             fill
                             sizes="180px"
@@ -1087,7 +997,11 @@ export function LivingWorkspace() {
                   {/* ── WHY HENRY: RIGHT OPEN PAGE (TITLE, OFFICIAL SYNOPSIS & AMAZON ACTION) ── */}
                   <div
                     data-testid="why-henry-right-page"
-                    className="relative flex flex-col justify-between overflow-hidden rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
+                    style={{
+                      transformStyle: "preserve-3d",
+                      visibility: bookStage === "opening" || bookStage === "open" ? "visible" : "hidden",
+                    }}
+                    className="relative flex flex-col justify-between overflow-visible rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
                   >
                     <div
                       aria-hidden="true"
@@ -1101,7 +1015,7 @@ export function LivingWorkspace() {
                     <div className="flex items-center justify-between gap-2 border-b border-[#8a683c]/30 pb-2.5">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-[#8a5a24]/35 bg-[#8a5a24]/10 px-2.5 py-0.5 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-[#7a4b19]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#b85d19]" />
-                        {whyHenry.statusLabel} · {whyHenry.details[1].value}
+                        DIGITAL READER · {whyHenry.details[1].value}
                       </span>
 
                       <button
@@ -1127,7 +1041,7 @@ export function LivingWorkspace() {
                       </h2>
 
                       <div className="space-y-2 pt-1 text-sm leading-relaxed text-[#382716] sm:text-[0.92rem]">
-                        {whyHenry.description.map((para, idx) => (
+                        {whyHenry.description.slice(0, 2).map((para, idx) => (
                           <p
                             key={idx}
                             className={idx === 0 ? "font-display text-lg italic text-[#593818]" : ""}
@@ -1161,22 +1075,33 @@ export function LivingWorkspace() {
                         transformOrigin: "left center",
                         transformStyle: "preserve-3d",
                         transform:
-                          bookStage === "open" ? "rotateY(-165deg)" : "rotateY(0deg)",
+                          bookStage === "open" || bookStage === "opening"
+                            ? "translateZ(-18px) rotateY(-165deg)"
+                            : "rotateY(0deg)",
                         transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+                        backfaceVisibility: "visible",
+                        visibility: "visible",
+                        background: "linear-gradient(135deg, #71502d 0%, #3d2817 48%, #24160d 100%)",
                       }}
-                      className={`pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-r-[6px] border-2 border-[#6e4926] bg-[#0d0a08] shadow-[16px_20px_48px_rgba(0,0,0,0.9)] ${
-                        bookStage === "open"
-                          ? "opacity-0 transition-[transform,opacity] duration-500"
-                          : "opacity-100"
-                      }`}
+                      className="pointer-events-none absolute inset-0 z-30 rounded-r-[6px] border-y-[5px] border-r-[4px] border-l-[10px] border-[#6e4926] bg-gradient-to-br from-[#71502d] via-[#3d2817] to-[#24160d] shadow-[16px_20px_48px_rgba(0,0,0,0.9)]"
                     >
                       <Image
-                        src="/media/why-henry/cover.webp"
+                        src="/media/why-henry/cover-user.jpg"
                         alt=""
                         fill
                         sizes="420px"
                         className="object-contain"
+                        style={{ backfaceVisibility: "hidden" }}
                       />
+                      <div
+                        aria-hidden="true"
+                        style={{
+                          transform: "rotateY(180deg) translateZ(1px)",
+                          backfaceVisibility: "hidden",
+                        }}
+                        className="absolute inset-0 grid place-items-center border border-[#c9a45c]/50 bg-gradient-to-br from-[#73502d] via-[#422b19] to-[#25170e]"
+                      >
+                      </div>
                     </div>
                   </div>
                 </>
@@ -1185,8 +1110,15 @@ export function LivingWorkspace() {
                   {/* ── THE DREAM OF THE PAYOFF: LEFT OPEN PAGE (OFFICIAL PUBLISHED COVER & ARTWORK) ── */}
                   <div
                     data-testid="dream-payoff-left-page"
+                    style={{
+                      transformOrigin: "right center",
+                      transform: bookStage === "opening" || bookStage === "open" ? "rotateY(0deg)" : "rotateY(-88deg)",
+                      transition: "transform 480ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease",
+                      backfaceVisibility: "hidden",
+                      zIndex: bookStage === "opening" || bookStage === "open" ? 40 : 0,
+                    }}
                     className={`relative flex flex-col justify-between overflow-hidden rounded-t-[6px] border border-[#b89b72]/45 bg-gradient-to-br from-[#f3ead8] via-[#eadbc0] to-[#dcc69e] p-5 text-[#22170d] shadow-[inset_-18px_0_32px_rgba(68,42,18,0.22)] transition-all duration-500 sm:p-7 md:rounded-l-[6px] md:rounded-tr-none ${
-                      bookStage === "open"
+                      bookStage === "open" || bookStage === "opening"
                         ? "translate-y-0 opacity-100"
                         : "pointer-events-none translate-y-2 opacity-0"
                     }`}
@@ -1250,7 +1182,11 @@ export function LivingWorkspace() {
                   {/* ── THE DREAM OF THE PAYOFF: RIGHT OPEN PAGE (DESCRIPTION & VERIFIED PURCHASE LINK) ── */}
                   <div
                     data-testid="dream-payoff-right-page"
-                    className="relative flex flex-col justify-between overflow-hidden rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
+                    style={{
+                      transformStyle: "preserve-3d",
+                      visibility: bookStage === "opening" || bookStage === "open" ? "visible" : "hidden",
+                    }}
+                    className="relative flex flex-col justify-between overflow-visible rounded-b-[6px] border border-[#b89b72]/45 bg-gradient-to-bl from-[#f7efe0] via-[#efe1c8] to-[#e2cfa8] p-5 text-[#1f150c] shadow-[inset_18px_0_32px_rgba(68,42,18,0.18)] sm:p-7 md:rounded-r-[6px] md:rounded-bl-none"
                   >
                     <div
                       aria-hidden="true"
@@ -1332,22 +1268,33 @@ export function LivingWorkspace() {
                         transformOrigin: "left center",
                         transformStyle: "preserve-3d",
                         transform:
-                          bookStage === "open" ? "rotateY(-165deg)" : "rotateY(0deg)",
+                          bookStage === "open" || bookStage === "opening"
+                            ? "translateZ(-18px) rotateY(-165deg)"
+                            : "rotateY(0deg)",
                         transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
+                        backfaceVisibility: "visible",
+                        visibility: "visible",
+                        background: "linear-gradient(135deg, #77603b 0%, #40311c 48%, #24190e 100%)",
                       }}
-                      className={`pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-r-[6px] border-2 border-[#6e4926] bg-[#120d09] shadow-[16px_20px_48px_rgba(0,0,0,0.9)] ${
-                        bookStage === "open"
-                          ? "opacity-0 transition-[transform,opacity] duration-500"
-                          : "opacity-100"
-                      }`}
+                      className="pointer-events-none absolute inset-0 z-30 rounded-r-[6px] border-y-[5px] border-r-[4px] border-l-[10px] border-[#5c4623] bg-gradient-to-br from-[#77603b] via-[#40311c] to-[#24190e] shadow-[16px_20px_48px_rgba(0,0,0,0.9)]"
                     >
                       <Image
                         src="/media/memoir/dream-payoff-cover.svg"
                         alt=""
                         fill
                         sizes="420px"
-                        className="object-cover"
+                        className="object-contain"
+                        style={{ backfaceVisibility: "hidden" }}
                       />
+                      <div
+                        aria-hidden="true"
+                        style={{
+                          transform: "rotateY(180deg) translateZ(1px)",
+                          backfaceVisibility: "hidden",
+                        }}
+                        className="absolute inset-0 grid place-items-center border border-[#c9a45c]/50 bg-gradient-to-br from-[#7a6139] via-[#42331c] to-[#25190e]"
+                      >
+                      </div>
                     </div>
                   </div>
                 </>
@@ -1444,7 +1391,7 @@ export function LivingWorkspace() {
                       type="button"
                       onClick={() => {
                         setActiveModal(null);
-                        handleExtractShelfBook("why-henry");
+                        handleOpenDigitalBook("why-henry");
                       }}
                       className="cursor-pointer rounded-full border border-amber/40 bg-amber/15 px-3.5 py-1.5 text-xs font-medium text-amber hover:bg-amber/25"
                     >
@@ -1454,7 +1401,7 @@ export function LivingWorkspace() {
                       type="button"
                       onClick={() => {
                         setActiveModal(null);
-                        handleExtractShelfBook("dream-payoff");
+                        handleOpenDigitalBook("dream-payoff");
                       }}
                       className="cursor-pointer rounded-full border border-gold/40 bg-gold/15 px-3.5 py-1.5 text-xs font-medium text-gold hover:bg-gold/25"
                     >
@@ -1779,7 +1726,7 @@ export function LivingWorkspace() {
                       type="button"
                       onClick={() => {
                         setActiveModal(null);
-                        handleExtractShelfBook("dream-payoff");
+                        handleOpenDigitalBook("dream-payoff");
                       }}
                       className="cursor-pointer rounded-full bg-[#26170b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#f3ead8] hover:bg-[#3d2512]"
                     >
@@ -1789,7 +1736,7 @@ export function LivingWorkspace() {
                       type="button"
                       onClick={() => {
                         setActiveModal(null);
-                        handleExtractShelfBook("why-henry");
+                        handleOpenDigitalBook("why-henry");
                       }}
                       className="cursor-pointer rounded-full border border-[#5c3d1e]/45 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#26170b] hover:bg-[#e2cfa8]"
                     >
@@ -1876,7 +1823,7 @@ export function LivingWorkspace() {
                       type="button"
                       onClick={() => {
                         setActiveModal(null);
-                        handleExtractShelfBook("dream-payoff");
+                        handleOpenDigitalBook("dream-payoff");
                       }}
                       className="mt-3 inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-gold hover:underline"
                     >

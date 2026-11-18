@@ -163,7 +163,8 @@ export function BankersLampControl({
       {/* ── 1. SILHOUETTE-CONFORMING LAMP GLOW ON HOVER/FOCUS (ZERO RECTANGULAR HOTSPOT BOX) ── */}
       <svg
         aria-hidden="true"
-        viewBox="0 0 240 260"
+          viewBox="227 318 315 349"
+          preserveAspectRatio="none"
         className={`pointer-events-none h-full w-full overflow-visible transition-opacity duration-300 ${
           hovered ? "opacity-100" : "opacity-0"
         }`}
@@ -177,26 +178,19 @@ export function BankersLampControl({
             </feMerge>
           </filter>
           <linearGradient id="shade-rim-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#a7f3d0" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="#fde68a" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.85" />
+            <stop offset="0%" stopColor="#ffe7b2" stopOpacity="0.9" />
+            <stop offset="50%" stopColor="#ffd27a" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#e9a94d" stopOpacity="0.85" />
           </linearGradient>
         </defs>
 
-        {/* Contoured silhouette path tracing ONLY the curved green glass dome, brass neck, and stepped circular base */}
         <path
-          d="M 52 78 C 56 34, 88 18, 134 18 C 180 18, 212 36, 218 78 C 220 86, 212 90, 200 90 L 66 90 C 55 90, 50 86, 52 78 Z"
-          fill="rgba(253, 230, 138, 0.08)"
+          d="M253 385 262 375 275 360 285 350 300 341 330 333 397 335 440 338 490 343 515 360 527 385 533 415 530 420 397 431 322 430 322 450 327 467 340 487 358 513 367 533 383 550 387 562 373 580 390 603 417 613 430 627 445 640 443 655 397 667 313 665 277 657 273 647 280 630 302 615 330 603 340 583 332 563 340 547 347 527 347 517 320 477 310 450 312 432 280 425 278 417 280 393 257 395Z"
+          fill="rgba(255, 205, 126, 0.09)"
           stroke="url(#shade-rim-grad)"
-          strokeWidth="2.4"
-          filter="url(#lamp-silhouette-glow)"
-        />
-        {/* Brass stem & stepped circular base silhouette trace */}
-        <path
-          d="M 118 90 L 112 205 C 82 210, 66 222, 62 238 L 172 238 C 168 222, 152 210, 124 205 L 122 90"
-          fill="none"
-          stroke="rgba(253, 224, 71, 0.55)"
-          strokeWidth="2"
+          strokeWidth="3"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
           filter="url(#lamp-silhouette-glow)"
         />
       </svg>
@@ -269,15 +263,6 @@ export function BankersLampControl({
             data-testid="lamp-pull-chain-ball"
             transform={`translate(9, ${currentChainHeightPx + 5.5})`}
           >
-            {/* Subtle warm highlight halo around the brass ball when hovered */}
-            {hovered && (
-              <circle
-                cx="0"
-                cy="1"
-                r="9"
-                fill="rgba(253, 224, 71, 0.28)"
-              />
-            )}
             {/* Top cap ring */}
             <path
               d="M -3 -5 L 3 -5 L 4.2 -2 L -4.2 -2 Z"
@@ -308,15 +293,27 @@ export function BankersLampControl({
         onFocus={handleEnter}
         onBlur={handleLeave}
         aria-pressed={lampOn}
-        aria-label={`Classic green glass banker's lamp pull-chain — ${
-          lampOn ? "pull chain to switch lamp off" : "pull chain to switch lamp on"
+        style={{ clipPath: "polygon(8.25% 19.20%, 11.11% 16.33%, 15.24% 12.03%, 18.41% 9.17%, 23.17% 6.59%, 32.70% 4.30%, 53.97% 4.87%, 67.62% 5.73%, 83.49% 7.16%, 91.43% 12.03%, 95.24% 19.20%, 97.14% 27.79%, 96.19% 29.23%, 53.97% 32.38%, 30.16% 32.09%, 30.16% 37.82%, 31.75% 42.69%, 35.87% 48.43%, 41.59% 55.87%, 44.44% 61.60%, 49.52% 66.48%, 50.79% 69.05%, 46.35% 75.50%, 51.75% 81.66%, 60.32% 84.24%, 64.44% 88.54%, 69.21% 92.55%, 68.57% 96.56%, 53.97% 100%, 27.30% 99.43%, 15.87% 97.13%, 14.60% 94.27%, 16.83% 89.40%, 23.81% 85.10%, 35.56% 81.66%, 35.87% 76.22%, 33.33% 70.19%, 35.87% 65.62%, 38.10% 59.88%, 38.10% 57.02%, 29.52% 45.56%, 26.35% 37.82%, 26.98% 32.67%, 16.83% 30.66%, 16.19% 28.37%, 16.83% 21.49%, 9.52% 22.06%)" }}
+        aria-label={`Classic green glass banker's lamp shade — ${
+          lampOn ? "click to switch study light off" : "click to switch study light on"
         }`}
         className="pointer-events-auto absolute inset-0 h-full w-full cursor-pointer bg-transparent p-0 outline-none focus-visible:outline-none"
       >
-        <span className="sr-only">
-          Pull brass chain on banker&apos;s lamp to toggle study lighting
-        </span>
+        <span className="sr-only">Click the lamp shade to toggle study lighting</span>
       </button>
+      <button
+        type="button"
+        data-testid="workspace-lamp-chain"
+        onClick={handlePullChain}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        onFocus={handleEnter}
+        onBlur={handleLeave}
+        aria-pressed={lampOn}
+        aria-label={`Pull brass chain to turn the lamp ${lampOn ? "off" : "on"}`}
+        style={{ left: "55.5%", top: "29%", width: "15.5%", height: "31%" }}
+        className="pointer-events-auto absolute z-10 cursor-pointer rounded-full bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-200/80"
+      />
     </div>
   );
 }
