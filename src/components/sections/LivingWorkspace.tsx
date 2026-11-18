@@ -7,6 +7,9 @@ import { getProject } from "@/content/projects";
 import { links, site, socials } from "@/content/site";
 import { ExternalArrow, SocialIcon } from "@/components/ui/Icons";
 import { EmailReveal } from "@/components/ui/EmailReveal";
+import { StudyVault } from "@/components/vault/StudyVault";
+import { advanceProgress, COMPASS_READY, readProgress } from "@/components/vault/progress";
+import { useVaultAudio } from "@/components/vault/useVaultAudio";
 import { BankersLampControl } from "@/components/ui/BankersLampControl";
 
 type HoveredItem =
@@ -203,6 +206,16 @@ export function LivingWorkspace() {
   const [hovered, setHovered] = useState<HoveredItem>(null);
   const [lampOn, setLampOn] = useState(true);
   const [muted, setMuted] = useState(false);
+  const vaultAudio = useVaultAudio(muted);
+
+  const toggleLamp = (trusted: boolean) => {
+    setLampOn((on) => !on);
+    if (!trusted) return;
+    const progress = readProgress();
+    if (progress < COMPASS_READY && advanceProgress(progress) && progress + 1 === COMPASS_READY) {
+      vaultAudio.play("latch");
+    }
+  };
 
   // Digital reader state for both books on the shelf
   const [activeShelfBook, setActiveShelfBook] = useState<ShelfBookId>("why-henry");
@@ -777,10 +790,15 @@ export function LivingWorkspace() {
              ----------------------------------------------------------------- */}
           <BankersLampControl
             lampOn={lampOn}
-            onToggleLamp={() => setLampOn((v) => !v)}
+            onToggleLamp={toggleLamp}
+            onPullStart={() => {
+              if (readProgress() === COMPASS_READY - 1) vaultAudio.prepare();
+            }}
             muted={muted}
             onHoverChange={(isHov) => setHovered(isHov ? "lamp" : null)}
           />
+
+          <StudyVault lampOn={lampOn} play={vaultAudio.play} obstructed={isBookOut || activeModal !== null} />
 
           {/* Subtle Top-Right Audio Mute Toggle */}
           <div className="absolute right-4 top-4 z-30">

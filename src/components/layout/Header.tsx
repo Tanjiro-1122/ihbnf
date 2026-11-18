@@ -46,7 +46,7 @@ export function Header() {
     return () => window.removeEventListener("resize", update);
   }, [active, isHome]);
 
-  if (isHome) return null;
+  if (isHome || pathname === "/vault") return null;
 
   const solid = scrolled && !open;
 

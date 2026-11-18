@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 
 type Props = {
   lampOn: boolean;
-  onToggleLamp: () => void;
+  onToggleLamp: (trusted: boolean) => void;
+  onPullStart?: () => void;
   muted?: boolean;
   reducedMotion?: boolean;
   onHoverChange?: (hovered: boolean) => void;
@@ -22,6 +23,7 @@ type Props = {
 export function BankersLampControl({
   lampOn,
   onToggleLamp,
+  onPullStart,
   muted = false,
   reducedMotion = false,
   onHoverChange,
@@ -66,13 +68,15 @@ export function BankersLampControl({
     }
   }, []);
 
-  const handlePullChain = useCallback(() => {
+  const handlePullChain = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const trusted = event.isTrusted;
+    if (trusted) onPullStart?.();
     // Allow rapid re-triggering cleanly by canceling any previous swing tail
     cancelAnimationFrame(animFrameRef.current);
 
     if (reducedMotion) {
       playSwitchClick();
-      onToggleRef.current();
+      onToggleRef.current(trusted);
       return;
     }
 
@@ -103,7 +107,7 @@ export function BankersLampControl({
       if (!clickedAtBottom) {
         clickedAtBottom = true;
         playSwitchClick();
-        onToggleRef.current();
+        onToggleRef.current(trusted);
         setPullState("swinging-back");
       }
 
@@ -131,7 +135,7 @@ export function BankersLampControl({
     };
 
     animFrameRef.current = requestAnimationFrame(step);
-  }, [playSwitchClick, reducedMotion]);
+  }, [onPullStart, playSwitchClick, reducedMotion]);
 
   const handleEnter = () => {
     setHovered(true);
