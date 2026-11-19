@@ -93,3 +93,153 @@
   .entry { background-position: 59% center; }
   .collection { grid-template-columns: minmax(0, 1fr); }
 }
+
+
+/* The archive beyond the steel door should feel like a hidden room,
+   not a second landing page full of standard cards. */
+.room{
+  position:relative;
+  background:
+    radial-gradient(ellipse at 50% 0%,#8e654222,transparent 42%),
+    repeating-linear-gradient(90deg,#17110d 0 5px,#1b140e 6px 11px,#130d09 12px 17px),
+    #0d0906;
+}
+.entry{
+  min-height:clamp(440px,70svh,790px);
+  overflow:hidden;
+  border-bottom:15px ridge #695037;
+  box-shadow:inset 0 -45px 65px #070403,0 18px 40px #0009;
+  background:
+    radial-gradient(ellipse at 59% 40%,transparent 0 17%,#0806066f 76%),
+    linear-gradient(0deg,#0c0704 0,#10090527 30%,#04040358 90%),
+    url("/media/vault/archive.webp") center 53% / cover no-repeat,
+    #120c08;
+}
+.entry::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,#080604a8,transparent 27% 75%,#0806049c),
+    radial-gradient(ellipse at 50% 100%,#e3b26c14,transparent 52%);
+  box-shadow:inset 0 0 100px 40px #0009;
+}
+.hero{position:relative;z-index:1;min-height:clamp(440px,70svh,790px);max-width:1440px}
+.title{
+  max-width:800px;
+  border-left:2px solid #d0b07a;
+  padding-left:clamp(15px,3vw,35px);
+  text-shadow:0 5px 20px #000,0 1px 5px #000;
+}
+.title h1{
+  font:normal clamp(5.3rem,12vw,10.5rem)/.88 Georgia,serif;
+  letter-spacing:.045em;
+  color:#f5e5c9;
+}
+.title p{font:italic clamp(16px,2vw,24px)/1.4 Georgia,serif;color:#e8cf9e;letter-spacing:.04em}
+.return{
+  order:-1;
+  border:1px ridge #d8bd8575;
+  border-radius:3px;
+  background:linear-gradient(115deg,#423020e8,#110b07ec);
+  box-shadow:inset 0 0 0 1px #1b110a,0 10px 30px #0008;
+}
+.collection{
+  position:relative;
+  isolation:isolate;
+  max-width:1280px;
+  gap:clamp(18px,3vw,38px);
+  padding:clamp(24px,4vw,60px);
+  background:
+    radial-gradient(ellipse at 55% 0,#b67f4612,transparent 67%),
+    repeating-linear-gradient(90deg,#0000 0 170px,#57391e18 172px 176px,#0000 180px 214px);
+}
+.collection::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 50% 35%,transparent 0 32%,#080503b0 96%);
+}
+.shelf{
+  position:relative;
+  overflow:hidden;
+  min-height:285px;
+  padding:clamp(19px,3vw,37px);
+  border:13px ridge #6f4d2e;
+  border-radius:3px;
+  background:
+    radial-gradient(ellipse at 50% 0,#f9cc8129 0,transparent 60%),
+    repeating-linear-gradient(93deg,#382315 0 6px,#2b1c12 7px 14px,#362416 15px 18px),
+    #29170d;
+  box-shadow:
+    inset 0 0 0 5px #130b06,
+    inset 0 0 0 8px #b18b5740,
+    inset 0 0 65px 20px #070402cf,
+    0 17px 30px #0009;
+}
+.shelf::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(#c9aa6744 0 2px,transparent 13px 96%,#d7b27933);
+}
+.shelf::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  bottom:0;left:0;right:0;height:12px;
+  background:linear-gradient(#8a6237,#25160d 63%,#110b07);
+  box-shadow:0 -8px 15px #0008;
+}
+.shelf h2{
+  position:relative;
+  z-index:1;
+  border-bottom:1px solid #bb935a5e;
+  padding:0 0 16px;
+  color:#f1dfbb;
+  font:normal clamp(29px,3vw,39px)/1.05 Georgia,serif;
+  letter-spacing:.025em;
+  text-shadow:0 2px 10px #000;
+}
+.exhibits,.shelf:first-child .exhibits{position:relative;z-index:1;gap:16px;margin-top:22px}
+.exhibit,.shelf:not(:first-child) .exhibit{
+  min-height:108px;
+  display:flex;
+  align-items:center;
+  padding:clamp(12px,1.5vw,19px);
+  border:1px ridge #9d7b5080;
+  border-bottom:5px ridge #8c633e;
+  border-radius:2px;
+  background:
+    linear-gradient(135deg,#aa82551a,transparent 42%),
+    radial-gradient(ellipse at 40% 0,#d4ae6e12,transparent 78%),
+    #1b140fd9;
+  box-shadow:inset 0 0 0 2px #130b08a4,0 12px 18px #0006;
+}
+.shelf:not(:first-child) .exhibit+.exhibit{margin-top:12px}
+.cover{
+  display:block;
+  width:clamp(82px,10vw,128px);
+  max-height:185px;
+  object-fit:cover;
+  border:3px ridge #b19a6e;
+  border-radius:2px;
+  box-shadow:5px 9px 18px #000d,10px 5px 2px #09090754;
+}
+.status{font:600 10px ui-monospace,monospace;letter-spacing:.16em;color:#d4b579}
+.exhibit h3{font:normal clamp(18px,1.9vw,23px)/1.12 Georgia,serif;color:#f4e2bd}
+.description{font:14px/1.6 Georgia,serif;color:#d2bfa0}
+@media(max-width:620px){
+  .entry{min-height:65svh;background-position:62% center}
+  .hero{min-height:65svh}
+  .title h1{font-size:clamp(60px,15vw,95px)}
+  .collection{padding:15px}
+  .shelf{min-height:auto;border-width:9px;padding:19px}
+  .shelf:first-child .exhibits{grid-template-columns:minmax(0,1fr)}
+  .cover{width:82px}
+}
