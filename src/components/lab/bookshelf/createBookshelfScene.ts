@@ -1,64 +1,36 @@
 import * as THREE from "three";
 import type { ShelfBookId } from "@/components/books/StudyHardcover";
+import { bookshelfCatalog, bookshelfLayout, arrangeBooks, hardcoverDesign } from "@/components/bookshelf/catalog";
 import { loadCover, makeBook, makeRelief } from "@/components/bookshelf/hardcover";
 
-const books = [
-  {
-    title: "The Dream of the Payoff",
-    author: "JAVIER HUERTAS",
-    cover: "/media/memoir/dream-payoff-cover.svg",
-    tone: "#441a17",
-    edge: "#753c2a",
-    foil: "#ffd792",
-    width: 3.13,
-    thickness: .43,
-    x: -.065,
-    z: .009,
-    yaw: .034,
-  },
-  {
-    title: "Why Henry?",
-    series: "THE UNWRITTEN JOURNEY  ·  BOOK ONE",
-    author: "JAVIER HUERTAS",
-    cover: "/media/why-henry/cover-user.jpg",
-    tone: "#101c2a",
-    edge: "#344956",
-    foil: "#ffda96",
-    width: 2.99,
-    thickness: .395,
-    x: .065,
-    z: -.025,
-    yaw: .056,
-  },
-];
-
-function shadowMap() {
+// The production shelf uses exactly the same physical book geometry and catalog
+// as /lab/3d-bookshelf. The transparent canvas sits over the original photo:
+// no additional wooden pedestal or duplicate shelf is rendered by Three.js.
+function softShadowTexture() {
   const canvas = document.createElement("canvas");
-  canvas.width = 320;
-  canvas.height = 256;
+  canvas.width = 512;
+  canvas.height = 320;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D unavailable");
-  for (let inset = 0; inset < 39; inset++) {
-    ctx.fillStyle = "rgba(17, 9, 4, .045)";
-    ctx.beginPath();
-    ctx.roundRect(4 + inset * 2, 4 + inset * 1.2, 312 - inset * 4, 248 - inset * 2.4, 46 - inset * .85);
-    ctx.fill();
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 8;
-  return texture;
+  const gradient = ctx.createRadialGradient(256, 160, 16, 256, 160, 235);
+  gradient.addColorStop(0, "rgba(8, 3, 1, .85)");
+  gradient.addColorStop(.45, "rgba(12, 5, 2, .63)");
+  gradient.addColorStop(.8, "rgba(13, 7, 4, .19)");
+  gradient.addColorStop(1, "rgba(13, 7, 4, 0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 512, 320);
+  return new THREE.CanvasTexture(canvas);
 }
 
-function addShadow(scene: THREE.Scene, map: THREE.Texture, width: number, depth: number, opacity: number, x: number, y: number, z: number) {
-  const plane = new THREE.Mesh(
+function addContactShadow(group: THREE.Group, texture: THREE.Texture, width: number, depth: number, y: number, opacity: number) {
+  const surface = new THREE.Mesh(
     new THREE.PlaneGeometry(width, depth),
-    new THREE.MeshBasicMaterial({ map, opacity, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1 }),
+    new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1 }),
   );
-  plane.rotation.x = -Math.PI / 2;
-  plane.position.set(x, y, z);
-  scene.add(plane);
-  return plane;
+  surface.rotation.x = -Math.PI / 2;
+  surface.position.y = y;
+  group.add(surface);
+  return surface;
 }
 
 export async function createBookshelfScene(
@@ -71,72 +43,111 @@ export async function createBookshelfScene(
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0, 0);
   renderer.toneMapping = THREE.AgXToneMapping;
-  renderer.toneMappingExposure = 1.28;
+  renderer.toneMappingExposure = 1.10;
+
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .1, 50);
-  camera.position.set(registerUpdate ? 3.25 : 1.55, 3.28, 10);
-  camera.lookAt(.04, .32, 0);
+
+  // Unlike the 3D lab's product-shot camera, the study's painted bookshelf is
+  // seen nearly head-on with only a modest view of the top boards.
+  camera.position.set(1.10, 2.00, 10);
+  camera.lookAt(0, .30, 0);
   camera.updateMatrixWorld();
 
-  const textures = new Set<THREE.Texture>();
+  const sharedTextures = new Set<THREE.Texture>();
+  const ownedTextures = new Set<THREE.Texture>();
+  const books = new Map<string, { object: THREE.Group; baseY: number; centerX: number; offsetZ: number; yaw: number }>();
+  const stacks = new THREE.Group();
+  scene.add(stacks);
   let disposed = false;
   let observer: ResizeObserver | undefined;
+
+  const relief = makeRelief();
+  sharedTextures.add(relief);
+  const shadow = softShadowTexture();
+  sharedTextures.add(shadow);
+
   const dispose = () => {
     if (disposed) return;
     disposed = true;
     observer?.disconnect();
+    const geometries = new Set<THREE.BufferGeometry>();
     const materials = new Set<THREE.Material>();
     scene.traverse((node) => {
       if (!(node instanceof THREE.Mesh)) return;
-      node.geometry.dispose();
-      for (const item of [node.material].flat() as THREE.MeshStandardMaterial[]) {
-        materials.add(item);
-        if (item.map) textures.add(item.map);
-        if (item.bumpMap) textures.add(item.bumpMap);
+      geometries.add(node.geometry);
+      for (const material of [node.material].flat() as THREE.MeshStandardMaterial[]) {
+        materials.add(material);
+        for (const texture of [material.map, material.bumpMap]) {
+          if (texture && !sharedTextures.has(texture)) ownedTextures.add(texture);
+        }
       }
     });
-    materials.forEach((item) => item.dispose());
-    textures.forEach((map) => map.dispose());
+    geometries.forEach(geometry => geometry.dispose());
+    materials.forEach(material => material.dispose());
+    ownedTextures.forEach(texture => texture.dispose());
+    sharedTextures.forEach(texture => texture.dispose());
     renderer.dispose();
     renderer.domElement.remove();
   };
   registerCleanup(dispose);
 
   try {
-    const covers = await Promise.all(books.map(async (book) => {
-      const cover = await loadCover(book.cover);
+    const covers = await Promise.all(bookshelfCatalog.map(async (entry) => {
+      const design = hardcoverDesign(entry);
+      const cover = await loadCover(entry.cover, { ratio: (design.depth ?? design.width * 2 / 3) / design.width, tone: design.tone });
       if (disposed) cover.dispose();
-      else textures.add(cover);
+      else sharedTextures.add(cover);
       return cover;
     }));
     if (disposed) return;
-    const relief = makeRelief();
-    const lower = makeBook(books[0], covers[0], relief);
-    const upper = makeBook(books[1], covers[1], relief);
-    lower.rotation.y = books[0].yaw;
-    lower.position.set(books[0].x, 0, books[0].z);
-    upper.rotation.y = books[1].yaw;
-    upper.position.set(books[1].x, books[0].thickness, books[1].z);
-    scene.add(lower, upper);
 
-    const shadow = shadowMap();
-    addShadow(scene, shadow, 3.97, 2.81, .9, -.09, -.004, .03);
-    const between = addShadow(scene, shadow, 3.38, 2.27, .52, .048, books[0].thickness + .0005, .005);
+    const arranged = arrangeBooks(bookshelfCatalog, bookshelfLayout);
+    const dimensionScale = 1 / 75;
+    const firstStack = arranged[0]?.center ?? 0;
 
-    scene.add(new THREE.HemisphereLight("#ffd2a0", "#522d20", 1.04));
-    const key = new THREE.DirectionalLight("#ffd6a8", 2.34);
-    key.position.set(2.6, 4, 1.25);
+    arranged.forEach((column) => {
+      const columnGroup = new THREE.Group();
+      // Center the first, currently active stack over the original shelf. A
+      // future second stack grows to the right instead of squashing the books.
+      columnGroup.position.x = (column.center - firstStack) * dimensionScale;
+      stacks.add(columnGroup);
+      let y = 0;
+      column.entries.forEach((entry, index) => {
+        const design = hardcoverDesign(entry);
+        const cover = covers[bookshelfCatalog.indexOf(entry)];
+        const object = makeBook(design, cover, relief);
+        const z = index % 2 === 0 ? .01 : -.035;
+        const yaw = index % 2 === 0 ? .022 : -.025;
+        object.position.set(index % 2 === 0 ? -.025 : .035, y, z);
+        object.rotation.y = yaw;
+        columnGroup.add(object);
+        books.set(entry.id, { object, baseY: y, centerX: object.position.x, offsetZ: z, yaw });
+        // The contact shadow is applied at each book's underside, not to the
+        // wall or to the whole canvas rectangle.
+        addContactShadow(columnGroup, shadow, design.width * 1.20, (design.depth ?? 2) * 1.22, Math.max(.002, y - .005), index === 0 ? .89 : .48)
+          .position.set(object.position.x, Math.max(.002, y - .005), z);
+        y += design.thickness;
+      });
+    });
+
+    scene.add(new THREE.HemisphereLight("#ffd6ac", "#3a261e", 1.03));
+    const key = new THREE.DirectionalLight("#ffcc90", 1.72);
+    key.position.set(-2.5, 4, 3.5);
     scene.add(key);
-    const fill = new THREE.DirectionalLight("#d3ddfb", .57);
-    fill.position.set(-3, 1.7, 4);
+    const fill = new THREE.DirectionalLight("#adc2e6", .35);
+    fill.position.set(3, 2, 5);
     scene.add(fill);
 
     renderer.domElement.dataset.testid = "bookshelf-lab-canvas";
     host.appendChild(renderer.domElement);
+
     function render() {
       const { clientWidth: w, clientHeight: h } = host;
-      if (!w || !h) return;
-      const halfWidth = registerUpdate ? 2.29 : 2.21;
+      if (!w || !h || disposed) return;
+      // The book stack should occupy only the shelf's existing niche, not
+      // dominate the painted study or float in front of the upper shelf.
+      const halfWidth = 2.62;
       const halfHeight = halfWidth * h / w;
       camera.left = -halfWidth;
       camera.right = halfWidth;
@@ -144,27 +155,36 @@ export async function createBookshelfScene(
       camera.bottom = -halfHeight;
       camera.updateProjectionMatrix();
 
-      // Register the lowest visible board corner against the existing shelf ledge.
-      let low = Infinity;
-      for (const x of [-books[0].width / 2, books[0].width / 2]) {
-        for (const z of [-books[0].width / 3, books[0].width / 3]) {
-          low = Math.min(low, lower.localToWorld(new THREE.Vector3(x, 0, z)).project(camera).y);
+      // Anchor the lower board to the photographed shelf ledge (normalized
+      // canvas y ≈ 88%, i.e. NDC -0.76) at every responsive size.
+      const lower = books.get("dream-payoff")?.object;
+      if (lower) {
+        const footprint = hardcoverDesign(bookshelfCatalog[0]);
+        const zDepth = footprint.depth ?? 2;
+        let low = Infinity;
+        for (const x of [-footprint.width / 2, footprint.width / 2]) {
+          for (const z of [-zDepth / 2, zDepth / 2]) {
+            const point = lower.localToWorld(new THREE.Vector3(x, 0, z));
+            low = Math.min(low, point.project(camera).y);
+          }
         }
+        const delta = (low + .76) * halfHeight;
+        camera.top += delta;
+        camera.bottom += delta;
+        camera.updateProjectionMatrix();
       }
-      const offset = (low + .766) * halfHeight;
-      camera.top += offset;
-      camera.bottom += offset;
-      camera.updateProjectionMatrix();
       renderer.setSize(w, h, false);
       renderer.render(scene, camera);
     }
 
     registerUpdate?.((selected, lit) => {
-      lower.visible = selected !== "dream-payoff";
-      upper.visible = selected !== "why-henry";
-      upper.position.y = lower.visible ? books[0].thickness : 0;
-      between.visible = lower.visible && upper.visible;
-      renderer.toneMappingExposure = lit ? 1.28 : 1.14;
+      for (const [id, model] of books) {
+        model.object.visible = selected !== id;
+      }
+      // Removing the lower book must leave the upper book sitting on the shelf.
+      const top = books.get("why-henry");
+      if (top) top.object.position.y = books.get("dream-payoff")?.object.visible === false ? 0 : top.baseY;
+      renderer.toneMappingExposure = lit ? 1.10 : .89;
       render();
     });
 
