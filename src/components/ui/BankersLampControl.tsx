@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 
 type Props = {
   lampOn: boolean;
-  onToggleLamp: () => void;
+  onToggleLamp: (trusted: boolean) => void;
+  onPullStart?: () => void;
   muted?: boolean;
   reducedMotion?: boolean;
   onHoverChange?: (hovered: boolean) => void;
@@ -16,12 +17,13 @@ type Props = {
  * - Separately animated physical brass beaded pull-chain + bottom brass acorn/ball aligned to the
  *   exact socket position under the green glass shade (`x = 25.55%, y = 45.4%` in the 16:9 study).
  * - Clicking/tapping pulls the chain & brass ball visibly downward (`+22px` travel), stretches the
- *   beaded chain links, fires `/media/audio/lamp-switch-click.wav` and toggles the room's lamp state
+ *   beaded chain links, fires `/media/audio/lamp-chain-approved.mp3` and toggles the room's lamp state
  *   at the exact lowest point of the pull (`175ms`), and retracts with a natural damped pendulum swing.
  */
 export function BankersLampControl({
   lampOn,
   onToggleLamp,
+  onPullStart,
   muted = false,
   reducedMotion = false,
   onHoverChange,
@@ -47,7 +49,7 @@ export function BankersLampControl({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const audio = new Audio("/media/audio/lamp-switch-click.wav");
+    const audio = new Audio("/media/audio/lamp-chain-approved.mp3");
     audio.preload = "auto";
     clickAudioRef.current = audio;
     return () => {
@@ -66,13 +68,15 @@ export function BankersLampControl({
     }
   }, []);
 
-  const handlePullChain = useCallback(() => {
+  const handlePullChain = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const trusted = event.isTrusted;
+    if (trusted) onPullStart?.();
     // Allow rapid re-triggering cleanly by canceling any previous swing tail
     cancelAnimationFrame(animFrameRef.current);
 
     if (reducedMotion) {
       playSwitchClick();
-      onToggleRef.current();
+      onToggleRef.current(trusted);
       return;
     }
 
@@ -103,7 +107,7 @@ export function BankersLampControl({
       if (!clickedAtBottom) {
         clickedAtBottom = true;
         playSwitchClick();
-        onToggleRef.current();
+        onToggleRef.current(trusted);
         setPullState("swinging-back");
       }
 
@@ -131,7 +135,7 @@ export function BankersLampControl({
     };
 
     animFrameRef.current = requestAnimationFrame(step);
-  }, [playSwitchClick, reducedMotion]);
+  }, [onPullStart, playSwitchClick, reducedMotion]);
 
   const handleEnter = () => {
     setHovered(true);
