@@ -230,7 +230,15 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook, muted = false
               </div>
               <div className={styles.keyboardBase} aria-hidden="true"><div className={styles.trackpad} /></div>
               <div className={styles.laptopFooter}>
-                <span>This is a visual preview of the project, not a usable website. You can scroll the display to see the concept.</span>
+                <span>This is a view-only preview. Scroll the laptop screen for a closer look, or visit the real website separately.</span>
+                <a
+                  href={links.sportsWagerHelper}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Visit Sports Wager Helper website in a new tab"
+                >
+                  Visit sportswagerhelper.com <ExternalArrow className="h-3 w-3" />
+                </a>
               </div>
             </div>
           )}
