@@ -455,3 +455,419 @@
   .spark, .transfer { display: none; }
   .compassFade { animation: none; opacity: 0; }
 }
+
+
+/* ---------------------------------------------------------------------------
+   IHBNF mechanical vault v2 — physical machinery, not an instant overlay.
+   Order: five-digit code -> brass wheel -> retracting bolts -> steel door.
+   All four phase changes are driven by HiddenSafe, without another user click.
+   --------------------------------------------------------------------------- */
+
+.inspection{
+  width:min(1120px,calc(100% - 26px));
+  border:2px ridge #91744a;
+  border-radius:11px;
+  color:#eadbc4;
+  background:
+    radial-gradient(ellipse at 18% 0%,#55412a88,transparent 45%),
+    radial-gradient(ellipse at 85% 130%,#40291888,transparent 55%),
+    repeating-linear-gradient(101deg,transparent 0 5px,#d6ad6810 6px 7px),
+    linear-gradient(138deg,#241a13,#0d0d0d 48%,#211a12);
+  box-shadow:
+    0 48px 130px #000e,
+    inset 0 0 0 5px #15110d,
+    inset 0 0 0 7px #9e82554d,
+    inset 0 0 55px #000e;
+}
+.inspection::backdrop{
+  background:#030404e8;
+  backdrop-filter:blur(5px) saturate(.65);
+}
+.inspectionHeader{
+  padding:17px clamp(18px,3vw,34px) 13px;
+  background:linear-gradient(90deg,#271d14a9,#0e0c09a5);
+  border-bottom:1px solid #ba95576b;
+}
+.inspectionIdentity{display:flex;flex-direction:column;gap:5px}
+.inspectionEyebrow{
+  color:#cba773;
+  font:600 10px/1.5 ui-monospace,SFMono-Regular,monospace;
+  letter-spacing:.2em;
+}
+.inspectionHeader h2{
+  margin:0;
+  font:normal clamp(29px,4vw,44px)/1.05 Georgia,serif;
+  color:#f1ddbd;
+  text-shadow:0 2px 12px #000;
+}
+.mechanismIntro{
+  padding:12px clamp(18px,3vw,34px) 0;
+  font:13px/1.6 Georgia,serif;
+  color:#baab93;
+}
+.inspectionBody{
+  grid-template-columns:minmax(0,1fr) minmax(185px,.39fr);
+  gap:clamp(16px,2.7vw,28px);
+  align-items:stretch;
+  padding:clamp(15px,2vw,25px);
+}
+.mechanism{
+  min-height:470px;
+  padding:0;
+  isolation:isolate;
+  perspective:1300px;
+  overflow:visible;
+  border:11px ridge #786f5c;
+  border-radius:9px;
+  background:
+    linear-gradient(125deg,#050807,#1d2423 28%,#020404 74%,#0e1514);
+  box-shadow:
+    inset 0 0 0 3px #272c2b,
+    inset 0 0 0 8px #0d1112,
+    inset 0 0 45px 15px #000,
+    0 14px 45px #000b,
+    0 0 0 2px #bd9a63;
+}
+.vaultBezel{
+  position:absolute;
+  inset:-5px;
+  border:3px solid #272a28;
+  border-radius:5px;
+  pointer-events:none;
+  background:repeating-linear-gradient(90deg,#c4b18b16 0 1px,transparent 1px 28px);
+  box-shadow:inset 0 0 0 2px #c5ad7854,inset 0 0 20px #000a;
+}
+.vaultInnerWall{
+  position:absolute;
+  inset:15px 17px 48px;
+  border:11px ridge #4d5957;
+  border-radius:3px;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 53% 40%,#183039a5,transparent 55%),
+    repeating-linear-gradient(90deg,#232e30 0 8px,#172125 9px 14px),
+    #090f13;
+  box-shadow:inset 0 0 45px #000,inset 0 0 0 5px #010304;
+}
+.safeDoor{
+  inset:15px 20px 52px;
+  z-index:4;
+  transform:rotateY(0);
+  transform-origin:left center;
+  transform-style:preserve-3d;
+  transition:transform 1340ms cubic-bezier(.22,.63,.18,.98);
+  filter:drop-shadow(6px 8px 10px #000b);
+  will-change:transform;
+}
+.doorThickness{
+  position:absolute;
+  inset:-5px -18px -5px 0;
+  background:
+    repeating-linear-gradient(90deg,#171b1b 0 3px,#a38c6a 4px 6px,#222424 7px 11px);
+  border:2px solid #8b7b60;
+  border-radius:4px;
+  transform:translateZ(-25px);
+  box-shadow:inset 0 0 0 8px #141715;
+}
+.doorFace{
+  padding:53px clamp(14px,2.5vw,26px) 35px;
+  overflow:visible;
+  justify-content:space-evenly;
+  gap:clamp(8px,2vw,20px);
+  border:10px ridge #7f8377;
+  border-radius:5px;
+  background:
+    linear-gradient(145deg,#c2c0ab22,transparent 27% 68%,#000a),
+    repeating-linear-gradient(110deg,transparent 0 2px,#bfca9d0b 3px 4px),
+    radial-gradient(ellipse at 35% 25%,#717b72,#3c4341 37%,#1c2527 77%,#47514b);
+  box-shadow:
+    inset 0 0 0 3px #202a27,
+    inset 0 0 0 8px #ab956e30,
+    inset 0 0 46px 13px #050807c9,
+    2px 2px 8px #000d;
+  backface-visibility:hidden;
+}
+.doorFace::before,.doorFace::after{display:none}
+.doorSeal{
+  position:absolute;
+  inset:9px;
+  pointer-events:none;
+  border:2px ridge #a4a28a7a;
+  border-radius:4px;
+  box-shadow:inset 0 0 0 3px #0f171a,inset 0 0 30px #0006;
+}
+.doorLabel{
+  position:absolute;
+  top:12px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  white-space:nowrap;
+  color:#d3b98e;
+  text-shadow:0 2px 3px #000;
+  pointer-events:none;
+}
+.doorLabel strong{font:normal 21px/1 Georgia,serif;letter-spacing:.15em}
+.doorLabel small{font:600 8px/1.3 ui-monospace,monospace;letter-spacing:.13em}
+.rivets{
+  position:absolute;
+  inset:8px 12px;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  grid-template-rows:auto auto;
+  align-content:space-between;
+  justify-items:center;
+  pointer-events:none;
+}
+.rivets i{
+  width:8px;height:8px;border-radius:50%;
+  border:1px solid #121719;
+  background:radial-gradient(circle at 28% 27%,#e4d0ab,#746b5e 35%,#1c2829 80%);
+  box-shadow:1px 2px 3px #0009;
+}
+.hingeRail{position:absolute;z-index:5;top:8%;bottom:8%;left:-22px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.hingeRail i{display:block;width:30px;height:41px;border:3px ridge #8c816e;border-radius:6px;background:linear-gradient(90deg,#151d1f,#958d7d 24%,#343e3d 42%,#a99a80 67%,#151b1d);box-shadow:4px 4px 9px #0009}
+.boltRail{position:absolute;right:-21px;top:10%;bottom:10%;width:42px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.boltRail .bolt{
+  position:relative;
+  right:auto;top:auto;width:42px;height:26px;
+  display:block;
+  border:3px ridge #a29c8b;
+  border-radius:4px;
+  background:linear-gradient(#bdc2ba,#3d4c4b 26%,#151c20 55%,#6d7775 85%,#252c2d);
+  box-shadow:2px 4px 8px #0009;
+  transform:translateX(3px);
+  transition:transform 460ms cubic-bezier(.15,.84,.18,1);
+}
+.boltRail .bolt:nth-child(2){transition-delay:90ms}
+.boltRail .bolt:nth-child(3){transition-delay:180ms}
+.boltRail .bolt:nth-child(4){transition-delay:270ms}
+.lockAssembly{
+  flex:1 1 51%;
+  min-width:0;
+  max-width:228px;
+  padding:14px;
+  border:4px ridge #696858;
+  border-radius:7px;
+  background:
+    linear-gradient(126deg,#5e514040,#121613ad),
+    linear-gradient(#282d2b,#111614);
+  box-shadow:inset 0 0 0 2px #9b86503d,0 10px 20px #0009;
+}
+.keypadTitle{
+  margin:0 0 7px;
+  color:#c4ac80;
+  font:600 9px/1.3 ui-monospace,monospace;
+  text-align:center;
+  letter-spacing:.13em;
+}
+.counter{
+  padding:.46rem .3rem;
+  font:clamp(16px,2.1vw,23px)/1.25 ui-monospace,monospace;
+  background:#080e0d;
+  color:#a6dbb0;
+  border:3px ridge #8b8766;
+  text-shadow:0 0 7px #6bd48d63;
+  letter-spacing:.09em;
+  min-height:39px;
+}
+.mechanism[data-phase="dialing"] .counter,
+.mechanism[data-phase="bolts"] .counter,
+.mechanism[data-phase="swinging"] .counter,
+.mechanism[data-phase="open"] .counter{color:#a4f3c8;box-shadow:inset 0 0 12px #0e5b382e}
+.keypad{gap:6px;margin-top:12px}
+.keypad button{
+  min-height:clamp(36px,4.2vw,47px);
+  border:2px ridge #857d65;
+  border-radius:5px;
+  color:#eedec0;
+  background:linear-gradient(160deg,#737262,#323b3b 45%,#161d1f);
+  box-shadow:inset 0 1px 3px #e1d8bd2a,0 3px 4px #000d;
+  font:600 clamp(15px,1.7vw,19px)/1 ui-monospace,monospace;
+}
+.keypad button:hover:not(:disabled){background:linear-gradient(160deg,#94876e,#364543 55%,#1e2526)}
+.keypad button:disabled{cursor:default;opacity:.48}
+.keypad button:last-child:not(:disabled){border-color:#a7b88a;color:#d0edba}
+.lockStatus{font:12px/1.4 Georgia,serif;color:#d8c69d;min-height:32px;margin-top:9px}
+.wheelHousing{
+  flex:0 1 39%;
+  display:flex;
+  min-width:100px;
+  max-width:205px;
+  align-items:center;
+  flex-direction:column;
+  justify-content:center;
+  color:#c5b38c;
+  gap:11px;
+  text-align:center;
+}
+.wheelHousing .wheelLabel{font:600 10px/1.3 ui-monospace,monospace;letter-spacing:.16em}
+.wheelHousing small{font:600 9px/1.3 ui-monospace,monospace;letter-spacing:.1em}
+.wheelFrame{
+  width:clamp(92px,13vw,170px);
+  max-width:100%;
+  aspect-ratio:1;
+  display:grid;
+  place-items:center;
+  border:11px ridge #a89b7f;
+  border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#b9ab8b 0deg 2deg,#2c3432 2deg 8deg,#5f685e 9deg 11deg,#141c1a 11deg 15deg);
+  box-shadow:inset 0 0 0 5px #151d1d,inset 0 0 15px #000,4px 9px 18px #000b;
+}
+.wheelRotor{height:85%;width:85%;transform:rotate(0);border-radius:50%;box-shadow:inset 0 0 0 4px #65594a}
+.wheelRotor .wheel{
+  width:100%;height:100%;aspect-ratio:1;
+  border:8px ridge #b3a88d;
+  background:radial-gradient(circle,#c4b391 0 13%,#1c2524 14% 19%,#907c59 20% 26%,#172021 27% 70%,#6c6e60 74%);
+  box-shadow:inset 0 0 13px #0009,2px 3px 9px #000a;
+  transform:none!important;
+}
+.wheelRotor .wheel i{
+  inset:45% 5%;
+  border:2px ridge #d2bf98;
+  border-radius:5px;
+  background:linear-gradient(#d1bf97,#544d3b 50%,#96815b);
+  box-shadow:1px 2px 3px #0009;
+}
+.wheelRotor .wheel b{
+  position:absolute;z-index:3;
+  width:27%;height:27%;
+  left:36.5%;top:36.5%;
+  border-radius:50%;
+  border:3px ridge #bba988;
+  background:radial-gradient(circle at 32% 30%,#e4d3a9,#826e4a 58%,#292722);
+  box-shadow:1px 2px 5px #000b;
+}
+.stageMeter{
+  position:absolute;
+  left:16px;right:16px;bottom:7px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:4px;z-index:5;pointer-events:none;
+}
+.stageMeter span{
+  border-top:2px solid #7c76678a;
+  color:#8e8470;
+  text-align:center;
+  padding:6px 2px 3px;
+  font:600 9px/1 ui-monospace,monospace;
+  letter-spacing:.09em;
+}
+.mechanism[data-phase="locked"] .stageMeter span:first-child,
+.mechanism[data-phase="dialing"] .stageMeter span:nth-child(-n+2),
+.mechanism[data-phase="bolts"] .stageMeter span:nth-child(-n+3),
+.mechanism[data-phase="swinging"] .stageMeter span,
+.mechanism[data-phase="open"] .stageMeter span{
+  border-color:#d3b479;
+  color:#e5ceaa;
+}
+.mechanism[data-phase="dialing"] .wheelRotor{
+  animation:vaultWheelRotate 1470ms cubic-bezier(.24,.7,.19,1) both;
+}
+.mechanism[data-phase="bolts"] .wheelRotor,
+.mechanism[data-phase="swinging"] .wheelRotor,
+.mechanism[data-phase="open"] .wheelRotor{transform:rotate(720deg)}
+@keyframes vaultWheelRotate{
+  0%{transform:rotate(0deg)}
+  22%{transform:rotate(195deg)}
+  48%{transform:rotate(460deg)}
+  75%{transform:rotate(796deg)}
+  89%{transform:rotate(691deg)}
+  100%{transform:rotate(720deg)}
+}
+.mechanism[data-phase="bolts"] .boltRail .bolt,
+.mechanism[data-phase="swinging"] .boltRail .bolt,
+.mechanism[data-phase="open"] .boltRail .bolt{transform:translateX(-39px)}
+.mechanism[data-phase="swinging"] .safeDoor,
+.mechanism[data-phase="open"] .safeDoor,
+.mechanism[data-open="true"] .safeDoor{
+  transform:rotateY(-106deg);
+  pointer-events:none;
+}
+.mechanism[data-phase="locked"] .safeDoor,
+.mechanism[data-phase="dialing"] .safeDoor,
+.mechanism[data-phase="bolts"] .safeDoor{transform:rotateY(0)}
+.mechanism[data-phase="swinging"] .passage,
+.mechanism[data-phase="open"] .passage{opacity:1}
+.passage{
+  inset:18px 19px 52px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  align-items:center;
+  padding:0 12px 20px;
+  background:
+    radial-gradient(ellipse at 50% 55%,#47627d4f 0 4%,transparent 32%,#000a 92%),
+    url("/media/vault/passage.webp") center / cover no-repeat,
+    #030609;
+  box-shadow:inset 0 0 32px 15px #010304;
+  border:2px solid #4b5555;
+}
+.passage:disabled{cursor:default}
+.passage span.passageLabel{
+  display:flex;flex-direction:column;gap:6px;
+  padding:12px 22px;
+  border:1px solid #f0d39985;
+  background:#0c1111e8;
+  color:#f2e6c6;
+  box-shadow:0 6px 15px #0007;
+}
+.passageLabel strong{font:600 10px/1.4 ui-monospace,monospace;letter-spacing:.2em}
+.passageLabel>span{display:block;padding:0;border:0;background:transparent;font:20px/1.2 Georgia,serif}
+.clue{
+  padding:20px 0 0 clamp(14px,2.2vw,24px);
+  border-left:1px solid #a08e6b56;
+  color:#dbc9a9;
+  align-self:stretch;
+  background:radial-gradient(ellipse at 0 0,#bb9c4a0a,transparent 50%);
+}
+.cluePortrait{width:clamp(85px,55%,150px);box-shadow:0 6px 15px #000b}
+.clue blockquote{font:clamp(26px,2.5vw,33px)/1.14 Georgia,serif;text-shadow:0 3px 10px #000}
+.clueNote{border-top:1px solid #a88a5671;margin-top:21px!important;padding-top:15px;color:#b8a88b;font-style:italic}
+.mechanism[data-failed="true"] .counter{animation:codeReject 260ms both;color:#f3a58c;border-color:#a45f52}
+@keyframes codeReject{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}60%{transform:translateX(5px)}}
+@media(max-width:800px){
+  .inspectionBody{grid-template-columns:minmax(0,1fr)}
+  .mechanism{min-height:450px}
+  .clue{padding:12px 0 0;border-left:0;border-top:1px solid #92794f}
+  .cluePortrait{float:left;width:74px;margin-right:13px}
+  .clue details{clear:both}
+}
+@media(max-width:510px){
+  .inspection{width:calc(100% - 8px);max-height:calc(100dvh - 8px)}
+  .inspectionHeader{padding:12px 12px}
+  .inspectionHeader h2{font-size:27px}
+  .inspectionEyebrow{font-size:8px}
+  .mechanismIntro{padding:8px 12px 0;font-size:11px}
+  .inspectionBody{padding:12px;gap:12px}
+  .mechanism{min-height:372px;border-width:6px}
+  .safeDoor{inset:12px 10px 39px}
+  .vaultInnerWall{inset:12px 10px 38px}
+  .doorFace{padding:42px 8px 25px;gap:5px;border-width:5px}
+  .doorLabel strong{font-size:14px}
+  .doorLabel small{font-size:6px}
+  .lockAssembly{padding:6px;border-width:2px}
+  .keypadTitle,.wheelHousing .wheelLabel,.wheelHousing small{font-size:7px}
+  .keypad{gap:3px;margin-top:6px}
+  .keypad button{min-height:33px;font-size:14px;border-width:1px}
+  .wheelHousing{min-width:77px;gap:4px}
+  .wheelFrame{width:80px;border-width:5px}
+  .wheelRotor .wheel{border-width:5px}
+  .counter{min-height:29px;font-size:13px;padding:2px}
+  .lockStatus{font-size:10px;min-height:22px}
+  .boltRail{right:-10px}.boltRail .bolt{width:19px;height:18px}
+  .mechanism[data-phase="bolts"] .boltRail .bolt,
+  .mechanism[data-phase="swinging"] .boltRail .bolt,
+  .mechanism[data-phase="open"] .boltRail .bolt{transform:translateX(-20px)}
+  .hingeRail{left:-12px}.hingeRail i{height:26px;width:15px}
+  .stageMeter{left:8px;right:8px}.stageMeter span{font-size:7px}
+  .passage{inset:12px 10px 39px}
+}
+@media(prefers-reduced-motion:reduce){
+  .mechanism[data-phase="dialing"] .wheelRotor{animation:none}
+  .mechanism .boltRail .bolt,.mechanism .safeDoor{transition:none}
+  .mechanism[data-failed="true"] .counter{animation:none}
+}
