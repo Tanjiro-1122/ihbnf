@@ -33,7 +33,6 @@ const steps = ["Create", "Build", "Break it", "Fix it", "Learn", "Keep moving"];
 
 export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
   const unfiltr = getProject("unfiltr")!;
-  const swh = getProject("sports-wager-helper")!;
   const closeRef = useRef<HTMLButtonElement>(null);
   const [phoneScreen, setPhoneScreen] = useState(0);
   const [brandPage, setBrandPage] = useState(0);
@@ -59,7 +58,8 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
     return () => { window.clearTimeout(opening); window.removeEventListener("keydown", onKey); };
   }, [onClose]);
 
-  const screenshotCount = unfiltr.media.screenshots?.length || 0;
+  const screenshots = unfiltr.media.screenshots || [];
+  const screenshotCount = screenshots.length;
   const sceneLabel = ({
     brand: "Framed IHBNF storybook",
     smartphone: "Unfiltr phone",
@@ -127,7 +127,7 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                   {brandPage === 2 && (
                     <>
                       <h2 id="in-room-presentation-title" className={styles.paperHeading}>More is coming.</h2>
-                      <p>I'm still writing. Still building. The shelves aren't full, and that's exactly how I want it.</p>
+                      <p>I&apos;m still writing. Still building. The shelves aren&apos;t full, and that&apos;s exactly how I want it.</p>
                       <p>Come back and see what found its way into this room next.</p>
                     </>
                   )}
@@ -151,8 +151,8 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                 <div className={styles.phoneScreen}>
                   {screenshotCount > 0 && (
                     <Image
-                      src={unfiltr.media.screenshots![phoneScreen % screenshotCount].src}
-                      alt={unfiltr.media.screenshots![phoneScreen % screenshotCount].alt}
+                      src={screenshots[phoneScreen % screenshotCount].src}
+                      alt={screenshots[phoneScreen % screenshotCount].alt}
                       fill
                       sizes="(max-width: 600px) 75vw, 300px"
                       className="object-cover"
@@ -166,7 +166,7 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                 <h2 id="in-room-presentation-title">A conversation that remembers.</h2>
                 <p>Explore the real app screens from the device on the desk. Choose what you want to see.</p>
                 <div className={styles.screenSelector} role="group" aria-label="Preview app screen">
-                  {(unfiltr.media.screenshots || []).map((item, index) => (
+                  {screenshots.map((item, index) => (
                     <button key={item.src} type="button" onClick={() => setPhoneScreen(index)} aria-pressed={phoneScreen === index}>
                       {["Chat", "Journal", "Memory"][index] || "Screen " + (index + 1)}
                     </button>
@@ -224,13 +224,13 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                 <div className={styles.journalLeaf}>
                   {journalPage === 0 && (
                     <>
-                      <p>If I'm not working hard, I'm writing books and building apps. That's where IHBNF comes from: idle hands bear no fruit.</p>
-                      <p>One thing leads to another, but I want each one to mean something. I'm doing the work, learning as I go, and taking the long way if that's what it takes.</p>
+                      <p>If I&apos;m not working hard, I&apos;m writing books and building apps. That&apos;s where IHBNF comes from: idle hands bear no fruit.</p>
+                      <p>One thing leads to another, but I want each one to mean something. I&apos;m doing the work, learning as I go, and taking the long way if that&apos;s what it takes.</p>
                     </>
                   )}
                   {journalPage === 1 && (
                     <>
-                      <p>On my desk right now are two published books and more stories that aren't finished yet.</p>
+                      <p>On my desk right now are two published books and more stories that aren&apos;t finished yet.</p>
                       <div className={styles.paperActions}>
                         <button type="button" onClick={() => onOpenBook("why-henry")}>Read about Why Henry?</button>
                         <button type="button" onClick={() => onOpenBook("dream-payoff")}>Read about The Dream of the Payoff</button>
@@ -271,12 +271,12 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
               </div>
               <div className={styles.milestones}>
                 <span className={styles.eyebrow}>Pinned to the calendar</span>
-                <h3>What's happening at IHBNF</h3>
+                <h3>What&apos;s happening at IHBNF</h3>
                 <div><span className={styles.milestoneTag}>Published</span><strong>The Unwritten Journey — Book One: Why Henry?</strong><p>Available on Amazon.</p></div>
                 <div><span className={styles.milestoneTag}>Published</span><strong>The Dream of the Payoff</strong><p>The memoir is available now.</p></div>
                 <div><span className={styles.milestoneTag}>Live</span><strong>Unfiltr by Javier</strong><p>Available for iOS and Android.</p></div>
                 <div><span className={styles.milestoneTag}>Project</span><strong>Sports Wager Helper</strong><p>Research and matchup tools; visit the site for current availability.</p></div>
-                <p className={styles.milestoneEnd}>Future announcements will appear here once they're confirmed.</p>
+                <p className={styles.milestoneEnd}>Future announcements will appear here once they&apos;re confirmed.</p>
               </div>
             </div>
           )}
@@ -291,8 +291,8 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
               <article className={styles.letterPaper} data-open={letterOpened}>
                 <div className={styles.letterTop}>Correspondence · IHBNF</div>
                 <h2 id="in-room-presentation-title">A note from my desk.</h2>
-                <p>I'd tell you exactly what comes next, but half the time I don't know yet either.</p>
-                <p>Follow along, say hello, or see what I'm building. There's always something happening in this room.</p>
+                <p>I&apos;d tell you exactly what comes next, but half the time I don&apos;t know yet either.</p>
+                <p>Follow along, say hello, or see what I&apos;m building. There&apos;s always something happening in this room.</p>
                 <div className={styles.letterContact}><EmailReveal /></div>
                 <div className={styles.letterSocials}>
                   {socials.map(s => (
