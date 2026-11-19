@@ -21,7 +21,7 @@ type SoundEngine = {
   noise: AudioBuffer;
 };
 
-type Recording = { src: string; volume: number; delay: number; maxDuration?: number };
+type Recording = { src: string; volume: number; delay: number; maxDuration?: number; playbackRate?: number };
 const recordedCues: Partial<Record<Cue, Recording[]>> = {
   chain: [{ src: "/media/audio/lamp-switch-real-cc0.wav", volume: .32, delay: .05 }],
   latch: [{ src: "/media/audio/vault-chains-cc0.mp3", volume: .13, delay: .07 }],
@@ -33,7 +33,12 @@ const recordedCues: Partial<Record<Cue, Recording[]>> = {
   ],
   key: [{ src: "/media/audio/vault-button-mechanical-cc0.wav", volume: .24, delay: 0 }],
   bolt: [{ src: "/media/audio/vault-chains-cc0.mp3", volume: .20, delay: .05 }],
-  door: [{ src: "/media/audio/vault-heavy-thud-cc0.mp3", volume: .34, delay: 1.23 }],
+  door: [
+    // Begin the recorded creak with the steel door's first movement.
+    { src: "/media/audio/vault-portrait-hinge-cc0.mp3", volume: .13, delay: .04, maxDuration: 1.25, playbackRate: .76 },
+    // Heavy latch / impact lands toward the end of the visible swing.
+    { src: "/media/audio/vault-heavy-thud-cc0.mp3", volume: .30, delay: 1.04 },
+  ],
 };
 const soundPaths = [...new Set(Object.values(recordedCues).flatMap(clips => (clips || []).map(c => c.src)))];
 
@@ -151,6 +156,7 @@ export function useVaultAudio(muted: boolean) {
         if (!source) return;
         const clip = source.cloneNode(true) as HTMLAudioElement;
         clip.volume = sample.volume;
+        clip.playbackRate = sample.playbackRate ?? 1;
         activeRecordings.current.add(clip);
         clip.onended = () => activeRecordings.current.delete(clip);
         void clip.play().catch(() => activeRecordings.current.delete(clip));
