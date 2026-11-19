@@ -501,17 +501,17 @@ export function LivingWorkspace() {
                 transform: isWhyHenryOut
                   ? "perspective(800px) rotateY(-8deg) scale(0.9)"
                   : hovered === "why-henry"
-                    ? "perspective(800px) rotateY(-4deg) rotateX(2deg) translateY(-5px) scale(1.045)"
+                    ? "perspective(800px) rotateY(-4deg) rotateX(2deg) translateY(-3px) scale(1.02)"
                     : "perspective(800px) rotateY(-7deg) rotateX(2deg) rotateZ(-0.5deg)",
               }}
-              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:drop-shadow-[0_0_16px_rgba(255,205,126,0.55)] focus-visible:drop-shadow-[0_0_16px_rgba(255,205,126,0.65)] ${
+              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:drop-shadow-[0_0_9px_rgba(255,205,126,0.3)] focus-visible:drop-shadow-[0_0_10px_rgba(255,205,126,0.4)] ${
                 isWhyHenryOut ? "pointer-events-none opacity-0" : "opacity-100"
               }`}
             >
               {/* Realistic contact shadow cast onto the walnut shelf back panel */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute -bottom-1.5 -left-2.5 -right-2 top-1.5 rounded-[3px] bg-black/85 blur-[6px] transition-all duration-500 group-hover:translate-x-1 group-hover:translate-y-1 group-hover:bg-black/95"
+                className="pointer-events-none absolute -bottom-[2%] left-[4%] right-[4%] top-[3%] rounded-[2px] bg-black/45 blur-[3px] transition-transform duration-500 group-hover:translate-x-[2px] group-hover:translate-y-[2px]"
               />
 
               {/* Left 3D Hardcover Spine Edge */}
@@ -524,7 +524,7 @@ export function LivingWorkspace() {
               <div
                 className={`relative h-full flex-1 overflow-hidden rounded-r-[2px] bg-[#0c0907] shadow-[8px_12px_24px_rgba(0,0,0,0.92)] transition-all duration-300 ${
                   hovered === "why-henry"
-                    ? "brightness-110 shadow-[0_0_28px_rgba(255,196,102,0.45)]"
+                    ? "brightness-105 shadow-[2px_6px_12px_rgba(0,0,0,0.6)]"
                     : "shadow-[8px_12px_24px_rgba(0,0,0,0.92)]"
                 }`}
               >
@@ -581,17 +581,17 @@ export function LivingWorkspace() {
                 transform: isDreamPayoffOut
                   ? "perspective(800px) rotateY(-8deg) scale(0.9)"
                   : hovered === "dream-payoff"
-                    ? "perspective(800px) rotateY(-5deg) rotateX(2deg) translateY(-5px) scale(1.045)"
+                    ? "perspective(800px) rotateY(-5deg) rotateX(2deg) translateY(-3px) scale(1.02)"
                     : "perspective(800px) rotateY(-8deg) rotateX(2deg) rotateZ(-0.5deg)",
               }}
-              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:drop-shadow-[0_0_16px_rgba(255,205,126,0.55)] focus-visible:drop-shadow-[0_0_16px_rgba(255,205,126,0.65)] ${
+              className={`group relative flex h-full w-full cursor-pointer items-stretch p-0 text-left outline-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:drop-shadow-[0_0_9px_rgba(255,205,126,0.3)] focus-visible:drop-shadow-[0_0_10px_rgba(255,205,126,0.4)] ${
                 isDreamPayoffOut ? "pointer-events-none opacity-0" : "opacity-100"
               }`}
             >
               {/* Realistic contact shadow cast onto the walnut shelf back panel */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute -bottom-1.5 -left-2.5 -right-2 top-1.5 rounded-[3px] bg-black/85 blur-[6px] transition-all duration-500 group-hover:translate-x-1 group-hover:translate-y-1 group-hover:bg-black/95"
+                className="pointer-events-none absolute -bottom-[2%] left-[4%] right-[4%] top-[3%] rounded-[2px] bg-black/45 blur-[3px] transition-transform duration-500 group-hover:translate-x-[2px] group-hover:translate-y-[2px]"
               />
 
               {/* Left 3D Hardcover Spine Edge */}
@@ -604,7 +604,7 @@ export function LivingWorkspace() {
               <div
                 className={`relative h-full flex-1 overflow-hidden rounded-r-[2px] bg-[#120d09] shadow-[8px_12px_24px_rgba(0,0,0,0.92)] transition-all duration-300 ${
                   hovered === "dream-payoff"
-                    ? "brightness-110 shadow-[0_0_28px_rgba(255,196,102,0.45)]"
+                    ? "brightness-105 shadow-[2px_6px_12px_rgba(0,0,0,0.6)]"
                     : "shadow-[8px_12px_24px_rgba(0,0,0,0.92)]"
                 }`}
               >
