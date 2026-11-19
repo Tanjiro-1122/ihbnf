@@ -72,6 +72,7 @@ export function useVaultAudio(muted: boolean) {
   const mutedRef = useRef(muted);
   const recordingPool = useRef<Map<string, HTMLAudioElement>>(new Map());
   const pendingRecordingTimers = useRef<number[]>([]);
+  const activeRecordings = useRef<Set<HTMLAudioElement>>(new Set());
   mutedRef.current = muted;
 
   const prepare = useCallback(() => {
@@ -106,8 +107,11 @@ export function useVaultAudio(muted: boolean) {
 
   useEffect(() => {
     const e = engineRef.current;
-    if (!e) return;
-    e.master.gain.setTargetAtTime(muted ? 0 : .76, e.context.currentTime, .016);
+    if (e) e.master.gain.setTargetAtTime(muted ? 0 : .76, e.context.currentTime, .016);
+    if (muted) {
+      for (const clip of activeRecordings.current) clip.pause();
+      activeRecordings.current.clear();
+    }
   }, [muted]);
 
   useEffect(() => {
@@ -121,6 +125,8 @@ export function useVaultAudio(muted: boolean) {
       pendingRecordingTimers.current.forEach(id => window.clearTimeout(id));
       pendingRecordingTimers.current = [];
       for (const clip of pool.values()) clip.pause();
+      for (const clip of activeRecordings.current) clip.pause();
+      activeRecordings.current.clear();
       pool.clear();
       const e = engineRef.current;
       engineRef.current = null;
@@ -144,7 +150,9 @@ export function useVaultAudio(muted: boolean) {
         if (!source) return;
         const clip = source.cloneNode(true) as HTMLAudioElement;
         clip.volume = sample.volume;
-        void clip.play().catch(() => {});
+        activeRecordings.current.add(clip);
+        clip.onended = () => activeRecordings.current.delete(clip);
+        void clip.play().catch(() => activeRecordings.current.delete(clip));
       };
       const delay = Math.max(0, (offset + sample.delay) * 1000);
       if (delay < 5) startClip();
