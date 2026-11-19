@@ -243,3 +243,369 @@
   .shelf:first-child .exhibits{grid-template-columns:minmax(0,1fr)}
   .cover{width:82px}
 }
+
+
+/* The passage has been crossed. A dark threshold clears to reveal the hidden
+   library built behind the stone and walnut wall. */
+.thresholdCurtain{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 43%,transparent 0%,#060605 12%,#020202 78%),
+    #030303;
+  animation:vaultThreshold 1650ms cubic-bezier(.2,.45,.2,1) forwards;
+}
+@keyframes vaultThreshold{
+  0%,13% {opacity:1;clip-path:circle(0% at 50% 45%)}
+  14%{opacity:1;clip-path:circle(12% at 50% 45%)}
+  70%{opacity:.95;clip-path:circle(78% at 50% 45%)}
+  100%{opacity:0;clip-path:circle(150% at 50% 45%)}
+}
+.entry{
+  min-height:clamp(450px,66svh,690px);
+  background-position:50% 45%;
+}
+.hero{min-height:clamp(450px,66svh,690px)}
+.title{z-index:1}
+.discoverGallery{
+  display:inline-flex;
+  align-items:center;
+  gap:15px;
+  margin-top:28px;
+  padding:10px 18px;
+  border:1px solid #e0b87f9e;
+  border-radius:3px;
+  color:#ffead0;
+  background:linear-gradient(90deg,#1b130eec,#3a2618e6);
+  font:600 11px/1.4 ui-monospace,monospace;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  box-shadow:0 5px 20px #000a;
+}
+.discoverGallery:hover{border-color:#f1d4a1;background:#654528dc}
+.discoverGallery:focus-visible{outline:2px solid #f9d79d;outline-offset:3px}
+.discoveryEyebrow{
+  display:block;
+  color:#e0bb84;
+  font:600 11px/1.5 ui-monospace,monospace;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+}
+.secretRoom{
+  position:relative;
+  isolation:isolate;
+  padding:clamp(40px,6vw,86px) clamp(12px,5vw,60px) clamp(65px,8vw,115px);
+  background:
+    radial-gradient(ellipse at 50% 0%,#f3b66a18 0%,transparent 42%),
+    radial-gradient(ellipse at 15% 80%,#aa611b13,transparent 50%),
+    repeating-linear-gradient(95deg,#26180e 0 6px,#17100c 7px 18px,#301f11 19px 22px),
+    #160f09;
+  box-shadow:inset 0 28px 30px #070504,0 -4px 8px #0009;
+}
+.secretRoom::before{
+  position:absolute;
+  content:"";
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,#0008,transparent 12% 88%,#0009),
+    radial-gradient(ellipse at 50% 0,transparent 0%,#08050355 72%,#0006 100%);
+}
+.galleryIntroduction{
+  position:relative;
+  max-width:1000px;
+  margin:0 auto clamp(35px,5vw,65px);
+  text-align:center;
+  text-shadow:0 3px 12px #000;
+}
+.galleryIntroduction h2{
+  max-width:900px;
+  margin:13px auto 15px;
+  font:normal clamp(37px,5vw,70px)/1.04 Georgia,serif;
+  color:#f1dfc1;
+}
+.galleryIntroduction p{
+  max-width:710px;
+  margin:0 auto;
+  color:#d2bfa2;
+  font:clamp(14px,1.75vw,18px)/1.55 Georgia,serif;
+}
+.galleryCollection{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:clamp(42px,5.5vw,80px);
+  max-width:1300px;
+  margin:auto;
+}
+.galleryShelf{
+  position:relative;
+  padding:clamp(22px,4vw,48px) clamp(16px,3.5vw,43px) 32px;
+  border:14px ridge #634123;
+  border-bottom:18px ridge #926740;
+  border-radius:6px 6px 2px 2px;
+  background:
+    radial-gradient(ellipse at 50% -12%,#e5b77545,transparent 58%),
+    repeating-linear-gradient(90deg,#24150a 0 12px,#341f11 13px 14px,#29190e 15px 24px),
+    #211409;
+  box-shadow:
+    inset 0 0 0 4px #110905,
+    inset 0 0 0 7px #ac7d3e4a,
+    inset 0 0 90px 18px #020100da,
+    0 22px 35px #000c;
+}
+.galleryShelf::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  bottom:0;
+  left:0;
+  right:0;
+  height:15px;
+  pointer-events:none;
+  background:linear-gradient(#b1834a,#4b2c18 60%,#190e07);
+  box-shadow:0 -8px 14px #0007;
+}
+.galleryShelfHeader{
+  position:relative;
+  z-index:1;
+  margin-bottom:clamp(17px,3vw,30px);
+  padding-bottom:18px;
+  border-bottom:1px solid #cfa97171;
+}
+.galleryShelfHeader h3{
+  margin:0 0 9px;
+  font:normal clamp(30px,3.8vw,48px)/1.05 Georgia,serif;
+  color:#f5e2c5;
+}
+.galleryShelfHeader p{
+  color:#d6c3a4;
+  font:clamp(13px,1.5vw,16px)/1.5 Georgia,serif;
+}
+.galleryExhibits{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:clamp(12px,2vw,30px);
+  padding:0;
+  margin:0;
+  list-style:none;
+}
+.galleryArtifact{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:start;
+  height:100%;
+  width:100%;
+  padding:10px clamp(4px,1vw,14px) 17px;
+  text-align:center;
+  background:linear-gradient(#3e291c38,#07040332);
+  border:1px solid #95734b4a;
+  border-bottom:3px ridge #9f7746;
+  color:inherit;
+  cursor:pointer;
+  transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;
+}
+.galleryArtifact:hover,.galleryArtifact:focus-visible{
+  transform:translateY(-8px);
+  border-color:#f4d09a9e;
+  box-shadow:0 12px 23px #000a,inset 0 0 22px #f7c3720d;
+  outline:none;
+}
+.galleryArtifact:focus-visible{outline:2px solid #f3cc8a;outline-offset:4px}
+.galleryArtifactLight{
+  position:absolute;
+  inset:-14px 1px auto;
+  height:50%;
+  pointer-events:none;
+  opacity:.56;
+  background:radial-gradient(ellipse at 50% 0%,#f5d18b33,transparent 80%);
+}
+.galleryArt{
+  position:relative;
+  z-index:1;
+  display:block;
+  width:min(100%,200px);
+  aspect-ratio:2/3;
+  perspective:750px;
+  transform:rotateY(-3deg);
+  filter:drop-shadow(10px 10px 10px #000b);
+  transition:transform .35s ease;
+}
+.galleryArtifact:hover .galleryArt,
+.galleryArtifact:focus-visible .galleryArt{transform:translateY(-4px) rotateY(0)}
+.galleryCover{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border:3px ridge #b59a66;
+  border-left:7px ridge #4a2717;
+  box-shadow:inset 0 0 4px #fff2e850,5px 10px 16px #0008;
+}
+.galleryPlaque{
+  z-index:1;
+  margin-top:20px;
+  display:flex;
+  width:100%;
+  flex-direction:column;
+  gap:8px;
+}
+.galleryPlaque strong{color:#f9e0b6;font:normal clamp(18px,2vw,26px)/1.1 Georgia,serif}
+.galleryPlaque small{color:#b8a18b;font:11px/1.45 ui-monospace,monospace}
+.galleryReadCue{
+  display:inline-block;
+  margin:auto auto 0;
+  padding-top:7px;
+  border-bottom:1px solid #bfa0718f;
+  color:#e1c08b;
+  font:600 10px/1.4 ui-monospace,monospace;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+}
+.galleryDialog{
+  margin:auto;
+  width:min(950px,calc(100% - 24px));
+  max-width:none;
+  max-height:calc(100dvh - 36px);
+  padding:0;
+  overflow:auto;
+  background:
+    radial-gradient(ellipse at 30% 0%,#e1c69e25,transparent 60%),
+    repeating-linear-gradient(95deg,#241a12 0 8px,#302215 9px 10px,#1c140e 11px 15px);
+  color:#f1dfc1;
+  border:7px ridge #80623f;
+  border-radius:7px;
+  box-shadow:0 30px 100px #000e,inset 0 0 0 5px #150d07;
+}
+.galleryDialog::backdrop{background:#020202c9;backdrop-filter:blur(4px)}
+.galleryDialog[open]{animation:galleryBookLift .44s cubic-bezier(.16,.7,.2,1) both}
+@keyframes galleryBookLift{
+  from{opacity:0;transform:translateY(20px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.galleryDialogTop{
+  position:sticky;
+  top:0;
+  z-index:4;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:12px clamp(15px,3vw,30px);
+  border-bottom:1px solid #ba986760;
+  background:#1d130cee;
+  color:#e7c995;
+  font:600 10px ui-monospace,monospace;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+}
+.galleryDialogTop button{
+  padding:9px 12px;
+  border:1px solid #d2ad77a2;
+  border-radius:3px;
+  background:#352418;
+  color:#f5ddb4;
+  cursor:pointer;
+}
+.galleryDialogTop button:focus-visible{outline:2px solid #f9dbab;outline-offset:2px}
+.galleryDialogBody{
+  display:grid;
+  grid-template-columns:minmax(160px,.75fr) minmax(0,1.35fr);
+  gap:clamp(17px,4vw,45px);
+  padding:clamp(18px,4vw,45px);
+}
+.gallerySelectedCover{
+  position:sticky;
+  top:70px;
+  align-self:start;
+  padding:6px;
+  border:7px ridge #765434;
+  background:#211207;
+  box-shadow:9px 16px 25px #000c;
+}
+.galleryDialogCover{
+  width:100%;
+  max-height:67svh;
+  height:auto;
+  display:block;
+  object-fit:contain;
+}
+.galleryStatus{
+  color:#e0b580;
+  font:600 10px/1.5 ui-monospace,monospace;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+}
+.galleryStory h2{
+  margin:10px 0 25px;
+  color:#f4ddbb;
+  font:normal clamp(39px,5vw,66px)/1.03 Georgia,serif;
+}
+.galleryStory h3{
+  margin:12px 0 10px;
+  color:#f2d5ad;
+  font:normal clamp(25px,2.8vw,34px)/1.2 Georgia,serif;
+}
+.galleryStory>p:not(.galleryStatus){
+  color:#edddc1;
+  font:clamp(14px,1.7vw,18px)/1.7 Georgia,serif;
+}
+.galleryAuthorLetter{
+  position:relative;
+  margin-top:32px;
+  padding:clamp(18px,3vw,35px);
+  border:1px solid #9f7e53;
+  background:
+    repeating-linear-gradient(0deg,#b6926220 0 1px,transparent 2px 29px),
+    linear-gradient(105deg,#d9c098,#f7e8c9 30%,#e3caa1 100%);
+  color:#35271a;
+  box-shadow:5px 9px 16px #0009,inset 0 0 40px #9c794e2b;
+  transform:rotate(.35deg);
+}
+.galleryLetterHead{
+  color:#815e39;
+  border-bottom:1px solid #9472477b;
+  padding-bottom:12px;
+  font:600 10px/1.4 ui-monospace,monospace;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+}
+.galleryAuthorLetter h3{
+  color:#3a2919;
+  font:normal clamp(26px,3vw,38px)/1.2 Georgia,serif;
+  margin:16px 0;
+}
+.galleryAuthorLetter p{
+  color:#3d2b19;
+  font:clamp(13px,1.45vw,17px)/1.8 Georgia,serif;
+  margin:13px 0;
+}
+.gallerySignature{
+  margin-top:25px;
+  color:#4b321d;
+  font:italic 28px Georgia,serif;
+}
+@media(max-width:800px){
+  .galleryExhibits{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:500px){
+  .galleryShelf{border-width:9px;padding:13px}
+  .galleryExhibits{gap:10px}
+  .galleryArtifact{padding:9px 4px 13px}
+  .galleryPlaque strong{font-size:18px}
+  .galleryPlaque small{font-size:9px}
+  .galleryDialogBody{grid-template-columns:1fr}
+  .gallerySelectedCover{position:relative;top:auto;max-width:205px;margin:auto}
+  .galleryStory h2{font-size:38px}
+  .galleryDialogTop{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .thresholdCurtain{display:none}
+  .galleryDialog[open]{animation:none}
+  .galleryArtifact,.galleryArt{transition:none}
+}
