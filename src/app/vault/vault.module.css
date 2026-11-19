@@ -258,10 +258,9 @@
   animation:vaultThreshold 1650ms cubic-bezier(.2,.45,.2,1) forwards;
 }
 @keyframes vaultThreshold{
-  0%,13% {opacity:1;clip-path:circle(0% at 50% 45%)}
-  14%{opacity:1;clip-path:circle(12% at 50% 45%)}
-  70%{opacity:.95;clip-path:circle(78% at 50% 45%)}
-  100%{opacity:0;clip-path:circle(150% at 50% 45%)}
+  0%,16%{opacity:1}
+  55%{opacity:.75}
+  100%{opacity:0}
 }
 .entry{
   min-height:clamp(450px,66svh,690px);
