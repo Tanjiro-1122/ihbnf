@@ -21,7 +21,8 @@ type HoveredItem =
   | "brand"
   | "contact";
 
-type BookStage = "shelved" | "opening" | "open";
+type BookStage = "shelved" | "lifting" | "opening" | "open" | "returning";
+type BookFlightRect = { left: number; top: number; width: number; height: number };
 type ShelfBookId = "why-henry" | "dream-payoff";
 
 /**
@@ -208,6 +209,7 @@ export function LivingWorkspace() {
   const [activeShelfBook, setActiveShelfBook] = useState<ShelfBookId>("why-henry");
   const [bookStage, setBookStage] = useState<BookStage>("shelved");
   const [henryArtIdx, setHenryArtIdx] = useState(0);
+  const [flightRect, setFlightRect] = useState<BookFlightRect | null>(null);
 
   // In-Room Object Presentation State (Brand Wall Frame, Phone, Laptop, Notebook, Calendar, Contact)
   const [activeModal, setActiveModal] = useState<ActiveRoomModal>(null);
@@ -238,33 +240,64 @@ export function LivingWorkspace() {
     }
   }, []);
 
+  // Audio only starts after a real visitor interaction; honor the study mute toggle.
+  const playBookSound = useCallback((sound: "pull" | "whoosh" | "creak" | "rustle" | "close" | "settle") => {
+    if (muted) return;
+    const sounds = {
+      pull: "/media/audio/book-pull.wav",
+      whoosh: "/media/audio/float-whoosh.wav",
+      creak: "/media/audio/binding-creak.wav",
+      rustle: "/media/audio/page-rustle.wav",
+      close: "/media/audio/book-close-thump.wav",
+      settle: "/media/audio/shelf-settle.wav",
+    } as const;
+    const audio = new Audio(sounds[sound]);
+    audio.volume = sound === "whoosh" ? 0.28 : 0.48;
+    void audio.play().catch(() => {});
+  }, [muted]);
+
   const handleOpenDigitalBook = useCallback(
     (bookId: ShelfBookId) => {
       if (bookStage !== "shelved") return;
+      const book = bookId === "why-henry" ? whyHenryBookRef.current : dreamPayoffBookRef.current;
+      if (!book) return;
+      const rect = book.getBoundingClientRect();
+      setFlightRect({ left: rect.left, top: rect.top, width: rect.width, height: rect.height });
       setActiveModal(null);
       clearStageTimers();
       setActiveShelfBook(bookId);
-      setBookStage("opening");
-
-      const openTimer = window.setTimeout(() => {
+      setBookStage("lifting");
+      playBookSound("pull");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      stageTimersRef.current.push(window.setTimeout(() => playBookSound("whoosh"), reduced ? 0 : 280));
+      stageTimersRef.current.push(window.setTimeout(() => {
+        setBookStage("opening");
+        playBookSound("creak");
+        stageTimersRef.current.push(window.setTimeout(() => playBookSound("rustle"), reduced ? 0 : 180));
+      }, reduced ? 60 : 1250));
+      stageTimersRef.current.push(window.setTimeout(() => {
         setBookStage("open");
         closeBookBtnRef.current?.focus({ preventScroll: true });
-      }, 220);
-      stageTimersRef.current.push(openTimer);
+      }, reduced ? 160 : 2050));
     },
-    [bookStage, clearStageTimers],
+    [bookStage, clearStageTimers, playBookSound],
   );
 
   const handleReturnShelfBook = useCallback(() => {
-    if (bookStage === "shelved") return;
+    if (bookStage === "shelved" || bookStage === "returning") return;
     clearStageTimers();
-    setBookStage("shelved");
-    const targetEl =
-      activeShelfBook === "why-henry"
-        ? whyHenryBookRef.current
-        : dreamPayoffBookRef.current;
-    targetEl?.focus({ preventScroll: true });
-  }, [bookStage, activeShelfBook, clearStageTimers]);
+    setBookStage("returning");
+    playBookSound("close");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    stageTimersRef.current.push(window.setTimeout(() => {
+      setBookStage("shelved");
+      setFlightRect(null);
+      playBookSound("settle");
+      const targetEl = activeShelfBook === "why-henry"
+        ? whyHenryBookRef.current : dreamPayoffBookRef.current;
+      targetEl?.focus({ preventScroll: true });
+    }, reduced ? 60 : 1080));
+  }, [bookStage, activeShelfBook, clearStageTimers, playBookSound]);
 
   // Open an in-room object overlay
   const openRoomModal = useCallback((modal: Exclude<ActiveRoomModal, null>) => {
@@ -361,6 +394,19 @@ export function LivingWorkspace() {
             className={`pointer-events-none z-0 object-cover transition-opacity duration-300 ${
               lampOn ? "opacity-100" : "opacity-0"
             }`}
+          />
+          {/* The source photograph contains two hard black book placeholders. Cover the
+              entire recess with a single feathered walnut backplate rather than
+              pasting a rectangle behind each separate book. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-[58.05%] top-[19.15%] z-[1] h-[23.1%] w-[23.8%]"
+            style={{
+              backgroundImage: 'url("/media/study/shelf-walnut-back.svg")',
+              backgroundSize: "100% 100%",
+              WebkitMaskImage: "linear-gradient(to right,transparent,black 4%,black 97%,transparent),linear-gradient(to bottom,transparent,black 6%,black 96%,transparent)",
+              maskImage: "linear-gradient(to right,transparent,black 4%,black 97%,transparent)",
+            }}
           />
           <StudyObjectHighlight active={hovered} onHover={setHovered} onSelect={openRoomModal} />
 
@@ -870,11 +916,69 @@ export function LivingWorkspace() {
         </div>
       </div>
 
+
+      {/* The actual cover lifts from the measured shelf location, not a rectangle
+          that instantly gets replaced by a modal. No invisible hover hitbox is shown. */}
+      {flightRect && (bookStage === "lifting" || bookStage === "opening" || bookStage === "returning") && (
+        <div
+          aria-hidden="true"
+          data-testid="shelf-book-flight"
+          className="pointer-events-none fixed z-[80] overflow-visible"
+          style={{
+            left: flightRect.left,
+            top: flightRect.top,
+            width: flightRect.width,
+            height: flightRect.height,
+            "--fly-x": `calc(50vw - ${flightRect.left + flightRect.width / 2}px)`,
+            "--fly-y": `calc(47vh - ${flightRect.top + flightRect.height / 2}px)`,
+            "--fly-scale": Math.min(3.25, Math.max(1.4, 350 / Math.max(flightRect.height, 1))),
+            transformOrigin: "center center",
+            animation: bookStage === "lifting"
+              ? "ihbnf-book-lift 1250ms cubic-bezier(.18,.76,.22,1) both"
+              : bookStage === "returning"
+                ? "ihbnf-book-return 1050ms cubic-bezier(.4,0,.28,1) both"
+                : "ihbnf-book-at-center 500ms ease-out both",
+          } as React.CSSProperties}
+        >
+          <div className="absolute -inset-1 rounded-sm bg-amber-200/10 blur-md" />
+          <div className="absolute inset-y-[2%] -right-[7%] w-[8%] rounded-r-sm border border-[#d5c7aa]/70 bg-[repeating-linear-gradient(to_bottom,#e6d5b4_0px,#e6d5b4_2px,#ac9473_3px,#e6d5b4_4px)]" />
+          <div className="relative h-full w-full overflow-hidden rounded-[3px] border-l-[5px] border-[#4f2c15] shadow-[12px_20px_32px_rgba(0,0,0,.75)]">
+            <Image
+              src={activeShelfBook === "why-henry" ? "/media/why-henry/cover-user.jpg" : "/media/memoir/dream-payoff-cover.svg"}
+              alt=""
+              fill
+              sizes="380px"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      )}
+      <style>{`
+        @keyframes ihbnf-book-lift {
+          0% { transform: translate3d(0,0,0) rotate(-1deg) scale(1); filter: brightness(1); }
+          25% { transform: translate3d(0,-20px,20px) rotate(-3deg) scale(1.07); filter: brightness(1.2); }
+          72% { transform: translate3d(var(--fly-x),calc(var(--fly-y) - 45px),70px) rotate(3deg) scale(var(--fly-scale)); }
+          100% { transform: translate3d(var(--fly-x),var(--fly-y),90px) rotate(0deg) scale(var(--fly-scale)); filter: brightness(1.12); }
+        }
+        @keyframes ihbnf-book-at-center {
+          from { transform: translate3d(var(--fly-x),var(--fly-y),90px) scale(var(--fly-scale)); opacity: 1; }
+          to { transform: translate3d(var(--fly-x),var(--fly-y),90px) scale(var(--fly-scale)); opacity: 0; }
+        }
+        @keyframes ihbnf-book-return {
+          from { transform: translate3d(var(--fly-x),var(--fly-y),90px) scale(var(--fly-scale)); opacity: 1; }
+          75% { transform: translate3d(0,-18px,15px) scale(1.08) rotate(-2deg); }
+          to { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-testid="shelf-book-flight"] { animation-duration: 1ms !important; }
+        }
+      `}</style>
+
       {/* =====================================================================
           3. DIGITAL BOOK READER
              (Supports BOTH "Why Henry?" AND "The Dream of the Payoff")
          ===================================================================== */}
-      {isBookOut && (
+      {isBookOut && bookStage !== "lifting" && bookStage !== "returning" && (
         <div
           role="dialog"
           aria-modal="true"
@@ -898,13 +1002,13 @@ export function LivingWorkspace() {
             }`}
           />
 
-          {/* Digital reader opens directly over the study without a flying-book effect */}
+          {/* The reader appears after the physical book flies off its shelf. */}
           <div
             data-testid="shelf-digital-reader"
             className="relative z-10 my-auto flex w-full max-w-[960px] items-center justify-center transition-[opacity,transform] duration-300 ease-out"
             style={{
-              opacity: bookStage === "open" ? 1 : 0.82,
-              transform: bookStage === "open" ? "scale(1)" : "scale(0.98)",
+              opacity: bookStage === "open" ? 1 : 0.92,
+              transform: bookStage === "open" ? "scale(1)" : "scale(0.96)",
             }}
           >
             {/* Two-page digital reading view */}
@@ -1085,7 +1189,7 @@ export function LivingWorkspace() {
                         transformOrigin: "left center",
                         transformStyle: "preserve-3d",
                         transform:
-                          bookStage === "open" || bookStage === "opening"
+                          bookStage === "open"
                             ? "translateZ(-18px) rotateY(-165deg)"
                             : "rotateY(0deg)",
                         transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
@@ -1278,7 +1382,7 @@ export function LivingWorkspace() {
                         transformOrigin: "left center",
                         transformStyle: "preserve-3d",
                         transform:
-                          bookStage === "open" || bookStage === "opening"
+                          bookStage === "open"
                             ? "translateZ(-18px) rotateY(-165deg)"
                             : "rotateY(0deg)",
                         transition: "transform 520ms cubic-bezier(0.22, 1, 0.36, 1)",
