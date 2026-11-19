@@ -25,7 +25,6 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
   const progress = useVaultProgress();
   const [swing, setSwing] = useState(false);
   const [inspecting, setInspecting] = useState(false);
-  const [transfer, setTransfer] = useState(false);
   const [frame, setFrame] = useState<"closed" | "opening" | "open" | "closing">("closed");
   const safeTrigger = useRef<HTMLButtonElement>(null);
   const compass = useRef<SVGPathElement>(null);
@@ -65,13 +64,11 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
     if (!compassActive || obstructed || !advanceProgress(progress)) return;
     const final = progress + 1 === RUNE_READY;
     if (final && document.activeElement === compass.current) restoreFocus.current = "rune";
-    play("compass");
+    play(final ? "compassFinal" : "compass");
     if (final) {
       setSwing(true);
-      play("compass", .2);
-      play("compass", .37);
-      play("awaken", .58);
-      timer.current = window.setTimeout(() => setSwing(false), 1500);
+      play("awaken", .75);
+      timer.current = window.setTimeout(() => setSwing(false), 1700);
     }
   }
 
@@ -85,15 +82,13 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
     window.clearTimeout(timer.current);
     setSwing(false);
     if (document.activeElement === rune.current) restoreFocus.current = "safe";
-    setTransfer(true);
     setFrame("opening");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     play("pulse");
-    play("hinge", reduced ? 0 : .64);
+    play("hinge", reduced ? 0 : 1.05);
     timer.current = window.setTimeout(() => {
-      setTransfer(false);
       setFrame("open");
-    }, reduced ? 0 : 1750);
+    }, reduced ? 0 : 3400);
   }
 
   function closeFrame() {
@@ -103,7 +98,7 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
     setFrame("closing");
     play("hinge");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    timer.current = window.setTimeout(() => setFrame("closed"), reduced ? 0 : 610);
+    timer.current = window.setTimeout(() => setFrame("closed"), reduced ? 0 : 1600);
   }
 
   return (
@@ -141,24 +136,19 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
             aria-haspopup={unlocked ? "dialog" : undefined} tabIndex={obstructed ? -1 : 0}
             onClick={touchRune} onKeyDown={(event) => activateWithKey(event, touchRune)} />
         )}
-        {((runeActive && !frameVisible) || transfer) && (
+        {runeActive && !frameVisible && (
           <g aria-hidden="true" pointerEvents="none">
-            <path d={runeShape} className={styles.runeGlow} data-transfer={transfer} />
+            <path d={runeShape} className={styles.runeGlow} />
             {!unlocked && [0, 1, 2, 3].map((i) => (
               <circle key={i} cx={554 + i * 8} cy={200} r={.8 + i * .14} fill="#a7d2ff"
                 className={styles.spark} style={{ animationDelay: `${i * -.8}s` }} />
             ))}
           </g>
         )}
-        {transfer && (
-          <g aria-hidden="true" pointerEvents="none" className={styles.transfer}>
-            <path d="M567 202 Q469 90 356 107" pathLength="100" />
-            <ellipse cx="356" cy="107" rx="83" ry="96" />
-          </g>
-        )}
       </svg>
       {frameVisible && (
         <div className={styles.recess} data-frame={frame} data-lit={lampOn}>
+          <div aria-hidden="true" className={styles.portraitMechanism}><span/><span/><span/></div>
           <div className={styles.wallCutout} style={{ clipPath: portraitShape }}>
             <button type="button" ref={safeTrigger} className={styles.recessSafe} aria-haspopup="dialog"
               aria-label={unlocked ? "Open the hidden passage" : "Inspect the concealed safe"}
@@ -169,6 +159,7 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
           <div className={styles.portrait} aria-hidden="true">
             <div className={styles.portraitFront} style={{ clipPath: portraitShape }} />
             <div className={styles.portraitBack} />
+            <div className={styles.portraitBracket} />
           </div>
           {frame === "open" && (
             <button type="button" className={styles.frameLatch} disabled={obstructed}
