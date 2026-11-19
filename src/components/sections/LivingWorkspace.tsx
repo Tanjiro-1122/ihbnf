@@ -224,8 +224,8 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
     }
   }, []);
 
-  // The user prefers the book to be completely silent. Lamp and vault
-  // sound effects still work; only book sounds are removed.
+  // Subtle genuine paper Foley replaces the artificial magical book sound.
+  // Keep it under 35% so the books sound physical but never distract.
   useEffect(() => () => {
     bookTimersRef.current.forEach((timer) => window.clearTimeout(timer));
   }, []);
@@ -233,6 +233,13 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
     bookTimersRef.current.forEach((timer) => window.clearTimeout(timer));
     bookTimersRef.current = [];
   }, []);
+
+  const playBookPaper = useCallback(() => {
+    if (muted) return;
+    const paper = new Audio("/media/audio/book-page-real-cc0.wav");
+    paper.volume = .32;
+    void paper.play().catch(() => {});
+  }, [muted]);
 
   const handleOpenDigitalBook = useCallback((bookId: ShelfBookId) => {
     if (bookStage !== "shelved") return;
@@ -244,7 +251,8 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
     setActiveShelfBook(bookId);
     setBookOrigin(bounds ?? null);
     setBookStage(bounds && !reduced ? "opening" : "open");
-  }, [bookStage, clearBookTimers]);
+    playBookPaper();
+  }, [bookStage, clearBookTimers, playBookPaper]);
 
   const finishReturnShelfBook = useCallback(() => {
     clearBookTimers();
@@ -803,7 +811,7 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
                     <div className={bookStyles.plateIndex} role="group" aria-label="Illustration plates">
                       {whyHenryIllustrations.map((plate, index) => (
                         <button key={plate.src} type="button" aria-label={`Plate 0${index + 1}`}
-                          aria-pressed={henryArtIdx === index} onClick={() => setHenryArtIdx(index)}>
+                          aria-pressed={henryArtIdx === index} onClick={() => { playBookPaper(); setHenryArtIdx(index); }}>
                           {["I", "II", "III", "IV"][index]}
                         </button>
                       ))}
@@ -839,6 +847,7 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
           kind={activeModal}
           onClose={closeRoomModal}
           onOpenBook={handleOpenDigitalBook}
+          muted={muted}
         />
       )}
     </section>
