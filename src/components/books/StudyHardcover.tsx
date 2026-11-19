@@ -58,11 +58,13 @@ function Hardcover({ book }: { book: ShelfBookId }) {
   );
 }
 
-export function BookFlight({ book, origin, reader, onOpened }: {
+export function BookFlight({ book, origin, reader, onOpened, returning = false, onReturned }: {
   book: ShelfBookId;
   origin: DOMRect;
   reader: RefObject<HTMLDivElement | null>;
   onOpened: () => void;
+  returning?: boolean;
+  onReturned?: () => void;
 }) {
   const stage = useRef<HTMLDivElement>(null);
 
@@ -101,9 +103,10 @@ export function BookFlight({ book, origin, reader, onOpened }: {
   }, [origin, reader]);
 
   return (
-    <div ref={stage} className={styles.flightStage} aria-hidden="true" data-testid="shelf-book-flight">
+    <div ref={stage} className={styles.flightStage} aria-hidden="true" data-testid="shelf-book-flight" data-returning={returning}>
       <div className={styles.flightBook}
-        onAnimationEnd={(event) => { if (event.target === event.currentTarget) onOpened(); }}
+        onAnimationEnd={(event) => { if (event.target === event.currentTarget) { if (returning) onReturned?.(); else onOpened(); } }}
+        data-returning={returning}
         style={{ "--lift": `${Math.max(5, origin.height * .095)}px` } as CSSProperties}>
         <div className={styles.bookOrientation}><Hardcover book={book} /></div>
       </div>
