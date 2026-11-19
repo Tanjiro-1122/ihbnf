@@ -27,7 +27,7 @@ export const vaultContents: VaultSection[] = [
         image: {
           src: "/media/vault/the-lost-cover.webp",
           alt: "The Lost cover: a boy in a wet alley facing a crack of golden light",
-          width: 300, height: 450,
+          width: 540, height: 810,
         },
         synopsis: "Michael is an ordinary teenager until a strange fracture appears in an alley and the world stops behaving like it should. What waits beyond that impossible crack—and what could be lost by crossing it? Book One begins a mystery about another world and the line between what we know and what we only think we know.",
       },
@@ -37,7 +37,7 @@ export const vaultContents: VaultSection[] = [
         image: {
           src: "/media/vault/the-guardian-cover.webp",
           alt: "The Guardian cover: an ancient mine entrance and a crowned lion emblem",
-          width: 300, height: 450,
+          width: 540, height: 810,
         },
         synopsis: "Long before the modern world, Amir, a former adviser to Solomon, discovers something impossible beneath Ophir. An ancient Guardian, a warning misunderstood, and those who choose to preserve that warning leave consequences that echo across centuries. A historical conspiracy with a science-fiction mystery beneath it.",
       },
@@ -47,7 +47,7 @@ export const vaultContents: VaultSection[] = [
         image: {
           src: "/media/vault/the-beacon-cover.webp",
           alt: "The Beacon cover: a glowing Earth suspended within a monumental interstellar council chamber",
-          width: 300, height: 450,
+          width: 540, height: 810,
         },
         synopsis: "A beacon awakens after humanity is assessed, bringing Earth's fate before a far older interstellar Council. A human must help make the case for a world full of contradictions—fear and courage, cruelty and compassion—while a decision about Earth's place in the wider universe hangs in the balance.",
       },
@@ -57,7 +57,7 @@ export const vaultContents: VaultSection[] = [
         image: {
           src: "/media/vault/oh-mara-cover.webp",
           alt: "Oh, Mara! cover: friends and family surrounding a hospital bedside beneath a blue magical sky",
-          width: 300, height: 450,
+          width: 540, height: 810,
         },
         synopsis: "The mystery from Why Henry? grows deeper. Azeron's fractured past, a desperate search for power, and loyalties tested under impossible pressure draw Henry, Dominick and those close to them toward a reckoning that reaches far beyond the world they thought they understood.",
       },
