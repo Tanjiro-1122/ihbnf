@@ -179,6 +179,7 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
   const toggleLamp = (trusted: boolean) => {
     setLampOn((on) => !on);
     if (!trusted) return;
+    vaultAudio.play("chain");
     const progress = readProgress();
     if (progress < COMPASS_READY && advanceProgress(progress) && progress + 1 === COMPASS_READY) {
       vaultAudio.play("latch");
