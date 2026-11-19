@@ -21,7 +21,20 @@ type SoundEngine = {
   noise: AudioBuffer;
 };
 
-const TWO_PI = Math.PI * 2;
+type Recording = { src: string; volume: number; delay: number };
+const recordedCues: Partial<Record<Cue, Recording[]>> = {
+  chain: [{ src: "/media/audio/lamp-switch-real-cc0.wav", volume: .32, delay: .05 }],
+  latch: [{ src: "/media/audio/vault-chains-cc0.mp3", volume: .13, delay: .07 }],
+  pulse: [{ src: "/media/audio/vault-wood-creaks-cc0.mp3", volume: .17, delay: .68 }],
+  hinge: [
+    { src: "/media/audio/vault-portrait-hinge-cc0.mp3", volume: .42, delay: .22 },
+    { src: "/media/audio/vault-wood-creaks-cc0.mp3", volume: .21, delay: .72 },
+  ],
+  key: [{ src: "/media/audio/vault-button-mechanical-cc0.wav", volume: .24, delay: 0 }],
+  bolt: [{ src: "/media/audio/vault-chains-cc0.mp3", volume: .20, delay: .05 }],
+  door: [{ src: "/media/audio/vault-heavy-thud-cc0.mp3", volume: .34, delay: 1.23 }],
+};
+const soundPaths = [...new Set(Object.values(recordedCues).flatMap(clips => clips.map(c => c.src)))];
 
 function makeNoise(context: AudioContext) {
   const length = Math.ceil(context.sampleRate * 3);
@@ -57,6 +70,8 @@ function makeRoomIR(context: AudioContext) {
 export function useVaultAudio(muted: boolean) {
   const engineRef = useRef<SoundEngine | null>(null);
   const mutedRef = useRef(muted);
+  const recordingPool = useRef<Map<string, HTMLAudioElement>>(new Map());
+  const pendingRecordingTimers = useRef<number[]>([]);
   mutedRef.current = muted;
 
   const prepare = useCallback(() => {
@@ -95,10 +110,22 @@ export function useVaultAudio(muted: boolean) {
     e.master.gain.setTargetAtTime(muted ? 0 : .76, e.context.currentTime, .016);
   }, [muted]);
 
-  useEffect(() => () => {
-    const e = engineRef.current;
-    engineRef.current = null;
-    if (e) void e.context.close().catch(() => {});
+  useEffect(() => {
+    const pool = recordingPool.current;
+    for (const src of soundPaths) {
+      const clip = new Audio(src);
+      clip.preload = "auto";
+      pool.set(src, clip);
+    }
+    return () => {
+      pendingRecordingTimers.current.forEach(id => window.clearTimeout(id));
+      pendingRecordingTimers.current = [];
+      for (const clip of pool.values()) clip.pause();
+      pool.clear();
+      const e = engineRef.current;
+      engineRef.current = null;
+      if (e) void e.context.close().catch(() => {});
+    };
   }, []);
 
   const play = useCallback((cue: Cue, offset = 0) => {
@@ -108,6 +135,21 @@ export function useVaultAudio(muted: boolean) {
     if (!e) return;
     const { context: c, dry, wet, noise } = e;
     const at = c.currentTime + Math.max(0, offset);
+    // Real CC0 recordings supply the audible mechanical character. Generated
+    // low-end body only reinforces the animation instead of sounding electronic.
+    for (const sample of recordedCues[cue] || []) {
+      const startClip = () => {
+        if (mutedRef.current) return;
+        const source = recordingPool.current.get(sample.src);
+        if (!source) return;
+        const clip = source.cloneNode(true) as HTMLAudioElement;
+        clip.volume = sample.volume;
+        void clip.play().catch(() => {});
+      };
+      const delay = Math.max(0, (offset + sample.delay) * 1000);
+      if (delay < 5) startClip();
+      else pendingRecordingTimers.current.push(window.setTimeout(startClip, delay));
+    }
 
     /** Band-limited material texture. All ramps have nonzero endpoints. */
     const texture = (when: number, duration: number, centreHz: number, q: number, loudness: number, type: BiquadFilterType = "bandpass", echo = .3) => {
@@ -229,8 +271,7 @@ export function useVaultAudio(muted: boolean) {
         texture(at + 1.67, .22, 570, 1.1, .06);
         break;
       case "key":
-        texture(at, .029, 1640, .95, .036, "bandpass", .04);
-        texture(at + .012, .048, 460, .7, .030, "lowpass", .03);
+        // The real recording replaces the high-pitched electronic key beep.
         break;
       case "reject":
         metal(at, 145, .38, .028, .23);
