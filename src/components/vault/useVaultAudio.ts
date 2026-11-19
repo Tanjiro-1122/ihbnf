@@ -21,14 +21,15 @@ type SoundEngine = {
   noise: AudioBuffer;
 };
 
-type Recording = { src: string; volume: number; delay: number };
+type Recording = { src: string; volume: number; delay: number; maxDuration?: number };
 const recordedCues: Partial<Record<Cue, Recording[]>> = {
   chain: [{ src: "/media/audio/lamp-switch-real-cc0.wav", volume: .32, delay: .05 }],
   latch: [{ src: "/media/audio/vault-chains-cc0.mp3", volume: .13, delay: .07 }],
-  pulse: [{ src: "/media/audio/vault-wood-creaks-cc0.mp3", volume: .17, delay: .68 }],
+  // Rune: the original magical resonance is deliberately isolated from the
+  // machinery. Recorded creaks begin only once the portrait actually moves.
   hinge: [
-    { src: "/media/audio/vault-portrait-hinge-cc0.mp3", volume: .42, delay: .22 },
-    { src: "/media/audio/vault-wood-creaks-cc0.mp3", volume: .21, delay: .72 },
+    { src: "/media/audio/vault-portrait-hinge-cc0.mp3", volume: .38, delay: .03, maxDuration: 2.4 },
+    { src: "/media/audio/vault-wood-creaks-cc0.mp3", volume: .15, delay: .21, maxDuration: 2.1 },
   ],
   key: [{ src: "/media/audio/vault-button-mechanical-cc0.wav", volume: .24, delay: 0 }],
   bolt: [{ src: "/media/audio/vault-chains-cc0.mp3", volume: .20, delay: .05 }],
@@ -153,6 +154,14 @@ export function useVaultAudio(muted: boolean) {
         activeRecordings.current.add(clip);
         clip.onended = () => activeRecordings.current.delete(clip);
         void clip.play().catch(() => activeRecordings.current.delete(clip));
+        // The portrait stops moving after 2.42 seconds. Don't keep playing
+        // leftover hinge audio over the revealed safe and its keypad.
+        if (sample.maxDuration) {
+          pendingRecordingTimers.current.push(window.setTimeout(() => {
+            clip.pause();
+            activeRecordings.current.delete(clip);
+          }, sample.maxDuration * 1000));
+        }
       };
       const delay = Math.max(0, (offset + sample.delay) * 1000);
       if (delay < 5) startClip();
