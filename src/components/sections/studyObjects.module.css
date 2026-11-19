@@ -1,0 +1,142 @@
+/* Object-first presentations: the original study remains in view.
+   Each scene uses its own physical surface instead of a generic modal card. */
+.overlay{position:fixed;inset:0;z-index:75;isolation:isolate;display:flex;align-items:center;justify-content:center;color:#ede4d7}
+.backdrop{position:absolute;inset:0;width:100%;height:100%;border:0;background:rgba(7,4,2,.78);backdrop-filter:blur(3px);cursor:default;animation:roomDim .36s ease both}
+.positioner{position:relative;z-index:1;max-height:100dvh;width:100%;overflow-y:auto;padding:clamp(14px,3vw,36px);overscroll-behavior:contain}
+.scene{max-width:1120px;margin:auto;position:relative;animation:sceneApproach .6s cubic-bezier(.18,.74,.18,1) both}
+.scene[data-kind="smartphone"]{max-width:920px}.scene[data-kind="laptop"]{max-width:1120px}
+.scene[data-kind="contact"]{max-width:900px}.scene[data-kind="calendar"]{max-width:1050px}
+.toolbar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 12px;color:#e4c99a;text-shadow:0 2px 10px #050403}
+.chapter{font:600 clamp(10px,1.3vw,12px)/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.16em;text-transform:uppercase}
+.close{border:1px solid #c4a87980;border-radius:999px;padding:9px 15px;background:#22170edc;color:#f8e8cd;cursor:pointer;font-size:12px;white-space:nowrap}
+.close:hover,.close:focus-visible{background:#3b2917;outline:2px solid #f0ca86;outline-offset:2px}
+.scene a{color:inherit}.scene :is(button,a):focus-visible{outline:2px solid #c99e55;outline-offset:3px}
+.scene button{cursor:pointer}.scene button:disabled{cursor:default;opacity:.38}
+@keyframes sceneApproach{from{transform:translateY(24px) scale(.91);opacity:0;filter:blur(5px)}to{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}}
+@keyframes roomDim{from{opacity:0}to{opacity:1}}
+
+/* The framed object is revealed as a real two-page folio. */
+.bookWorld{position:relative;filter:drop-shadow(18px 24px 38px #000d)}
+.bookCoverEdge{position:absolute;inset:10px 4px 50px;border:13px solid #4b2916;border-radius:13px;box-shadow:inset 0 0 0 3px #916843,inset 0 0 25px #000a}
+.openBook{display:grid;grid-template-columns:1fr 1fr;position:relative;min-height:min(66vh,550px);padding:12px 16px 6px;border-radius:8px;transform-origin:center center;transition:transform .4s ease;isolation:isolate}
+.openBook[data-magnified="true"]{transform:scale(1.08)}
+.openBook:before{content:"";position:absolute;inset:5px 12px 4px;background:linear-gradient(90deg,#5e321c,#2a140b 2%,#e7ca9e 4%,#e9d6b0 47%,#51301b 50%,#e5d2af 53%,#ecdbb9 96%,#4e2c1a 98%,#2a170e);border-radius:14px;box-shadow:0 15px 35px #050302}
+.paperPage{position:relative;min-width:0;display:flex;flex-direction:column;z-index:1;padding:clamp(20px,4vw,52px);color:#362219;background:radial-gradient(ellipse at 13% 12%,#fff3d6,transparent 52%),repeating-linear-gradient(0deg,transparent 0 5px,#9d734116 6px 7px),linear-gradient(100deg,#c8a97a,#ead7b0 9%,#f6e8cc 83%,#cfab78);box-shadow:inset -23px 0 28px #5f371d2c;clip-path:polygon(1% 1%,96% 0,100% 3%,99% 98%,92% 100%,2% 99%,0 95%);animation:folioReveal .38s ease}
+.paperPage+.paperPage{box-shadow:inset 22px 0 25px #533a1934;clip-path:polygon(2% 1%,98% 0,100% 4%,99% 98%,93% 100%,0 99%,1% 94%)}
+.paperPage p{font:clamp(13px,1.65vw,17px)/1.75 Georgia,"Times New Roman",serif;margin:.7em 0}
+.pageTop,.letterTop{font:600 10px/1.4 ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;color:#815a2f;border-bottom:1px solid #a0804c75;padding-bottom:12px}
+.emblem{position:relative;flex:1;min-height:185px;max-height:340px;margin:20px auto;width:95%}
+.paperCaption{text-align:center;font:italic clamp(14px,1.8vw,20px) Georgia,serif}
+.paperHeading{font:normal clamp(28px,3.4vw,44px)/1.07 Georgia,serif;margin:26px 0 14px;color:#24140e}
+.pageNumber{font:11px Georgia,serif;margin:auto 0 0;text-align:center;color:#86613b;padding-top:16px}
+.paperActions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.paperActions button{padding:9px 12px;border:1px solid #916d44;border-radius:4px;color:#492813;font:600 12px Georgia,serif}
+.bookControls{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:15px;color:#ebd6b7;font-size:12px}
+.bookControls button{padding:9px 15px;border:1px solid #c6a26d88;border-radius:5px;background:#28170fef;color:#f8e4c0}
+.bookControls button:not(:disabled):hover{background:#5a3721}
+@keyframes folioReveal{from{opacity:.5;transform:rotateY(-9deg)}to{opacity:1;transform:rotateY(0)}}
+
+/* The phone is a screen inside a physical handheld device. */
+.phoneStage{display:grid;grid-template-columns:minmax(235px,340px) minmax(240px,1fr);align-items:center;justify-content:center;gap:clamp(24px,6vw,80px)}
+.phoneShell{position:relative;width:min(100%,290px);aspect-ratio:9/19.5;margin:auto;padding:14px;border-radius:clamp(34px,5vw,52px);border:4px solid #7b7c82;background:linear-gradient(100deg,#3a3a3d,#08090b 7%,#16161a 90%,#77777b 98%);box-shadow:16px 26px 50px #000c,inset 0 0 0 3px #050506;animation:phonePickUp .7s ease both;overflow:hidden}
+.phoneShell:after{content:"";position:absolute;pointer-events:none;inset:15px;border:2px solid #f3f0f21c;border-radius:34px}
+.phoneNotch{position:absolute;left:50%;top:13px;transform:translateX(-50%);width:32%;height:22px;border-radius:0 0 14px 14px;background:#050507;z-index:3}
+.phoneStatus{position:absolute;inset:25px 32px auto;display:flex;justify-content:space-between;z-index:2;color:white;text-shadow:0 1px 3px #000;font:600 11px Arial,sans-serif}
+.phoneScreen{position:relative;overflow:hidden;width:100%;height:100%;border-radius:34px;background:linear-gradient(135deg,#211737,#060609);box-shadow:inset 0 0 18px #000}
+.homeBar{position:absolute;bottom:21px;left:36%;width:28%;height:5px;border-radius:99px;background:#fff9;z-index:2}
+.deviceDetails h2{font:normal clamp(34px,5vw,57px)/.99 Georgia,serif;margin:16px 0;color:#f2e8ff}
+.deviceDetails p{max-width:460px;font:15px/1.7 Arial,sans-serif;color:#c9c1d5}
+.eyebrow{font:600 11px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:#d8b979}
+.screenSelector{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}
+.screenSelector button,.deviceLinks a{border:1px solid #a495d277;border-radius:99px;padding:9px 13px;color:#e9e0ff;font-size:12px}
+.screenSelector button[aria-pressed="true"]{background:#e4d8ff;color:#241532}
+.deviceLinks{display:flex;flex-wrap:wrap;gap:8px}.deviceLinks a{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+@keyframes phonePickUp{from{transform:translateY(40px) rotate(13deg) scale(.8)}to{transform:translateY(0) rotate(-3deg) scale(1)}}
+
+/* Full laptop viewport - the iframe itself owns scrolling when the site permits embedding. */
+.laptopStage{padding:4px 0;color:#f5f4e7}
+.laptopLid{width:100%;border:13px solid #15181a;border-radius:16px 16px 7px 7px;background:#111;box-shadow:0 25px 50px #000d,inset 0 0 0 1px #6a6965;overflow:hidden}
+.laptopCamera{height:10px;width:10px;margin:3px auto 7px;border-radius:50%;background:radial-gradient(circle,#355264 15%,#020509 60%,#56575a 65%);}
+.browserBar{display:flex;align-items:center;gap:13px;height:40px;padding:6px 12px;background:#e8e8e9;color:#292929;font:12px Arial,sans-serif}
+.browserBar>span:first-child{white-space:nowrap;color:#f18d86;font-size:11px}
+.address{flex:1;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap;background:#f9f9f9;border:1px solid #ccc;border-radius:5px;padding:4px 10px}
+.browserBar a{color:#30564b!important;font-weight:700;text-decoration:underline;white-space:nowrap}
+.websiteViewport{position:relative;height:clamp(320px,52vh,590px);background:#0e1414}
+.siteFrame{display:block;width:100%;height:100%;border:0;background:white}
+.keyboardBase{position:relative;height:28px;background:linear-gradient(#b5b5b8,#73767c 50%,#26272b);border-radius:0 0 55% 55%/0 0 100% 100%;box-shadow:0 15px 25px #000a}
+.trackpad{height:7px;width:18%;margin:auto;border:1px solid #8c8b8d;border-top:0;border-radius:0 0 9px 9px;background:#77787b}
+.laptopFooter{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;font-size:13px;color:#e1dfd5}
+.laptopFooter a{display:inline-flex;align-items:center;gap:4px;color:#def3bd;text-decoration:underline}
+.embedNote{max-width:700px;margin:8px auto 0;text-align:center;font:11px/1.5 Arial,sans-serif;color:#a6a29e}
+
+/* An actual journal laid open on walnut, not a generic information rectangle. */
+.journalStage{position:relative;padding:14px 22px 5px}
+.journalCover{position:absolute;inset:5px 9px 48px;background:#52321f;border:12px solid #341c0c;border-radius:12px;box-shadow:20px 25px 35px #000d}
+.journalSpread{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:440px;box-shadow:2px 18px 40px #0007;animation:folioReveal .4s ease}
+.journalLeaf{position:relative;min-width:0;padding:clamp(22px,4vw,50px);color:#392917;background:repeating-linear-gradient(0deg,transparent 0 28px,#916e4430 29px 30px),linear-gradient(110deg,#d0b690,#f2e5cd 16%,#e2d0ae 90%,#bda079);box-shadow:inset -28px 0 32px #5b382124}
+.journalLeaf+.journalLeaf{box-shadow:inset 27px 0 30px #51341a30;background:repeating-linear-gradient(0deg,transparent 0 28px,#916e4430 29px 30px),linear-gradient(90deg,#bda079,#ead8b6 10%,#f1e3c9 95%)}
+.journalLabel{font:600 10px ui-monospace,monospace;letter-spacing:.15em;text-transform:uppercase;color:#87542c}
+.authorPortrait{position:relative;margin:24px 0;width:96px;height:112px;border:4px solid #4d2f1a;box-shadow:5px 6px 6px #0005}
+.journalLeaf h2{font:normal clamp(29px,4.2vw,45px)/1.1 Georgia,serif}
+.journalLeaf p{font:clamp(14px,1.6vw,18px)/1.9 Georgia,serif;margin-bottom:18px}
+.signature{font:italic 25px Georgia,serif;margin-top:auto!important}
+.journalFolio{position:absolute;bottom:18px;right:28px;font:12px Georgia,serif;color:#795632}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px 0;font:italic 19px Georgia,serif}.steps li span{color:#ae7339}
+
+/* Calendar month is real; projects are explicitly undated. */
+.calendarScene{display:grid;grid-template-columns:minmax(300px,1.1fr) minmax(240px,.9fr);align-items:start;gap:clamp(18px,4vw,48px)}
+.calendarPaper{position:relative;min-height:525px;padding:34px 27px 25px;background:linear-gradient(118deg,#eee1c1,#faf0d5 70%,#c6a478);color:#39271d;border-radius:5px;box-shadow:12px 19px 35px #000b,0 0 0 10px #604627}
+.calendarBinding{position:absolute;inset:-15px 10px auto;display:flex;justify-content:space-between}
+.calendarBinding span{height:37px;width:19px;border:5px solid #ac884c;border-radius:50%;box-shadow:1px 1px 2px #33210e}
+.calendarMonth{margin-top:24px;text-align:center;border-bottom:2px solid #89663f;padding-bottom:15px}
+.calendarMonth span{font:600 10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.16em}
+.calendarMonth h2{font:normal clamp(28px,3vw,40px) Georgia,serif;margin:8px 0}
+.monthGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-top:21px}
+.monthGrid span{display:grid;place-items:center;min-height:42px;padding:4px;font:14px Georgia,serif;border:1px solid #8a6d3e29}
+.weekday{background:#e0cca8;font-weight:700!important}
+.today{background:#77552c!important;color:#fff1ce;border-radius:50%;font-weight:700!important}
+.calendarDisclaimer{margin:25px 0 0;color:#775938;font:11px/1.5 Arial,sans-serif}
+.milestones{background:#1d160fdd;padding:clamp(20px,3vw,32px);border:1px solid #be99645d;border-radius:8px}
+.milestones h3{font:normal clamp(28px,3vw,37px)/1.1 Georgia,serif;margin:14px 0 18px}
+.milestones>div{border-top:1px solid #ad8b5945;padding:12px 0}
+.milestones strong{display:block;font:normal 17px Georgia,serif;margin:6px 0}
+.milestones p{font:13px/1.5 Arial,sans-serif;color:#d1c1a9}
+.milestoneTag{font:600 10px ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#d6b581}
+.milestoneEnd{color:#e2c99e!important;font-style:italic!important}
+
+/* Wax-sealed envelope physically breaks open to a readable paper letter. */
+.letterScene{position:relative;min-height:580px;display:grid;place-items:center;overflow:visible;padding:10px}
+.envelope{position:absolute;top:8%;left:50%;width:min(78vw,520px);height:300px;transform:translateX(-50%);perspective:900px;z-index:2;pointer-events:none;transition:transform 1s ease,opacity .6s ease}
+.envelope[data-open="true"]{transform:translate(-50%,110px) scale(.75);opacity:0}
+.envelopeBody{position:absolute;inset:0;background:linear-gradient(150deg,#d9c3a0,#9f7650);clip-path:polygon(0 0,100% 0,100% 100%,0 100%);box-shadow:0 20px 35px #0008}
+.envelopeFlap{position:absolute;inset:0;background:linear-gradient(#b38b60,#e6d2b1);clip-path:polygon(0 0,100% 0,50% 55%);transform-origin:50% 0;z-index:3}
+.envelope[data-open="true"] .envelopeFlap{animation:envelopeUnseal .8s ease both}
+.waxSeal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;z-index:4;width:56px;height:56px;border-radius:48%;background:radial-gradient(circle at 32% 28%,#b84230,#5a1211);border:3px solid #6c2118;box-shadow:2px 5px 9px #0008;color:#f1c49d;font:20px Georgia,serif}
+.envelope[data-open="true"] .waxSeal{animation:sealBreak .65s ease both}
+.letterPaper{position:relative;width:100%;max-width:700px;min-height:530px;padding:clamp(22px,5vw,55px);color:#352316;background:radial-gradient(ellipse at 15% 4%,#fff6df,#f1e2bf 67%,#d3b98b);box-shadow:0 27px 60px #000b,inset 0 0 80px #a072392a;border-radius:3px;transform:translateY(75px) scale(.85);opacity:0;transition:transform .75s cubic-bezier(.2,.8,.2,1),opacity .65s ease}
+.letterPaper[data-open="true"]{opacity:1;transform:translateY(0) scale(1)}
+.letterPaper h2{font:normal clamp(31px,4vw,47px) Georgia,serif;margin:28px 0}
+.letterPaper p{font:clamp(14px,1.7vw,19px)/1.75 Georgia,serif;margin:16px 0}
+.letterContact{margin:22px 0;border-top:1px solid #9c744e;padding-top:14px}
+.letterSocials{display:flex;flex-wrap:wrap;gap:10px}
+.letterSocials a{display:flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid #ad8a5b;border-radius:2px;color:#593924;font:12px Arial,sans-serif;text-decoration:none}
+@keyframes envelopeUnseal{from{transform:rotateX(0)}to{transform:rotateX(180deg)}}
+@keyframes sealBreak{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-120%) rotate(-25deg) scale(.3);opacity:0}}
+
+@media(max-width:740px){
+ .positioner{padding:13px 11px}
+ .toolbar{align-items:start}.chapter{font-size:9px}.close{padding:7px 10px;font-size:11px}
+ .openBook,.journalSpread,.calendarScene,.phoneStage{grid-template-columns:1fr}
+ .openBook{padding:7px}.openBook[data-magnified="true"]{transform:scale(1)}
+ .paperPage{min-height:250px;padding:22px;clip-path:none!important}
+ .paperPage p{font-size:15px}.emblem{min-height:190px}
+ .phoneStage{gap:18px}.phoneShell{max-width:218px}.deviceDetails{text-align:center}.screenSelector,.deviceLinks{justify-content:center}
+ .laptopLid{border-width:6px}.websiteViewport{height:56vh;min-height:300px}.browserBar{padding:4px 5px;gap:5px;font-size:10px}
+ .journalStage{padding:5px}.journalLeaf{min-height:260px}.journalLeaf p{font-size:14px}
+ .calendarPaper{min-height:440px}.monthGrid span{min-height:35px;font-size:12px}
+ .laptopFooter{flex-direction:column;font-size:12px}.letterScene{min-height:560px}
+}
+@media(prefers-reduced-motion:reduce){
+ .scene,.backdrop,.phoneShell,.paperPage,.journalSpread,.envelopeFlap,.waxSeal{animation:none!important}
+ .letterPaper,.envelope,.openBook{transition:none!important}
+ .letterPaper[data-open="true"]{transform:none}
+}
