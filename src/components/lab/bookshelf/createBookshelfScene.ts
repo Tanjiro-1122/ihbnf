@@ -56,7 +56,7 @@ export async function createBookshelfScene(
 
   const sharedTextures = new Set<THREE.Texture>();
   const ownedTextures = new Set<THREE.Texture>();
-  const books = new Map<string, { object: THREE.Group; baseY: number; centerX: number; offsetZ: number; yaw: number }>();
+  const books = new Map<string, { object: THREE.Group; baseY: number; shadow: THREE.Mesh }>();
   const stacks = new THREE.Group();
   scene.add(stacks);
   let disposed = false;
@@ -122,11 +122,11 @@ export async function createBookshelfScene(
         object.position.set(index % 2 === 0 ? -.025 : .035, y, z);
         object.rotation.y = yaw;
         columnGroup.add(object);
-        books.set(entry.id, { object, baseY: y, centerX: object.position.x, offsetZ: z, yaw });
         // The contact shadow is applied at each book's underside, not to the
         // wall or to the whole canvas rectangle.
-        addContactShadow(columnGroup, shadow, design.width * 1.20, (design.depth ?? 2) * 1.22, Math.max(.002, y - .005), index === 0 ? .89 : .48)
-          .position.set(object.position.x, Math.max(.002, y - .005), z);
+        const contact = addContactShadow(columnGroup, shadow, design.width * 1.20, (design.depth ?? 2) * 1.22, Math.max(.002, y - .005), index === 0 ? .89 : .48);
+        contact.position.set(object.position.x, Math.max(.002, y - .005), z);
+        books.set(entry.id, { object, baseY: y, shadow: contact });
         y += design.thickness;
       });
     });
@@ -180,10 +180,15 @@ export async function createBookshelfScene(
     registerUpdate?.((selected, lit) => {
       for (const [id, model] of books) {
         model.object.visible = selected !== id;
+        model.shadow.visible = selected !== id;
       }
       // Removing the lower book must leave the upper book sitting on the shelf.
       const top = books.get("why-henry");
-      if (top) top.object.position.y = books.get("dream-payoff")?.object.visible === false ? 0 : top.baseY;
+      if (top) {
+        const displaced = books.get("dream-payoff")?.object.visible === false;
+        top.object.position.y = displaced ? 0 : top.baseY;
+        top.shadow.position.y = displaced ? .002 : Math.max(.002, top.baseY - .005);
+      }
       renderer.toneMappingExposure = lit ? 1.10 : .89;
       render();
     });
