@@ -27,7 +27,8 @@ type HoveredItem =
   | "brand"
   | "contact";
 
-type BookStage = "shelved" | "opening" | "open";
+type BookStage = "shelved" | "opening" | "open" | "returning";
+type BookSoundCue = "pull" | "float" | "creak" | "rustle" | "close" | "settle";
 
 /**
  * Active in-room object overlay (for non-shelf-book objects: Wall Logo, Smartphone, Laptop, Notebook, Calendar, Contact).
@@ -229,6 +230,8 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
   const closeModalBtnRef = useRef<HTMLButtonElement>(null);
   const bookDialogRef = useRef<HTMLDialogElement>(null);
   const bookReaderRef = useRef<HTMLDivElement>(null);
+  const bookAudioRef = useRef<Partial<Record<BookSoundCue, HTMLAudioElement>>>({});
+  const bookTimersRef = useRef<number[]>([]);
   const isBookOut = bookStage !== "shelved";
 
   useLayoutEffect(() => {
@@ -251,24 +254,99 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
     }
   }, []);
 
+  // All six clips already ship with IHBNF. Sound is user-triggered, can be
+  // muted instantly, and does not require external hosting or paid services.
+  useEffect(() => {
+    const source: Record<BookSoundCue, string> = {
+      pull: "/media/audio/book-pull.wav",
+      float: "/media/audio/float-whoosh.wav",
+      creak: "/media/audio/binding-creak.wav",
+      rustle: "/media/audio/page-rustle.wav",
+      close: "/media/audio/book-close-thump.wav",
+      settle: "/media/audio/shelf-settle.wav",
+    };
+    for (const [key, src] of Object.entries(source) as [BookSoundCue, string][]) {
+      const clip = new Audio(src);
+      clip.preload = "auto";
+      bookAudioRef.current[key] = clip;
+    }
+    return () => {
+      bookTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      bookTimersRef.current = [];
+      Object.values(bookAudioRef.current).forEach((clip) => { clip.pause(); clip.removeAttribute("src"); clip.load(); });
+      bookAudioRef.current = {};
+    };
+  }, []);
+
+  useEffect(() => {
+    if (muted) Object.values(bookAudioRef.current).forEach((clip) => clip.pause());
+  }, [muted]);
+
+  const clearBookTimers = useCallback(() => {
+    bookTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    bookTimersRef.current = [];
+  }, []);
+
+  const playBookSound = useCallback((cue: BookSoundCue) => {
+    if (muted) return;
+    const clip = bookAudioRef.current[cue];
+    if (!clip) return;
+    try {
+      clip.pause();
+      clip.currentTime = 0;
+      clip.volume = cue === "float" ? .32 : .55;
+      void clip.play().catch(() => {});
+    } catch { /* Browser audio permission never blocks book access. */ }
+  }, [muted]);
+
+  const queueBookSound = useCallback((cue: BookSoundCue, delay: number) => {
+    bookTimersRef.current.push(window.setTimeout(() => playBookSound(cue), delay));
+  }, [playBookSound]);
+
   const handleOpenDigitalBook = useCallback((bookId: ShelfBookId) => {
     if (bookStage !== "shelved") return;
     const button = bookId === "why-henry" ? whyHenryBookRef.current : dreamPayoffBookRef.current;
     const bounds = button?.querySelector("[data-stack-spine]")?.getBoundingClientRect();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    clearBookTimers();
     setActiveModal(null);
     setActiveShelfBook(bookId);
     setBookOrigin(bounds ?? null);
     setBookStage(bounds && !reduced ? "opening" : "open");
-  }, [bookStage]);
+    playBookSound("pull");
+    if (bounds && !reduced) {
+      queueBookSound("float", 160);
+      queueBookSound("creak", 850);
+      queueBookSound("rustle", 1210);
+    } else {
+      queueBookSound("rustle", 70);
+    }
+  }, [bookStage, clearBookTimers, playBookSound, queueBookSound]);
 
-  const handleReturnShelfBook = useCallback(() => {
-    if (bookStage === "shelved") return;
+  const finishReturnShelfBook = useCallback(() => {
+    clearBookTimers();
     bookDialogRef.current?.close();
     setBookStage("shelved");
+    setBookOrigin(null);
+    playBookSound("settle");
     const target = activeShelfBook === "why-henry" ? whyHenryBookRef : dreamPayoffBookRef;
     target.current?.focus({ preventScroll: true });
-  }, [bookStage, activeShelfBook]);
+  }, [activeShelfBook, clearBookTimers, playBookSound]);
+
+  const handleReturnShelfBook = useCallback(() => {
+    if (bookStage === "shelved" || bookStage === "returning") return;
+    clearBookTimers();
+    playBookSound("close");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced || !bookOrigin) {
+      finishReturnShelfBook();
+      return;
+    }
+    setBookStage("returning");
+    queueBookSound("float", 360);
+    // A fallback keeps keyboard users from being trapped if CSS animation is interrupted.
+    bookTimersRef.current.push(window.setTimeout(finishReturnShelfBook, 1510));
+  }, [bookStage, bookOrigin, clearBookTimers, finishReturnShelfBook, playBookSound, queueBookSound]);
 
   // Open an in-room object overlay
   const openRoomModal = useCallback((modal: Exclude<ActiveRoomModal, null>) => {
@@ -760,12 +838,19 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
         >
           <div data-testid="why-henry-stage-backdrop" className={bookStyles.backdrop}
             data-opening={bookStage === "opening"} aria-hidden="true" onClick={handleReturnShelfBook} />
-          {bookStage === "opening" && bookOrigin && (
-            <BookFlight book={activeShelfBook} origin={bookOrigin} reader={bookReaderRef} onOpened={() => setBookStage("open")} />
+          {(bookStage === "opening" || bookStage === "returning") && bookOrigin && (
+            <BookFlight
+              book={activeShelfBook}
+              origin={bookOrigin}
+              reader={bookReaderRef}
+              returning={bookStage === "returning"}
+              onOpened={() => setBookStage("open")}
+              onReturned={finishReturnShelfBook}
+            />
           )}
           <div className={bookStyles.readerLayout}>
             <div data-testid="shelf-digital-reader" className={bookStyles.reader}
-              data-opening={bookStage === "opening"} inert={bookStage === "opening"}>
+              data-opening={bookStage === "opening"} data-returning={bookStage === "returning"} inert={bookStage !== "open"}>
               <nav className={bookStyles.readerTools} aria-label="Book controls">
                 <button ref={closeBookBtnRef} type="button" data-testid={`${activeShelfBook}-return-shelf-btn`}
                   onClick={handleReturnShelfBook}>← Return to Shelf</button>
