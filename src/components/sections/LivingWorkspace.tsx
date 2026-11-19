@@ -157,6 +157,9 @@ function StudyObjectHighlight({
             pointerEvents="all"
             role="button"
             tabIndex={0}
+            // Keyboard focus uses the SAME object-shaped gold glow as hover;
+            // never allow the browser's default square SVG focus outline.
+            style={{ outline: "none" }}
             aria-label={target.label}
             aria-haspopup="dialog"
             onPointerEnter={() => onHover(target.id)}
