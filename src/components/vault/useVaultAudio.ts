@@ -20,6 +20,7 @@ const sounds = {
 export function useVaultAudio(muted: boolean) {
   const audio = useRef<AudioContext | null>(null);
   const output = useRef<GainNode | null>(null);
+  const mechanicalNoise = useRef<AudioBuffer | null>(null);
 
   const prepare = useCallback(() => {
     if (muted) return;
@@ -28,6 +29,16 @@ export function useVaultAudio(muted: boolean) {
         audio.current = new AudioContext();
         output.current = audio.current.createGain();
         output.current.connect(audio.current.destination);
+        // Cache one short burst of filtered noise so each clue's metal and
+        // wood mechanism has texture without loud synthesized bleeps.
+        const length = Math.round(audio.current.sampleRate * .105);
+        const noise = audio.current.createBuffer(1, length, audio.current.sampleRate);
+        const samples = noise.getChannelData(0);
+        for (let i = 0; i < length; i++) {
+          const envelope = Math.exp(-7 * i / length);
+          samples[i] = (Math.random() * 2 - 1) * envelope;
+        }
+        mechanicalNoise.current = noise;
       }
       if (audio.current.state !== "running") void audio.current.resume().catch(() => {});
     } catch {
@@ -43,6 +54,7 @@ export function useVaultAudio(muted: boolean) {
     void audio.current?.close().catch(() => {});
     audio.current = null;
     output.current = null;
+    mechanicalNoise.current = null;
   }, []);
 
   const play = useCallback((sound: keyof typeof sounds, offset = 0) => {
@@ -63,6 +75,32 @@ export function useVaultAudio(muted: boolean) {
       oscillator.connect(gain).connect(master);
       oscillator.start(start);
       oscillator.stop(start + duration);
+    }
+    // Mechanical clues get a subtle transient; magic stays atmospheric.
+    const texture: Partial<Record<keyof typeof sounds, [number, number]>> = {
+      latch: [.038, 1300],
+      compass: [.024, 2600],
+      hinge: [.028, 720],
+      key: [.019, 3000],
+      reject: [.02, 560],
+      bolt: [.052, 930],
+      door: [.037, 520],
+    };
+    const settings = texture[sound];
+    if (settings && mechanicalNoise.current) {
+      const [volume, frequency] = settings;
+      const impulse = context.createBufferSource();
+      impulse.buffer = mechanicalNoise.current;
+      const filter = context.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = frequency;
+      const amplitude = context.createGain();
+      const start = context.currentTime + offset;
+      amplitude.gain.setValueAtTime(volume, start);
+      amplitude.gain.exponentialRampToValueAtTime(.0001, start + .103);
+      impulse.connect(filter).connect(amplitude).connect(master);
+      impulse.start(start);
+      impulse.stop(start + .105);
     }
   }, [muted, prepare]);
 
