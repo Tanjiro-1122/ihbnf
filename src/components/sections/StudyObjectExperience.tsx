@@ -57,7 +57,7 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook, muted = false
     const opening = window.setTimeout(() => {
       setLetterOpened(true);
       if (kind === "contact" && !muted) {
-        const audio = new Audio("/media/audio/envelope-seal-real-cc0.wav");
+        const audio = new Audio("/media/audio/envelope-seal-cc-by.wav");
         audio.volume = .38;
         void audio.play().catch(() => {});
       }
@@ -328,6 +328,7 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook, muted = false
                   ))}
                 </div>
                 <div className={styles.signature}>— Javier</div>
+                <a className={styles.soundCreditLink} href="/media/audio/SOUND-CREDITS.txt" target="_blank" rel="noopener noreferrer">Sound recording credits</a>
               </article>
             </div>
           )}
