@@ -218,3 +218,15 @@
  .previewGrid>div{min-height:90px}
  .previewBanner span{display:none}
 }
+
+.soundCreditLink {
+  display:block;
+  width:max-content;
+  max-width:100%;
+  margin:18px 0 0 auto;
+  color:#795b35!important;
+  font:10px/1.5 Arial,sans-serif;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.soundCreditLink:hover{color:#4a2c18!important}
