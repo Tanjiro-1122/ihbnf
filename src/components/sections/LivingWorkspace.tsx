@@ -251,7 +251,9 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
     setActiveShelfBook(bookId);
     setBookOrigin(bounds ?? null);
     setBookStage(bounds && !reduced ? "opening" : "open");
-    playBookPaper();
+    // The page-turn sound belongs to the physical opening, not the moment
+    // the visitor first clicks the book on its shelf.
+    if (reduced || !bounds) playBookPaper();
   }, [bookStage, clearBookTimers, playBookPaper]);
 
   const finishReturnShelfBook = useCallback(() => {
@@ -769,7 +771,7 @@ export function LivingWorkspace({ previewBooks = false }: { previewBooks?: boole
               origin={bookOrigin}
               reader={bookReaderRef}
               returning={bookStage === "returning"}
-              onOpened={() => setBookStage("open")}
+              onOpened={() => { setBookStage("open"); playBookPaper(); }}
               onReturned={finishReturnShelfBook}
             />
           )}
