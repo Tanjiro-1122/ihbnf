@@ -34,7 +34,7 @@ const recordedCues: Partial<Record<Cue, Recording[]>> = {
   bolt: [{ src: "/media/audio/vault-chains-cc0.mp3", volume: .20, delay: .05 }],
   door: [{ src: "/media/audio/vault-heavy-thud-cc0.mp3", volume: .34, delay: 1.23 }],
 };
-const soundPaths = [...new Set(Object.values(recordedCues).flatMap(clips => clips.map(c => c.src)))];
+const soundPaths = [...new Set(Object.values(recordedCues).flatMap(clips => (clips || []).map(c => c.src)))];
 
 function makeNoise(context: AudioContext) {
   const length = Math.ceil(context.sampleRate * 3);
