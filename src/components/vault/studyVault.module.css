@@ -905,7 +905,7 @@
 .portraitMechanism span:nth-child(3) { right: 9%; }
 .recess .portrait {
   z-index: 3;
-  transform: translate3d(0,-115%,0);
+  transform: translate3d(0,-84%,0);
   transform-origin: 50% 10%;
   transform-style: flat;
   border: clamp(2px,.26vw,5px) ridge #9b7140;
@@ -929,26 +929,26 @@
   box-shadow: 0 4px 6px #000c;
 }
 .recess[data-frame="opening"] .portrait{
-  animation: portrait-slide-up 3180ms cubic-bezier(.16,.62,.19,1) both;
+  animation: portrait-slide-up 2420ms cubic-bezier(.16,.62,.19,1) both;
 }
 .recess[data-frame="closing"] .portrait{
-  animation: portrait-slide-down 1580ms cubic-bezier(.39,.1,.7,1) both;
+  animation: portrait-slide-down 1330ms cubic-bezier(.39,.1,.7,1) both;
 }
 .recess[data-frame="open"] .portrait{
   animation: none;
-  transform: translate3d(0,-115%,0);
+  transform: translate3d(0,-84%,0);
 }
 @keyframes portrait-slide-up{
   0%{transform:translate3d(0,0,0)}
   7%{transform:translate3d(0,1.8%,0)}
   20%{transform:translate3d(0,-6%,0)}
   34%{transform:translate3d(0,-10%,0)}
-  70%{transform:translate3d(0,-91%,0)}
-  90%{transform:translate3d(0,-110%,0)}
-  100%{transform:translate3d(0,-115%,0)}
+  70%{transform:translate3d(0,-68%,0)}
+  90%{transform:translate3d(0,-82%,0)}
+  100%{transform:translate3d(0,-84%,0)}
 }
 @keyframes portrait-slide-down{
-  0%{transform:translate3d(0,-115%,0)}
+  0%{transform:translate3d(0,-84%,0)}
   82%{transform:translate3d(0,3%,0)}
   100%{transform:translate3d(0,0,0)}
 }
