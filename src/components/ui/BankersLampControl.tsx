@@ -24,7 +24,6 @@ export function BankersLampControl({
   lampOn,
   onToggleLamp,
   onPullStart,
-  muted = false,
   reducedMotion = false,
   onHoverChange,
 }: Props) {
@@ -33,11 +32,8 @@ export function BankersLampControl({
   const [pullOffsetPx, setPullOffsetPx] = useState(0);
   const [swingAngleDeg, setSwingAngleDeg] = useState(0);
 
-  const clickAudioRef = useRef<HTMLAudioElement | null>(null);
-  const mutedRef = useRef(muted);
-  useEffect(() => {
-    mutedRef.current = muted;
-  }, [muted]);
+
+
 
   const onToggleRef = useRef(onToggleLamp);
   useEffect(() => {
@@ -47,26 +43,10 @@ export function BankersLampControl({
   const animFrameRef = useRef<number>(0);
   const isAnimatingRef = useRef(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const audio = new Audio("/media/audio/lamp-chain-approved.mp3");
-    audio.preload = "auto";
-    clickAudioRef.current = audio;
-    return () => {
-      cancelAnimationFrame(animFrameRef.current);
-    };
-  }, []);
-
-  const playSwitchClick = useCallback(() => {
-    if (mutedRef.current || !clickAudioRef.current) return;
-    try {
-      clickAudioRef.current.currentTime = 0;
-      clickAudioRef.current.volume = 1;
-      clickAudioRef.current.play().catch(() => {});
-    } catch {
-      // Ignore autoplay restrictions
-    }
-  }, []);
+  // The shared cinematic Foley engine now supplies the chain and switch
+  // sounds at the actual toggle, preventing the old MP3 and WebAudio from
+  // overlapping or sounding out of sync.
+  useEffect(() => () => cancelAnimationFrame(animFrameRef.current), []);
 
   const handlePullChain = useCallback((event: MouseEvent<HTMLButtonElement>) => {
     const trusted = event.isTrusted;
@@ -75,7 +55,6 @@ export function BankersLampControl({
     cancelAnimationFrame(animFrameRef.current);
 
     if (reducedMotion) {
-      playSwitchClick();
       onToggleRef.current(trusted);
       return;
     }
@@ -106,7 +85,6 @@ export function BankersLampControl({
       // At the exact lowest point of the pull: play the crisp mechanical switch click and flip the lamp state!
       if (!clickedAtBottom) {
         clickedAtBottom = true;
-        playSwitchClick();
         onToggleRef.current(trusted);
         setPullState("swinging-back");
       }
@@ -135,7 +113,7 @@ export function BankersLampControl({
     };
 
     animFrameRef.current = requestAnimationFrame(step);
-  }, [onPullStart, playSwitchClick, reducedMotion]);
+  }, [onPullStart, reducedMotion]);
 
   const handleEnter = () => {
     setHovered(true);

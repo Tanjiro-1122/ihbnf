@@ -1,0 +1,37 @@
+IHBNF INTERACTIVE STUDY — RECORDED SOUND EFFECT CREDITS
+
+Original sound design and layering for IHBNF. The recorded samples below are
+used as short, edited Foley cues. None is copied from a feature film.
+
+CC0 1.0 / Public Domain Dedication — credit appreciated, not required:
+- vault-portrait-hinge-cc0.mp3: "Creaky door 3", joedeshon, Freesound #339184
+  https://freesound.org/people/joedeshon/sounds/339184/
+- vault-wood-creaks-cc0.mp3: "Floorboard creaks", Rudmer_Rotteveel, Freesound #502507
+  https://freesound.org/people/Rudmer_Rotteveel/sounds/502507/
+- vault-chains-cc0.mp3: "Chains rattling 2", cribbler, Freesound #370877
+  https://freesound.org/people/cribbler/sounds/370877/
+- vault-heavy-thud-cc0.mp3: "Door slam 2", IanStarGem, Freesound #478076
+  https://freesound.org/people/IanStarGem/sounds/478076/
+- vault-button-mechanical-cc0.wav: BMacZero / yottasounds / knufds
+  extracted from Appletrumpet/Typewriter key_1.wav (CC0)
+  https://freesound.org/s/160678/
+  https://freesound.org/s/380137/
+  https://freesound.org/s/345955/
+- lamp-switch-real-cc0.wav: "Light Switch Variations", neverak, Freesound #708606
+  via Appletrumpet/Typewriter button_click.wav
+  https://freesound.org/s/708606/
+- book-page-real-cc0.wav: "paper2.wav", XTYL33, Freesound #68221
+  via Appletrumpet/Typewriter paper_select.wav
+  https://freesound.org/s/68221/
+CC0 details: https://creativecommons.org/publicdomain/zero/1.0/
+
+CC BY 4.0 — attribution required:
+- envelope-seal-cc-by.wav: "sticker peel", tim.kahn, Freesound #27976
+  https://freesound.org/s/27976/
+  https://creativecommons.org/licenses/by/4.0/
+  Used as a shortened, lower-volume wax-seal peel/tear cue.
+  Credit to tim.kahn, with thanks; no endorsement implied.
+
+Sample transcodes sourced through:
+https://github.com/mayerwin/halloween-soundboard (individual licenses in README)
+https://github.com/Appletrumpet/Typewriter (individual licenses in README)

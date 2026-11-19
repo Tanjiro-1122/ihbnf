@@ -14,6 +14,7 @@ type Props = {
   kind: StudySceneKind;
   onClose: () => void;
   onOpenBook: (book: "why-henry" | "dream-payoff") => void;
+  muted?: boolean;
 };
 
 function calendarDates(date: Date) {
@@ -31,7 +32,7 @@ const pageNames = ["The Idea", "The Work", "What Comes Next"];
 const journalTitles = ["A Note from Javier", "On the Writing Desk", "The Way I Work"];
 const steps = ["Create", "Build", "Break it", "Fix it", "Learn", "Keep moving"];
 
-export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
+export function StudyObjectExperience({ kind, onClose, onOpenBook, muted = false }: Props) {
   const unfiltr = getProject("unfiltr")!;
   const closeRef = useRef<HTMLButtonElement>(null);
   const [phoneScreen, setPhoneScreen] = useState(0);
@@ -41,13 +42,26 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
   const [letterOpened, setLetterOpened] = useState(false);
   const [today, setToday] = useState<Date | null>(null);
   const days = useMemo(() => today ? calendarDates(today) : [], [today]);
+  const playPaper = () => {
+    if (muted) return;
+    const audio = new Audio("/media/audio/book-page-real-cc0.wav");
+    audio.volume = .34;
+    void audio.play().catch(() => {});
+  };
 
   useEffect(() => {
     closeRef.current?.focus({ preventScroll: true });
     setToday(new Date());
     // The seal is broken after the visitor has selected the object. No audio
     // and no second click; the parchment unfolds automatically.
-    const opening = window.setTimeout(() => setLetterOpened(true), 180);
+    const opening = window.setTimeout(() => {
+      setLetterOpened(true);
+      if (kind === "contact" && !muted) {
+        const audio = new Audio("/media/audio/envelope-seal-cc-by.wav");
+        audio.volume = .38;
+        void audio.play().catch(() => {});
+      }
+    }, 180);
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -56,7 +70,7 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => { window.clearTimeout(opening); window.removeEventListener("keydown", onKey); };
-  }, [onClose]);
+  }, [onClose, kind, muted]);
 
   const screenshots = unfiltr.media.screenshots || [];
   const screenshotCount = screenshots.length;
@@ -135,10 +149,10 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                 </div>
               </div>
               <div className={styles.bookControls}>
-                <button type="button" disabled={brandPage === 0} onClick={() => setBrandPage((p) => p - 1)}>← Previous page</button>
+                <button type="button" disabled={brandPage === 0} onClick={() => { playPaper(); setBrandPage((p) => p - 1); }}>← Previous page</button>
                 <span>Page {brandPage + 1} of {pageNames.length}</span>
                 <button type="button" onClick={() => setMagnified((v) => !v)} aria-pressed={magnified}>{magnified ? "Zoom out" : "Zoom in"}</button>
-                <button type="button" disabled={brandPage === pageNames.length - 1} onClick={() => setBrandPage((p) => p + 1)}>Turn page →</button>
+                <button type="button" disabled={brandPage === pageNames.length - 1} onClick={() => { playPaper(); setBrandPage((p) => p + 1); }}>Turn page →</button>
               </div>
             </div>
           )}
@@ -188,24 +202,36 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                 <div className={styles.browserBar}>
                   <span aria-hidden="true">● ● ●</span>
                   <span className={styles.address}>sportswagerhelper.com</span>
-                  <a href={links.sportsWagerHelper} target="_blank" rel="noopener noreferrer">Open ↗</a>
+                  <span className={styles.previewLabel}>VIEW ONLY</span>
                 </div>
-                <div className={styles.websiteViewport}>
-                  <iframe
-                    title="Interactive Sports Wager Helper website"
-                    src={links.sportsWagerHelper}
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    className={styles.siteFrame}
-                  />
+                <div className={styles.websiteViewport} tabIndex={0}
+                  role="img" aria-label="Noninteractive visual presentation of Sports Wager Helper: dark blue website, lime accents, AI sports analysis panels">
+                  <div className={styles.previewCanvas}>
+                    <Image
+                      src="/media/sports-wager-helper/og-image.png"
+                      alt="Sports Wager Helper — Know the numbers before you bet, AI player and team breakdowns"
+                      width={1200} height={630}
+                      className={styles.previewHero}
+                      sizes="(max-width: 850px) 90vw, 1100px"
+                    />
+                    <div className={styles.previewContent} aria-hidden="true">
+                      <div className={styles.previewBanner}>
+                        <strong>SPORTS WAGER HELPER</strong>
+                        <span>AI SPORTS RESEARCH · PREVIEW</span>
+                      </div>
+                      <div className={styles.previewGrid}>
+                        <div><small>PLAYER RESEARCH</small><strong>Know the matchup.</strong><span>Historical performance · Team trends · Recent form</span></div>
+                        <div><small>SMARTER BREAKDOWNS</small><strong>See the full picture.</strong><span>Player insights · Context · Comparisons</span></div>
+                        <div><small>PRE-GAME ANALYSIS</small><strong>Find the details.</strong><span>Matchup previews · Key factors · Data</span></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className={styles.keyboardBase} aria-hidden="true"><div className={styles.trackpad} /></div>
               <div className={styles.laptopFooter}>
-                <span>Scroll inside the laptop screen to explore the live site.</span>
-                <a href={links.sportsWagerHelper} target="_blank" rel="noopener noreferrer">Open full website <ExternalArrow className="h-3 w-3" /></a>
+                <span>This is a visual preview of the project, not a usable website. You can scroll the display to see the concept.</span>
               </div>
-              <p className={styles.embedNote}>If the website refuses to display inside another site, open it directly using the link above. The website controls whether embedding is permitted.</p>
             </div>
           )}
 
@@ -244,9 +270,9 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                 </div>
               </div>
               <div className={styles.bookControls}>
-                <button type="button" disabled={journalPage === 0} onClick={() => setJournalPage((p) => p - 1)}>← Previous note</button>
+                <button type="button" disabled={journalPage === 0} onClick={() => { playPaper(); setJournalPage((p) => p - 1); }}>← Previous note</button>
                 <span>{journalPage + 1} / {journalTitles.length}</span>
-                <button type="button" disabled={journalPage === journalTitles.length - 1} onClick={() => setJournalPage((p) => p + 1)}>Turn page →</button>
+                <button type="button" disabled={journalPage === journalTitles.length - 1} onClick={() => { playPaper(); setJournalPage((p) => p + 1); }}>Turn page →</button>
               </div>
             </div>
           )}
@@ -302,6 +328,7 @@ export function StudyObjectExperience({ kind, onClose, onOpenBook }: Props) {
                   ))}
                 </div>
                 <div className={styles.signature}>— Javier</div>
+                <a className={styles.soundCreditLink} href="/media/audio/SOUND-CREDITS.txt" target="_blank" rel="noopener noreferrer">Sound recording credits</a>
               </article>
             </div>
           )}

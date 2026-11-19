@@ -871,3 +871,116 @@
   .mechanism .boltRail .bolt,.mechanism .safeDoor{transition:none}
   .mechanism[data-failed="true"] .counter{animation:none}
 }
+
+
+/* The framed painting slides into a concealed wall pocket instead of
+   vanishing behind a one-frame magical flare. The dark niche is exposed
+   progressively so the safe becomes visible only as the frame rises. */
+.recess {
+  overflow: visible;
+  perspective: 1000px;
+}
+.portraitMechanism {
+  position: absolute;
+  inset: -4% 8% 0;
+  pointer-events: none;
+  z-index: 0;
+  border-left: 3px ridge #85603c;
+  border-right: 3px ridge #85603c;
+  background: linear-gradient(90deg, transparent 0 3%,#d1b0781a 5%,transparent 7% 93%,#d1b07826 95%,transparent);
+  box-shadow: inset 0 0 13px #000b;
+}
+.portraitMechanism span {
+  position: absolute;
+  top: 0;
+  width: 18%;
+  height: 6%;
+  border: 2px ridge #76583b;
+  border-radius: 20%;
+  background: linear-gradient(#af8960,#302013);
+  box-shadow: 0 2px 4px #0008;
+}
+.portraitMechanism span:nth-child(1) { left: 9%; }
+.portraitMechanism span:nth-child(2) { left: 41%; }
+.portraitMechanism span:nth-child(3) { right: 9%; }
+.recess .portrait {
+  z-index: 3;
+  transform: translate3d(0,-115%,0);
+  transform-origin: 50% 10%;
+  transform-style: flat;
+  border: clamp(2px,.26vw,5px) ridge #9b7140;
+  box-shadow: 3px 10px 16px #000d, inset 0 0 0 4px #281309;
+  will-change: transform;
+}
+.recess .portraitFront{
+  clip-path: none;
+  background-position: center;
+  border: 2px solid #5c381b;
+  box-shadow: inset 0 0 0 4px #c69b61a6, inset 0 0 12px 3px #000c;
+}
+.portraitBracket {
+  position: absolute;
+  top: 100%;
+  left: 12%;
+  right: 12%;
+  height: 6%;
+  border: 3px ridge #805b38;
+  background: linear-gradient(90deg,#352318,#b48a51 20%,#342319 50%,#b48a51 80%,#352318);
+  box-shadow: 0 4px 6px #000c;
+}
+.recess[data-frame="opening"] .portrait{
+  animation: portrait-slide-up 3180ms cubic-bezier(.16,.62,.19,1) both;
+}
+.recess[data-frame="closing"] .portrait{
+  animation: portrait-slide-down 1580ms cubic-bezier(.39,.1,.7,1) both;
+}
+.recess[data-frame="open"] .portrait{
+  animation: none;
+  transform: translate3d(0,-115%,0);
+}
+@keyframes portrait-slide-up{
+  0%{transform:translate3d(0,0,0)}
+  7%{transform:translate3d(0,1.8%,0)}
+  20%{transform:translate3d(0,-6%,0)}
+  34%{transform:translate3d(0,-10%,0)}
+  70%{transform:translate3d(0,-91%,0)}
+  90%{transform:translate3d(0,-110%,0)}
+  100%{transform:translate3d(0,-115%,0)}
+}
+@keyframes portrait-slide-down{
+  0%{transform:translate3d(0,-115%,0)}
+  82%{transform:translate3d(0,3%,0)}
+  100%{transform:translate3d(0,0,0)}
+}
+.recess .wallCutout {
+  background:
+    linear-gradient(90deg,#060605df 0 5%,transparent 18% 84%,#070504eb 99%),
+    radial-gradient(ellipse at 50% 52%,#66513745,transparent 65%),
+    repeating-linear-gradient(91deg,#0b0908 0 12px,#20150f 12px 14px,#150f0c 18px 25px);
+  border: 2px ridge #3e3024;
+  box-shadow: inset 0 0 0 6px #060504,inset 0 0 30px #000;
+}
+.recess .recessSafe {
+  inset: 16% 12% 8%;
+  border: 6px ridge #a99363;
+  background:
+    radial-gradient(circle at 48% 43%,#d4b77d22,transparent 30%),
+    repeating-linear-gradient(94deg,transparent 0 9px,#d6c6a00c 10px 11px),
+    linear-gradient(155deg,#657274,#232d2d 48%,#0d1519 78%,#5c6358);
+  box-shadow: inset 0 0 0 5px #0f1416,inset 0 0 0 8px #8c80664d,inset 0 0 35px #000,0 11px 17px #000b;
+}
+.recess .miniWheel {
+  width: 40%;
+  border: clamp(2px,.3vw,5px) ridge #c7b17d;
+  background: repeating-conic-gradient(#bea677 0 4deg,#1a2525 4deg 16deg);
+  box-shadow: 0 0 0 4px #292d2b,inset 0 0 15px #000b;
+}
+.recess .recessSafe:hover:not(:disabled) .miniWheel{
+  filter: brightness(1.23);
+  box-shadow: 0 0 0 4px #292d2b,0 0 15px #d3b47a50,inset 0 0 12px #000b;
+}
+@media (prefers-reduced-motion: reduce){
+  .recess[data-frame="opening"] .portrait,
+  .recess[data-frame="closing"] .portrait { animation: none!important; }
+  .recess[data-frame="closed"] .portrait { transform: translate3d(0,0,0); }
+}
