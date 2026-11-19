@@ -152,7 +152,7 @@ export function HiddenSafe({ unlocked, lampOn, sound, onClose }: {
             aria-hidden={!canEnter}
             onClick={enter}
           >
-            <span>Enter the passage <span aria-hidden="true">→</span></span>
+            <span className={styles.passageLabel}><strong>THE PASSAGE IS OPEN</strong><span>Enter the vault →</span></span>
           </button>
           <div className={styles.safeDoor} inert={phase !== "locked"}>
             <div className={styles.doorThickness} aria-hidden="true" />
