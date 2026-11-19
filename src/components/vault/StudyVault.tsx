@@ -85,10 +85,11 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
     setFrame("opening");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     play("pulse");
-    play("hinge", reduced ? 0 : 1.05);
+    // The heavy recorded hinge starts as the portrait begins rising.
+    play("hinge", reduced ? 0 : .04);
     timer.current = window.setTimeout(() => {
       setFrame("open");
-    }, reduced ? 0 : 3400);
+    }, reduced ? 0 : 2500);
   }
 
   function closeFrame() {
@@ -98,7 +99,7 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
     setFrame("closing");
     play("hinge");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    timer.current = window.setTimeout(() => setFrame("closed"), reduced ? 0 : 1600);
+    timer.current = window.setTimeout(() => setFrame("closed"), reduced ? 0 : 1380);
   }
 
   return (
@@ -106,7 +107,7 @@ export function StudyVault({ lampOn, play, obstructed, onFrameVisibilityChange }
       <span className="sr-only" role="status">
         {compassActive ? "A latch clicks. The brass compass catches the light."
           : progress === RUNE_READY ? "The compass points toward the glowing rune stone."
-          : frame === "open" ? "The frame swings open, revealing a concealed safe."
+          : frame === "open" ? "The portrait slides upward, revealing a concealed safe."
           : ""}
       </span>
       <svg viewBox="0 0 1000 562.5" preserveAspectRatio="none" className={styles.hotspots}>
