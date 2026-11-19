@@ -379,8 +379,34 @@
   100% { opacity: 1; }
 }
 
+/* Close the hardcover and bring it all the way back to the exact shelf slot.
+   The opening animation is preserved, rather than replacing the first video's
+   real three-dimensional page-turning with an instant flat modal. */
+.flightBook[data-returning="true"] {
+  animation: book-return 1240ms cubic-bezier(.46,.03,.27,.99) both;
+}
+.flightBook[data-returning="true"] .bookOrientation {
+  animation: book-orientation 1240ms reverse both;
+}
+.flightBook[data-returning="true"] .coverHinge {
+  animation: cover-open 1240ms reverse both;
+}
+.flightBook[data-returning="true"] .turningLeaf {
+  animation: leaf-open 1240ms reverse both;
+}
+.reader[data-returning="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+@keyframes book-return {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  16% { transform: translate(0, -10px) scale(1); opacity: 1; }
+  78% { transform: translate(var(--shelf-x), calc(var(--shelf-y) - var(--lift))) scale(var(--shelf-scale)); opacity: 1; }
+  100% { transform: translate(var(--shelf-x), var(--shelf-y)) scale(var(--shelf-scale)); opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .backdrop, .reader[data-opening="true"] { animation: none; }
+  .backdrop, .reader[data-opening="true"], .flightBook[data-returning="true"], .flightBook[data-returning="true"] .bookOrientation, .flightBook[data-returning="true"] .coverHinge, .flightBook[data-returning="true"] .turningLeaf { animation: none; }
   .stackedBinding { transition: none; }
   .shelfBook[data-shift="true"] .stackedBinding { animation: none; transform: translateY(var(--lower-book-height)); }
 }
